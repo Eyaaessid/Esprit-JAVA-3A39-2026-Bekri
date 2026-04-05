@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
@@ -31,3 +32,22 @@ build/
 
 ### VS Code ###
 .vscode/
+=======
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+out/
+
+# Spring Boot
+application-local.properties
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+>>>>>>> 6a7a515 (feat: initial Spring Boot project setup - module auth/users)
