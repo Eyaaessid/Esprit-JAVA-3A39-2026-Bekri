@@ -1,0 +1,17 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+out/
+
+# Spring Boot
+application-local.properties
+.env
+
+# OS
+.DS_Store
+Thumbs.db
