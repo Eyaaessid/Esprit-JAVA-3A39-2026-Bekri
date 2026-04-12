@@ -5,8 +5,8 @@ import com.bekri.dto.request.RegisterDTO;
 import com.bekri.dto.response.AuthResponseDTO;
 import com.bekri.dto.response.UtilisateurResponseDTO;
 import com.bekri.entities.Utilisateur;
-import com.bekri.repositories.UtilisateurRepository;
 import com.bekri.config.OpenApiConfig;
+import com.bekri.services.CustomUserDetailsService;
 import com.bekri.services.JwtService;
 import com.bekri.services.UtilisateurService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -36,14 +36,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final UtilisateurService utilisateurService;
-    private final UtilisateurRepository utilisateurRepository;
+    private final CustomUserDetailsService customUserDetailsService;
     private final JwtService jwtService;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody RegisterDTO dto) {
         UtilisateurResponseDTO utilisateurDto = utilisateurService.register(dto);
-        Utilisateur entity = utilisateurRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable après inscription"));
+        Utilisateur entity = (Utilisateur) customUserDetailsService.loadUserByUsername(dto.getEmail());
         String token = jwtService.generateToken(entity);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new AuthResponseDTO("Inscription réussie", utilisateurDto, token));
@@ -52,8 +51,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginDTO dto) {
         UtilisateurResponseDTO utilisateurDto = utilisateurService.login(dto);
-        Utilisateur entity = utilisateurRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable après connexion"));
+        Utilisateur entity = (Utilisateur) customUserDetailsService.loadUserByUsername(dto.getEmail());
         String token = jwtService.generateToken(entity);
         return ResponseEntity.ok(new AuthResponseDTO("Connexion réussie", utilisateurDto, token));
     }

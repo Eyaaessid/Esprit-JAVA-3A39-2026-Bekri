@@ -5,30 +5,32 @@ import com.bekri.dto.request.RegisterDTO;
 import com.bekri.dto.request.UpdateMeRequest;
 import com.bekri.dto.request.UtilisateurRequestDTO;
 import com.bekri.dto.response.UtilisateurResponseDTO;
-import com.bekri.entities.Admin;
-import com.bekri.entities.Coach;
 import com.bekri.entities.Utilisateur;
-import com.bekri.entities.User;
-import com.bekri.enums.UtilisateurRole;
 import com.bekri.enums.UtilisateurStatut;
 import com.bekri.exceptions.ResourceNotFoundException;
-import com.bekri.repositories.ProfilPsychologiqueRepository;
-import com.bekri.repositories.UtilisateurRepository;
-import jakarta.persistence.EntityManager;
+import com.bekri.utils.MyDataBase;
+import com.bekri.utils.UtilisateurResultSetMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
 import java.time.LocalDateTime;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -42,99 +44,208 @@ public class UtilisateurService {
     private static final Set<String> ALLOWED_AVATAR_TYPES = Set.of(
             "image/jpeg", "image/png", "image/gif", "image/webp");
 
-    private final UtilisateurRepository utilisateurRepository;
-    private final ProfilPsychologiqueRepository profilPsychologiqueRepository;
+    private final Connection cnx = MyDataBase.getInstance().getCnx();
     private final PasswordEncoder passwordEncoder;
-    private final EntityManager entityManager;
 
     @Value("${app.files.avatar-dir:./data/avatars}")
     private String avatarStorageDir;
 
-    @Transactional(readOnly = true)
+    @FunctionalInterface
+    private interface SqlRunnable {
+        void run() throws Exception;
+    }
+
+    private void inTransaction(SqlRunnable r) {
+        boolean prevAuto = true;
+        try {
+            prevAuto = cnx.getAutoCommit();
+            cnx.setAutoCommit(false);
+            r.run();
+            cnx.commit();
+        } catch (Exception e) {
+            try {
+                cnx.rollback();
+            } catch (SQLException ignored) {
+                // ignore
+            }
+            if (e instanceof RuntimeException re) {
+                throw re;
+            }
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                cnx.setAutoCommit(prevAuto);
+            } catch (SQLException ignored) {
+                // ignore
+            }
+        }
+    }
+
     public UtilisateurResponseDTO getUtilisateurById(Integer id) {
-        Utilisateur u = utilisateurRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable : " + id));
-        return toResponseDTO(u);
+        try {
+            String sql = "SELECT * FROM utilisateur WHERE id = ?";
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                throw new ResourceNotFoundException("Utilisateur introuvable : " + id);
+            }
+            Utilisateur u = UtilisateurResultSetMapper.mapRow(rs);
+            rs.close();
+            ps.close();
+            return toResponseDTO(u);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    @Transactional
     public UtilisateurResponseDTO createUtilisateur(UtilisateurRequestDTO dto) {
-        if (utilisateurRepository.existsByEmail(dto.getEmail())) {
-            throw new IllegalArgumentException("Cet email est déjà utilisé");
+        try {
+            if (existsByEmail(dto.getEmail())) {
+                throw new IllegalArgumentException("Cet email est déjà utilisé");
+            }
+            String roleDb = dto.getRole() != null ? dto.getRole().getValue() : "user";
+
+            String sql = """
+                    INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, telephone, date_naissance, role, statut, created_at)
+                    VALUES (?,?,?,?,?,?,?,?,NOW())
+                    """;
+            PreparedStatement ps = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, dto.getNom());
+            ps.setString(2, dto.getPrenom());
+            ps.setString(3, dto.getEmail());
+            ps.setString(4, passwordEncoder.encode(dto.getMotDePasse()));
+            ps.setString(5, dto.getTelephone());
+            if (dto.getDateNaissance() != null) {
+                ps.setDate(6, Date.valueOf(dto.getDateNaissance()));
+            } else {
+                ps.setNull(6, Types.DATE);
+            }
+            ps.setString(7, roleDb);
+            ps.setString(8, UtilisateurStatut.ACTIF.getValue());
+            ps.executeUpdate();
+            ResultSet keys = ps.getGeneratedKeys();
+            if (!keys.next()) {
+                throw new IllegalStateException("Impossible de récupérer l'id généré");
+            }
+            int newId = keys.getInt(1);
+            keys.close();
+            ps.close();
+            return getUtilisateurById(newId);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        Utilisateur entity = newUtilisateurForRole(dto.getRole());
-        entity.setNom(dto.getNom());
-        entity.setPrenom(dto.getPrenom());
-        entity.setEmail(dto.getEmail());
-        entity.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
-        entity.setTelephone(dto.getTelephone());
-        entity.setDateNaissance(dto.getDateNaissance());
-        entity.setStatut(UtilisateurStatut.ACTIF);
-        return toResponseDTO(utilisateurRepository.save(entity));
     }
 
-    @Transactional
     public UtilisateurResponseDTO updateUtilisateur(Integer id, UtilisateurRequestDTO dto) {
-        Utilisateur entity = utilisateurRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable : " + id));
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getPrincipal() instanceof Utilisateur current
-                && current.getId() != null && current.getId().equals(id)
-                && !isAdminPrincipal(current)
-                && dto.getRole() != null
-                && !dto.getRole().getValue().equalsIgnoreCase(entity.getRoleValue())) {
-            throw new IllegalArgumentException("Vous ne pouvez pas modifier votre rôle");
+        try {
+            Utilisateur entity = findByIdOrThrow(id);
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getPrincipal() instanceof Utilisateur current
+                    && current.getId() != null && current.getId().equals(id)
+                    && !isAdminPrincipal(current)
+                    && dto.getRole() != null
+                    && !dto.getRole().getValue().equalsIgnoreCase(entity.getRoleValue())) {
+                throw new IllegalArgumentException("Vous ne pouvez pas modifier votre rôle");
+            }
+            if (existsByEmailAndIdNot(dto.getEmail(), id)) {
+                throw new IllegalArgumentException("Cet email est déjà utilisé");
+            }
+
+            boolean changePwd = dto.getMotDePasse() != null && !dto.getMotDePasse().isBlank();
+            String sql = changePwd
+                    ? """
+                    UPDATE utilisateur SET nom=?, prenom=?, email=?, mot_de_passe=?, telephone=?, date_naissance=?, updated_at=NOW()
+                    WHERE id=?
+                    """
+                    : """
+                    UPDATE utilisateur SET nom=?, prenom=?, email=?, telephone=?, date_naissance=?, updated_at=NOW()
+                    WHERE id=?
+                    """;
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setString(1, dto.getNom());
+            ps.setString(2, dto.getPrenom());
+            ps.setString(3, dto.getEmail());
+            int idx = 4;
+            if (changePwd) {
+                ps.setString(idx++, passwordEncoder.encode(dto.getMotDePasse()));
+            }
+            ps.setString(idx++, dto.getTelephone());
+            if (dto.getDateNaissance() != null) {
+                ps.setDate(idx++, Date.valueOf(dto.getDateNaissance()));
+            } else {
+                ps.setNull(idx++, Types.DATE);
+            }
+            ps.setInt(idx, id);
+            int n = ps.executeUpdate();
+            ps.close();
+            if (n == 0) {
+                throw new ResourceNotFoundException("Utilisateur introuvable : " + id);
+            }
+            return getUtilisateurById(id);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        if (utilisateurRepository.existsByEmailAndIdNot(dto.getEmail(), id)) {
-            throw new IllegalArgumentException("Cet email est déjà utilisé");
-        }
-        entity.setNom(dto.getNom());
-        entity.setPrenom(dto.getPrenom());
-        entity.setEmail(dto.getEmail());
-        entity.setTelephone(dto.getTelephone());
-        entity.setDateNaissance(dto.getDateNaissance());
-        if (dto.getMotDePasse() != null && !dto.getMotDePasse().isBlank()) {
-            entity.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
-        }
-        return toResponseDTO(utilisateurRepository.save(entity));
     }
 
-    @Transactional
     public void deleteUtilisateur(Integer id) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getPrincipal() instanceof Utilisateur current
-                && current.getId() != null && current.getId().equals(id)) {
-            throw new IllegalArgumentException("Vous ne pouvez pas supprimer votre propre compte");
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getPrincipal() instanceof Utilisateur current
+                    && current.getId() != null && current.getId().equals(id)) {
+                throw new IllegalArgumentException("Vous ne pouvez pas supprimer votre propre compte");
+            }
+            if (!existsById(id)) {
+                throw new ResourceNotFoundException("Utilisateur introuvable : " + id);
+            }
+            String sql = """
+                    UPDATE utilisateur SET statut='supprime', deactivated_at=NOW(), deactivated_by=?, updated_at=NOW()
+                    WHERE id=?
+                    """;
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setString(1, currentActorLabel());
+            ps.setInt(2, id);
+            ps.executeUpdate();
+            ps.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        Utilisateur entity = utilisateurRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable : " + id));
-        entity.setStatut(UtilisateurStatut.SUPPRIME);
-        entity.setDeactivatedAt(LocalDateTime.now());
-        entity.setDeactivatedBy(currentActorLabel());
-        utilisateurRepository.save(entity);
     }
 
-    /**
-     * Suppression physique (admin) : profil psychologique puis utilisateur.
-     */
-    @Transactional
     public void hardDeleteUtilisateur(Integer id) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getPrincipal() instanceof Utilisateur current
-                && current.getId() != null && current.getId().equals(id)) {
-            throw new IllegalArgumentException("Vous ne pouvez pas supprimer votre propre compte");
-        }
-        Utilisateur entity = utilisateurRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable : " + id));
-        profilPsychologiqueRepository.findByUtilisateurId(id).ifPresent(profilPsychologiqueRepository::delete);
-        entityManager.flush();
-        utilisateurRepository.delete(entity);
+        inTransaction(() -> {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getPrincipal() instanceof Utilisateur current
+                    && current.getId() != null && current.getId().equals(id)) {
+                throw new IllegalArgumentException("Vous ne pouvez pas supprimer votre propre compte");
+            }
+            if (!existsById(id)) {
+                throw new ResourceNotFoundException("Utilisateur introuvable : " + id);
+            }
+            String delProfil = "DELETE FROM profil_psychologique WHERE utilisateur_id=?";
+            try (PreparedStatement ps1 = cnx.prepareStatement(delProfil)) {
+                ps1.setInt(1, id);
+                ps1.executeUpdate();
+            }
+            String delUser = "DELETE FROM utilisateur WHERE id=?";
+            try (PreparedStatement ps2 = cnx.prepareStatement(delUser)) {
+                ps2.setInt(1, id);
+                int n = ps2.executeUpdate();
+                if (n == 0) {
+                    throw new ResourceNotFoundException("Utilisateur introuvable : " + id);
+                }
+            }
+        });
     }
 
     public boolean isSelf(Integer userId) {
-        if (userId == null) return false;
+        if (userId == null) {
+            return false;
+        }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) return false;
+        if (auth == null || !auth.isAuthenticated()) {
+            return false;
+        }
         if (auth.getPrincipal() instanceof Utilisateur u) {
             return u.getId() != null && u.getId().equals(userId);
         }
@@ -145,45 +256,118 @@ public class UtilisateurService {
         return u.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
     }
 
-    @Transactional
     public UtilisateurResponseDTO register(RegisterDTO dto) {
-        if (utilisateurRepository.existsByEmail(dto.getEmail())) {
-            throw new IllegalArgumentException("Cet email est déjà utilisé");
-        }
-        Utilisateur entity = new User();
-        entity.setNom(dto.getNom());
-        entity.setPrenom(dto.getPrenom());
-        entity.setEmail(dto.getEmail());
-        entity.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
-        entity.setTelephone(dto.getTelephone());
-        entity.setDateNaissance(dto.getDateNaissance());
-        entity.setStatut(UtilisateurStatut.ACTIF);
-        return toResponseDTO(utilisateurRepository.save(entity));
+        inTransaction(() -> {
+            try {
+                if (existsByEmail(dto.getEmail())) {
+                    throw new IllegalArgumentException("Cet email est déjà utilisé");
+                }
+                String sql = """
+                        INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, telephone, date_naissance, role, statut, created_at)
+                        VALUES (?,?,?,?,?,?,?,?,NOW())
+                        """;
+                PreparedStatement ps = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                ps.setString(1, dto.getNom());
+                ps.setString(2, dto.getPrenom());
+                ps.setString(3, dto.getEmail());
+                ps.setString(4, passwordEncoder.encode(dto.getMotDePasse()));
+                ps.setString(5, dto.getTelephone());
+                if (dto.getDateNaissance() != null) {
+                    ps.setDate(6, Date.valueOf(dto.getDateNaissance()));
+                } else {
+                    ps.setNull(6, Types.DATE);
+                }
+                ps.setString(7, "user");
+                ps.setString(8, UtilisateurStatut.ACTIF.getValue());
+                ps.executeUpdate();
+                ps.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        return loginDtoToResponse(dto.getEmail());
     }
 
-    @Transactional(readOnly = true)
     public UtilisateurResponseDTO login(LoginDTO dto) {
-        Utilisateur u = utilisateurRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
-        if (!passwordEncoder.matches(dto.getMotDePasse(), u.getMotDePasse())) {
-            throw new IllegalArgumentException("Email ou mot de passe incorrect");
+        try {
+            String sql = "SELECT * FROM utilisateur WHERE email = ?";
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setString(1, dto.getEmail());
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                throw new ResourceNotFoundException("Utilisateur introuvable");
+            }
+            Utilisateur u = UtilisateurResultSetMapper.mapRow(rs);
+            rs.close();
+            ps.close();
+            if (!passwordEncoder.matches(dto.getMotDePasse(), u.getMotDePasse())) {
+                throw new IllegalArgumentException("Email ou mot de passe incorrect");
+            }
+            return toResponseDTO(u);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        return toResponseDTO(u);
     }
 
-    @Transactional(readOnly = true)
+    private UtilisateurResponseDTO loginDtoToResponse(String email) {
+        try {
+            String sql = "SELECT * FROM utilisateur WHERE email = ?";
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                throw new ResourceNotFoundException("Utilisateur introuvable");
+            }
+            Utilisateur u = UtilisateurResultSetMapper.mapRow(rs);
+            rs.close();
+            ps.close();
+            return toResponseDTO(u);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public List<UtilisateurResponseDTO> search(String search, String role, String statut) {
-        UtilisateurStatut s = (statut == null || statut.isBlank()) ? null : UtilisateurStatut.fromDbValue(statut);
-        String r = (role == null || role.isBlank()) ? null : role.trim().toLowerCase(Locale.ROOT);
-        return utilisateurRepository.search(search, r, s).stream().map(this::toResponseDTO).toList();
+        try {
+            UtilisateurStatut s = (statut == null || statut.isBlank()) ? null : UtilisateurStatut.fromDbValue(statut);
+            String r = (role == null || role.isBlank()) ? null : role.trim().toLowerCase(Locale.ROOT);
+
+            StringBuilder sql = new StringBuilder("SELECT * FROM utilisateur WHERE 1=1");
+            List<Object> params = new ArrayList<>();
+            if (search != null && !search.isBlank()) {
+                String like = "%" + search + "%";
+                sql.append(" AND (nom LIKE ? OR prenom LIKE ? OR email LIKE ?)");
+                params.add(like);
+                params.add(like);
+                params.add(like);
+            }
+            if (r != null) {
+                sql.append(" AND LOWER(role) = LOWER(?)");
+                params.add(r);
+            }
+            if (s != null) {
+                sql.append(" AND statut = ?");
+                params.add(s.getValue());
+            }
+            sql.append(" ORDER BY id DESC");
+
+            PreparedStatement ps = cnx.prepareStatement(sql.toString());
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            ResultSet rs = ps.executeQuery();
+            List<UtilisateurResponseDTO> out = new ArrayList<>();
+            while (rs.next()) {
+                out.add(toResponseDTO(UtilisateurResultSetMapper.mapRow(rs)));
+            }
+            rs.close();
+            ps.close();
+            return out;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    /**
-     * Updates the role discriminator column via a native SQL query.
-     * JPA SINGLE_TABLE does not allow updating the discriminator column via entity save,
-     * so we bypass JPA entirely and flush the cache afterwards.
-     */
-    @Transactional
     public UtilisateurResponseDTO updateRole(Integer id, String role) {
         if (role == null || role.isBlank()) {
             throw new IllegalArgumentException("role est requis");
@@ -192,33 +376,63 @@ public class UtilisateurService {
         if (!r.equals("user") && !r.equals("coach") && !r.equals("admin")) {
             throw new IllegalArgumentException("role invalide: " + role);
         }
-        if (!utilisateurRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Utilisateur introuvable : " + id);
+        try {
+            if (!existsById(id)) {
+                throw new ResourceNotFoundException("Utilisateur introuvable : " + id);
+            }
+            String sql = "UPDATE utilisateur SET role=?, updated_at=NOW() WHERE id=?";
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setString(1, r);
+            ps.setInt(2, id);
+            ps.executeUpdate();
+            ps.close();
+            return getUtilisateurById(id);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        utilisateurRepository.updateRoleById(id, r);
-        // Clear the JPA first-level cache so the next read reflects the new role value
-        entityManager.flush();
-        entityManager.clear();
-        return getUtilisateurById(id);
     }
 
-    @Transactional
     public UtilisateurResponseDTO updateStatut(Integer id, String statut) {
-        Utilisateur entity = utilisateurRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable : " + id));
-        UtilisateurStatut s = UtilisateurStatut.fromDbValue(statut);
-        entity.setStatut(s);
-        if (s == UtilisateurStatut.SUPPRIME) {
-            entity.setDeactivatedAt(LocalDateTime.now());
-            entity.setDeactivatedBy(currentActorLabel());
-        } else {
-            entity.setDeactivatedAt(null);
-            entity.setDeactivatedBy(null);
+        try {
+            if (!existsById(id)) {
+                throw new ResourceNotFoundException("Utilisateur introuvable : " + id);
+            }
+            UtilisateurStatut s = UtilisateurStatut.fromDbValue(statut);
+            if (s == UtilisateurStatut.SUPPRIME) {
+                String sql = """
+                        UPDATE utilisateur SET statut=?, deactivated_at=NOW(), deactivated_by=?, updated_at=NOW()
+                        WHERE id=?
+                        """;
+                PreparedStatement ps = cnx.prepareStatement(sql);
+                ps.setString(1, s.getValue());
+                ps.setString(2, currentActorLabel());
+                ps.setInt(3, id);
+                ps.executeUpdate();
+                ps.close();
+            } else if (s == UtilisateurStatut.ACTIF) {
+                String sql = """
+                        UPDATE utilisateur SET statut=?, deactivated_at=NULL, deactivated_by=NULL, updated_at=NOW()
+                        WHERE id=?
+                        """;
+                PreparedStatement ps = cnx.prepareStatement(sql);
+                ps.setString(1, s.getValue());
+                ps.setInt(2, id);
+                ps.executeUpdate();
+                ps.close();
+            } else {
+                String sql = "UPDATE utilisateur SET statut=?, updated_at=NOW() WHERE id=?";
+                PreparedStatement ps = cnx.prepareStatement(sql);
+                ps.setString(1, s.getValue());
+                ps.setInt(2, id);
+                ps.executeUpdate();
+                ps.close();
+            }
+            return getUtilisateurById(id);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        return toResponseDTO(utilisateurRepository.save(entity));
     }
 
-    @Transactional(readOnly = true)
     public UtilisateurResponseDTO me(Utilisateur principal) {
         if (principal == null || principal.getId() == null) {
             throw new IllegalArgumentException("Non authentifié");
@@ -226,29 +440,51 @@ public class UtilisateurService {
         return getUtilisateurById(principal.getId());
     }
 
-    @Transactional
     public UtilisateurResponseDTO updateMe(Utilisateur principal, UpdateMeRequest dto) {
-        if (principal == null || principal.getId() == null) {
-            throw new IllegalArgumentException("Non authentifié");
+        try {
+            if (principal == null || principal.getId() == null) {
+                throw new IllegalArgumentException("Non authentifié");
+            }
+            if (existsByEmailAndIdNot(dto.getEmail(), principal.getId())) {
+                throw new IllegalArgumentException("Cet email est déjà utilisé");
+            }
+            boolean changePwd = dto.getMotDePasse() != null && !dto.getMotDePasse().isBlank();
+            String sql = changePwd
+                    ? """
+                    UPDATE utilisateur SET nom=?, prenom=?, email=?, telephone=?, date_naissance=?, avatar=?, mot_de_passe=?, updated_at=NOW()
+                    WHERE id=?
+                    """
+                    : """
+                    UPDATE utilisateur SET nom=?, prenom=?, email=?, telephone=?, date_naissance=?, avatar=?, updated_at=NOW()
+                    WHERE id=?
+                    """;
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setString(1, dto.getNom());
+            ps.setString(2, dto.getPrenom());
+            ps.setString(3, dto.getEmail());
+            ps.setString(4, dto.getTelephone());
+            if (dto.getDateNaissance() != null) {
+                ps.setDate(5, Date.valueOf(dto.getDateNaissance()));
+            } else {
+                ps.setNull(5, Types.DATE);
+            }
+            ps.setString(6, dto.getAvatar());
+            int idx = 7;
+            if (changePwd) {
+                ps.setString(idx++, passwordEncoder.encode(dto.getMotDePasse()));
+            }
+            ps.setInt(idx, principal.getId());
+            int n = ps.executeUpdate();
+            ps.close();
+            if (n == 0) {
+                throw new ResourceNotFoundException("Utilisateur introuvable : " + principal.getId());
+            }
+            return getUtilisateurById(principal.getId());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        Utilisateur entity = utilisateurRepository.findById(principal.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable : " + principal.getId()));
-        if (utilisateurRepository.existsByEmailAndIdNot(dto.getEmail(), entity.getId())) {
-            throw new IllegalArgumentException("Cet email est déjà utilisé");
-        }
-        entity.setNom(dto.getNom());
-        entity.setPrenom(dto.getPrenom());
-        entity.setEmail(dto.getEmail());
-        entity.setTelephone(dto.getTelephone());
-        entity.setDateNaissance(dto.getDateNaissance());
-        entity.setAvatar(dto.getAvatar());
-        if (dto.getMotDePasse() != null && !dto.getMotDePasse().isBlank()) {
-            entity.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
-        }
-        return toResponseDTO(utilisateurRepository.save(entity));
     }
 
-    @Transactional
     public UtilisateurResponseDTO uploadMyAvatar(Utilisateur principal, MultipartFile file) {
         if (principal == null || principal.getId() == null) {
             throw new IllegalArgumentException("Non authentifié");
@@ -287,10 +523,20 @@ public class UtilisateurService {
             throw new IllegalStateException("Échec de l'enregistrement du fichier", e);
         }
         String publicPath = "/uploads/avatars/" + filename;
-        Utilisateur entity = utilisateurRepository.findById(principal.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable : " + principal.getId()));
-        entity.setAvatar(publicPath);
-        return toResponseDTO(utilisateurRepository.save(entity));
+        try {
+            String sql = "UPDATE utilisateur SET avatar=?, updated_at=NOW() WHERE id=?";
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setString(1, publicPath);
+            ps.setInt(2, principal.getId());
+            int n = ps.executeUpdate();
+            ps.close();
+            if (n == 0) {
+                throw new ResourceNotFoundException("Utilisateur introuvable : " + principal.getId());
+            }
+            return getUtilisateurById(principal.getId());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public UtilisateurResponseDTO toResponseDTO(Utilisateur u) {
@@ -308,20 +554,68 @@ public class UtilisateurService {
                 .build();
     }
 
-    private static Utilisateur newUtilisateurForRole(UtilisateurRole role) {
-        if (role == null) return new User();
-        return switch (role) {
-            case ADMIN -> new Admin();
-            case COACH -> new Coach();
-            case USER -> new User();
-        };
+    private Utilisateur findByIdOrThrow(Integer id) throws SQLException {
+        String sql = "SELECT * FROM utilisateur WHERE id = ?";
+        PreparedStatement ps = cnx.prepareStatement(sql);
+        ps.setInt(1, id);
+        ResultSet rs = ps.executeQuery();
+        if (!rs.next()) {
+            rs.close();
+            ps.close();
+            throw new ResourceNotFoundException("Utilisateur introuvable : " + id);
+        }
+        Utilisateur u = UtilisateurResultSetMapper.mapRow(rs);
+        rs.close();
+        ps.close();
+        return u;
+    }
+
+    private boolean existsById(Integer id) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM utilisateur WHERE id=?";
+        PreparedStatement ps = cnx.prepareStatement(sql);
+        ps.setInt(1, id);
+        ResultSet rs = ps.executeQuery();
+        rs.next();
+        boolean ok = rs.getInt(1) > 0;
+        rs.close();
+        ps.close();
+        return ok;
+    }
+
+    private boolean existsByEmail(String email) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM utilisateur WHERE email=?";
+        PreparedStatement ps = cnx.prepareStatement(sql);
+        ps.setString(1, email);
+        ResultSet rs = ps.executeQuery();
+        rs.next();
+        boolean ok = rs.getInt(1) > 0;
+        rs.close();
+        ps.close();
+        return ok;
+    }
+
+    private boolean existsByEmailAndIdNot(String email, Integer id) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM utilisateur WHERE email=? AND id != ?";
+        PreparedStatement ps = cnx.prepareStatement(sql);
+        ps.setString(1, email);
+        ps.setInt(2, id);
+        ResultSet rs = ps.executeQuery();
+        rs.next();
+        boolean ok = rs.getInt(1) > 0;
+        rs.close();
+        ps.close();
+        return ok;
     }
 
     private static String currentActorLabel() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) return null;
+        if (auth == null || !auth.isAuthenticated()) {
+            return null;
+        }
         Object p = auth.getPrincipal();
-        if (p instanceof Utilisateur u) return u.getEmail();
+        if (p instanceof Utilisateur u) {
+            return u.getEmail();
+        }
         return auth.getName();
     }
 }
