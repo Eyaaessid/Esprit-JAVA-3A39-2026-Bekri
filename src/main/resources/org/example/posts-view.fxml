@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane stylesheets="@app.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.PostsController">
+    <top>
+        <VBox spacing="0.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="0.0" right="0.0" bottom="0.0" left="0.0"/>
+            </padding>
+            <HBox alignment="CENTER_LEFT" spacing="18.0" styleClass="topbar-shell">
+                <VBox spacing="0.0" styleClass="brand-lockup">
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <ImageView fitHeight="34.0" fitWidth="34.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@images/logo.png"/>
+                            </image>
+                        </ImageView>
+                        <Label styleClass="brand-title" text="Bekri"/>
+                    </HBox>
+                </VBox>
+                <VBox alignment="CENTER_LEFT" spacing="2.0">
+                    <Label styleClass="screen-title" text="Community Posts"/>
+                    <Label styleClass="screen-subtitle" text="Posts"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button onAction="#handleRefresh" styleClass="topbar-button" text="Refresh"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <VBox spacing="16.0">
+            <padding>
+                <Insets top="16.0" right="24.0" bottom="24.0" left="24.0"/>
+            </padding>
+            <HBox spacing="12.0">
+                <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                    <Label styleClass="section-label" text="Current User"/>
+                    <ComboBox fx:id="currentUserComboBox" prefWidth="260.0"/>
+                </VBox>
+                <VBox spacing="6.0">
+                    <Label styleClass="section-label" text="Category"/>
+                    <ComboBox fx:id="categoryComboBox" onAction="#handleSearch" prefWidth="150.0"/>
+                </VBox>
+            </HBox>
+            <HBox spacing="10.0">
+                <TextField fx:id="searchField" onAction="#handleSearch" promptText="Search title, content, or category..." HBox.hgrow="ALWAYS"/>
+                <Button onAction="#handleSearch" styleClass="primary-button" text="Search"/>
+                <Button onAction="#handleResetFilters" styleClass="ghost-button" text="Reset"/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Label styleClass="section-title" text="Posts Feed"/>
+                <Label fx:id="feedInfoLabel" styleClass="muted-label" text="0 post(s) loaded"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button onAction="#handleCreatePost" styleClass="primary-button" text="New Post"/>
+            </HBox>
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS">
+                <content>
+                    <VBox fx:id="postsContainer" spacing="14.0">
+                        <padding>
+                            <Insets right="6.0"/>
+                        </padding>
+                    </VBox>
+                </content>
+            </ScrollPane>
+        </VBox>
+    </center>
+</BorderPane>
