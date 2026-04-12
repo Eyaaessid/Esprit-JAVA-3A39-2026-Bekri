@@ -1,30 +1,61 @@
 package com.bekri.services;
 
 import com.bekri.entities.Utilisateur;
-import com.bekri.repositories.UtilisateurRepository;
-import lombok.RequiredArgsConstructor;
+import com.bekri.utils.MyDataBase;
+import com.bekri.utils.UtilisateurResultSetMapper;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 @Service
-@RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UtilisateurRepository utilisateurRepository;
+    private final Connection cnx = MyDataBase.getInstance().getCnx();
 
     @Override
-    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) {
-        return utilisateurRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable : " + username));
+        try {
+            String sql = "SELECT * FROM utilisateur WHERE email=?";
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                rs.close();
+                ps.close();
+                throw new UsernameNotFoundException("Utilisateur introuvable : " + username);
+            }
+            Utilisateur u = UtilisateurResultSetMapper.mapRow(rs);
+            rs.close();
+            ps.close();
+            return u;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    @Transactional(readOnly = true)
     public Utilisateur loadUserById(Integer id) {
-        return utilisateurRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable : " + id));
+        try {
+            String sql = "SELECT * FROM utilisateur WHERE id=?";
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                rs.close();
+                ps.close();
+                throw new UsernameNotFoundException("Utilisateur introuvable : " + id);
+            }
+            Utilisateur u = UtilisateurResultSetMapper.mapRow(rs);
+            rs.close();
+            ps.close();
+            return u;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
