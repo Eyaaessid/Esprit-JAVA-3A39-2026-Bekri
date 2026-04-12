@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.esprit.pijavafx.ui.ObjectifFormController"
+      spacing="0"
+      prefWidth="600"
+      style="-fx-background-color: white;">
+
+    <!-- ── HEADER ── -->
+    <HBox alignment="CENTER_LEFT" spacing="14"
+          style="-fx-background-color: white;
+                 -fx-border-color: #e8ecf0;
+                 -fx-border-width: 0 0 1 0;
+                 -fx-padding: 18 28 18 28;">
+        <Label text="🎯"
+               style="-fx-font-size: 20px;
+                      -fx-background-color: #e8f8f7;
+                      -fx-background-radius: 12;
+                      -fx-padding: 8 10 8 10;"/>
+        <VBox spacing="2">
+            <Label text="Objectif"
+                   style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1a2332;"/>
+            <Label text="Remplissez tous les champs requis"
+                   style="-fx-font-size: 12px; -fx-text-fill: #94a3b8;"/>
+        </VBox>
+    </HBox>
+
+    <!-- ── SCROLLABLE BODY ── -->
+    <ScrollPane fitToWidth="true" maxHeight="520"
+                style="-fx-background-color: white; -fx-border-width: 0; -fx-background: white;">
+        <VBox spacing="0" style="-fx-background-color: white; -fx-padding: 28 32 20 32;">
+
+            <!-- Titre -->
+            <Label text="Titre *" styleClass="field-label"/>
+            <TextField fx:id="titreField" promptText="Ex : Perdre 5 kg" styleClass="field-input"/>
+            <Label fx:id="titreError" styleClass="field-error" text=""/>
+            <Region prefHeight="16"/>
+
+            <!-- Type + Statut -->
+            <HBox spacing="20">
+                <VBox spacing="0" HBox.hgrow="ALWAYS">
+                    <Label text="Type *" styleClass="field-label"/>
+                    <ComboBox fx:id="typeCombo" promptText="Choisir un type"
+                              styleClass="field-input" maxWidth="Infinity"/>
+                    <Label fx:id="typeError" styleClass="field-error" text=""/>
+                </VBox>
+                <VBox spacing="0" HBox.hgrow="ALWAYS">
+                    <Label text="Statut *" styleClass="field-label"/>
+                    <ComboBox fx:id="statutCombo" promptText="Choisir un statut"
+                              styleClass="field-input" maxWidth="Infinity"/>
+                    <Label fx:id="statutError" styleClass="field-error" text=""/>
+                </VBox>
+            </HBox>
+            <Region prefHeight="16"/>
+
+            <!-- Description -->
+            <Label text="Description" styleClass="field-label"/>
+            <TextArea fx:id="descriptionArea" promptText="Description de l'objectif..."
+                      styleClass="field-input" prefRowCount="3" wrapText="true"/>
+            <Region prefHeight="16"/>
+
+            <!-- Valeur cible + actuelle -->
+            <HBox spacing="20">
+                <VBox spacing="0" HBox.hgrow="ALWAYS">
+                    <Label text="Valeur cible *" styleClass="field-label"/>
+                    <TextField fx:id="valeurCibleField" promptText="Ex : 70" styleClass="field-input"/>
+                    <Label fx:id="valeurCibleError" styleClass="field-error" text=""/>
+                </VBox>
+                <VBox spacing="0" HBox.hgrow="ALWAYS">
+                    <Label text="Valeur actuelle" styleClass="field-label"/>
+                    <TextField fx:id="valeurActuelleField" promptText="Ex : 80" styleClass="field-input"/>
+                    <Label fx:id="valeurActuelleError" styleClass="field-error" text=""/>
+                </VBox>
+            </HBox>
+            <Region prefHeight="16"/>
+
+            <!-- Divider -->
+            <Region style="-fx-background-color: #e8ecf0; -fx-pref-height:1; -fx-min-height:1; -fx-max-height:1;"/>
+            <Region prefHeight="16"/>
+
+            <!-- Dates -->
+            <HBox spacing="20">
+                <VBox spacing="0" HBox.hgrow="ALWAYS">
+                    <Label text="Date de début *" styleClass="field-label"/>
+                    <DatePicker fx:id="dateDebutPicker" styleClass="field-input" maxWidth="Infinity"/>
+                    <Label fx:id="dateDebutError" styleClass="field-error" text=""/>
+                </VBox>
+                <VBox spacing="0" HBox.hgrow="ALWAYS">
+                    <Label text="Date de fin *" styleClass="field-label"/>
+                    <DatePicker fx:id="dateFinPicker" styleClass="field-input" maxWidth="Infinity"/>
+                    <Label fx:id="dateFinError" styleClass="field-error" text=""/>
+                </VBox>
+            </HBox>
+            <Region prefHeight="16"/>
+
+            <!-- Slug -->
+            <Label text="Slug (optionnel)" styleClass="field-label"/>
+            <TextField fx:id="slugField" promptText="Ex : perdre-5-kg" styleClass="field-input"/>
+            <Region prefHeight="8"/>
+
+        </VBox>
+    </ScrollPane>
+
+    <!-- ── FOOTER ── -->
+    <HBox alignment="CENTER_RIGHT" spacing="12"
+          style="-fx-background-color: white;
+                 -fx-border-color: #e8ecf0;
+                 -fx-border-width: 1 0 0 0;
+                 -fx-padding: 16 28 16 28;">
+        <Button text="Annuler"       onAction="#onAnnuler"     styleClass="btn-cancel"/>
+        <Button text="💾  Enregistrer" onAction="#onEnregistrer" styleClass="btn-primary"/>
+    </HBox>
+
+</VBox>
