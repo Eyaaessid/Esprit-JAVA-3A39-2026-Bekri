@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.bekri.controllers.LoginController"
+      styleClass="auth-root"
+      prefWidth="1100" prefHeight="700">
+
+    <!-- LEFT PANEL -->
+    <VBox styleClass="auth-left" HBox.hgrow="ALWAYS" maxWidth="460">
+        <padding><Insets top="60" right="50" bottom="60" left="60"/></padding>
+        <Label text="Bekri" styleClass="brand-logo"/>
+        <Label text="Prenez soin de votre bien-être chaque jour"
+               styleClass="auth-tagline" wrapText="true"/>
+        <Label text="Une plateforme dédiée à la prévention mentale et physique."
+               styleClass="auth-sub" wrapText="true"/>
+        <VBox spacing="12" style="-fx-padding: 36 0 0 0;">
+            <HBox styleClass="feature-row" spacing="14">
+                <Label text="📋" styleClass="feature-icon"/>
+                <VBox>
+                    <Label text="Suivi quotidien" styleClass="feature-title"/>
+                    <Label text="Humeur, sommeil, activité &amp; nutrition" styleClass="feature-desc"/>
+                </VBox>
+            </HBox>
+            <HBox styleClass="feature-row" spacing="14">
+                <Label text="📊" styleClass="feature-icon"/>
+                <VBox>
+                    <Label text="Insights hebdomadaires IA" styleClass="feature-title"/>
+                    <Label text="Analyses personnalisées chaque semaine" styleClass="feature-desc"/>
+                </VBox>
+            </HBox>
+            <HBox styleClass="feature-row" spacing="14">
+                <Label text="🤖" styleClass="feature-icon"/>
+                <VBox>
+                    <Label text="Coach Eya — IA bien-être" styleClass="feature-title"/>
+                    <Label text="Disponible 24h/24 en français" styleClass="feature-desc"/>
+                </VBox>
+            </HBox>
+        </VBox>
+    </VBox>
+
+    <!-- RIGHT PANEL -->
+    <ScrollPane styleClass="auth-scroll" HBox.hgrow="ALWAYS" fitToWidth="true">
+        <VBox styleClass="auth-right">
+            <padding><Insets top="60" right="70" bottom="60" left="70"/></padding>
+
+            <Label text="Bon retour 👋" styleClass="auth-title"/>
+            <Label text="Connectez-vous à votre espace bien-être" styleClass="auth-subtitle"/>
+
+            <!-- General error banner -->
+            <Label fx:id="errorLabel" styleClass="error-banner" wrapText="true"
+                   managed="false" visible="false">
+                <VBox.margin><Insets top="14"/></VBox.margin>
+            </Label>
+
+            <!-- EMAIL -->
+            <VBox spacing="6">
+                <VBox.margin><Insets top="28"/></VBox.margin>
+                <HBox spacing="4" alignment="CENTER_LEFT">
+                    <Label text="Adresse email" styleClass="field-label"/>
+                    <Label text="*" styleClass="required-star"/>
+                </HBox>
+                <TextField fx:id="emailField" styleClass="auth-field"
+                           promptText="votre@email.com"/>
+                <Label fx:id="emailErrorLabel" styleClass="error-label"
+                       wrapText="true" managed="false" visible="false"/>
+            </VBox>
+
+            <!-- PASSWORD -->
+            <VBox spacing="6">
+                <VBox.margin><Insets top="16"/></VBox.margin>
+                <HBox spacing="4" alignment="CENTER_LEFT">
+                    <Label text="Mot de passe" styleClass="field-label"/>
+                    <Label text="*" styleClass="required-star"/>
+                </HBox>
+                <StackPane styleClass="password-field-stack password-with-toggle">
+                    <PasswordField fx:id="passwordField" promptText="••••••••"
+                                   styleClass="password-field-in-stack"/>
+                    <TextField fx:id="passwordPlainField" promptText="••••••••"
+                               visible="false" managed="false"
+                               styleClass="password-field-in-stack"/>
+                    <HBox alignment="CENTER_RIGHT" pickOnBounds="false">
+                        <padding><Insets right="8"/></padding>
+                        <Button fx:id="passwordToggleBtn" text="👁"
+                                styleClass="eye-button password-toggle-btn password-eye-integrated"/>
+                    </HBox>
+                </StackPane>
+                <Label fx:id="passwordErrorLabel" styleClass="error-label"
+                       wrapText="true" managed="false" visible="false"/>
+            </VBox>
+
+            <!-- LOGIN BUTTON — inline style used here intentionally:
+                 JavaFX overrides .btn-primary:default with system blue unless we
+                 use -fx-background-insets:0 inline which has highest specificity -->
+            <Button fx:id="loginBtn" text="Se connecter" maxWidth="Infinity"
+                    styleClass="btn-primary"
+                    onAction="#handleLogin" defaultButton="true"
+                    style="-fx-background-insets: 0;">
+                <VBox.margin><Insets top="28"/></VBox.margin>
+            </Button>
+
+            <Separator>
+                <VBox.margin><Insets top="24" bottom="24"/></VBox.margin>
+            </Separator>
+
+            <HBox alignment="CENTER" spacing="6">
+                <Label text="Pas encore de compte ?" styleClass="auth-link-text"/>
+                <Hyperlink text="Créer un compte" styleClass="auth-link" onAction="#goToRegister"/>
+            </HBox>
+        </VBox>
+    </ScrollPane>
+</HBox>
