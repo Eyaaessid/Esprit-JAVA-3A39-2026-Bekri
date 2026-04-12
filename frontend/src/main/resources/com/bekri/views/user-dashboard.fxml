@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.bekri.controllers.UserDashboardController"
+      styleClass="dashboard-root"
+      prefWidth="900" prefHeight="700">
+
+    <!-- TOP NAV -->
+    <HBox styleClass="topnav" alignment="CENTER_LEFT" spacing="12">
+        <padding><Insets top="14" right="28" bottom="14" left="28"/></padding>
+        <Label text="Bekri" styleClass="nav-brand" HBox.hgrow="ALWAYS"/>
+        <Label fx:id="roleLabel" styleClass="role-badge"/>
+        <Hyperlink text="Mon profil" styleClass="nav-link" onAction="#goToProfile"/>
+        <Button text="Déconnexion" styleClass="btn-logout" onAction="#handleLogout"/>
+    </HBox>
+
+    <!-- CONTENT -->
+    <VBox VBox.vgrow="ALWAYS" styleClass="dashboard-content">
+        <padding><Insets top="40" right="60" bottom="40" left="60"/></padding>
+
+        <Label fx:id="welcomeLabel" text="Bonjour !" styleClass="dashboard-title"/>
+        <Label text="Votre espace bien-être personnel" styleClass="dashboard-sub"/>
+
+        <!-- COACH NOTICE -->
+        <HBox fx:id="coachNotice" styleClass="info-banner" spacing="12"
+              managed="false" visible="false">
+            <VBox.margin><Insets top="20"/></VBox.margin>
+            <Label text="ℹ️" style="-fx-font-size:18px;"/>
+            <Label text="Votre demande de rôle Coach est en attente de confirmation par un administrateur."
+                   styleClass="info-banner-text" wrapText="true" HBox.hgrow="ALWAYS"/>
+        </HBox>
+
+        <!-- PROFIL CARD -->
+        <VBox styleClass="profil-card" spacing="12">
+            <VBox.margin><Insets top="28"/></VBox.margin>
+            <Label text="📊 Votre profil psychologique" styleClass="card-title"/>
+            <HBox spacing="32" alignment="CENTER_LEFT">
+                <VBox alignment="CENTER" spacing="6">
+                    <Label fx:id="scoreLabel" text="—" styleClass="score-big"/>
+                    <Label text="Score global" styleClass="score-sub"/>
+                </VBox>
+                <VBox spacing="6">
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label text="Profil :" styleClass="profil-key"/>
+                        <Label fx:id="profilTypeLabel" text="—" styleClass="profil-value"/>
+                    </HBox>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label text="Évalué le :" styleClass="profil-key"/>
+                        <Label fx:id="dateEvalLabel" text="—" styleClass="profil-value"/>
+                    </HBox>
+                    <Label fx:id="feedbackLabel" text="" styleClass="profil-feedback"
+                           wrapText="true" maxWidth="450"/>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <!-- QUICK STATS -->
+        <HBox spacing="16">
+            <VBox.margin><Insets top="24"/></VBox.margin>
+            <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+                <Label text="👤" styleClass="stat-icon"/>
+                <Label fx:id="statRole" text="—" styleClass="stat-value"/>
+                <Label text="Votre rôle" styleClass="stat-label"/>
+            </VBox>
+            <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+                <Label text="✅" styleClass="stat-icon"/>
+                <Label fx:id="statStatut" text="—" styleClass="stat-value"/>
+                <Label text="Statut du compte" styleClass="stat-label"/>
+            </VBox>
+            <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+                <Label text="📅" styleClass="stat-icon"/>
+                <Label fx:id="statDate" text="—" styleClass="stat-value"/>
+                <Label text="Membre depuis" styleClass="stat-label"/>
+            </VBox>
+        </HBox>
+    </VBox>
+</VBox>
