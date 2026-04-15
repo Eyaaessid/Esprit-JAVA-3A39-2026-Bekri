@@ -1,77 +1,29 @@
 package tn.esprit.pijava.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "objectif_bien_etre")
 public class ObjectifBienEtre {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @NotBlank(message = "Le titre est obligatoire.")
-    @Size(min = 3, max = 255, message = "Le titre doit contenir entre 3 et 255 caractères.")
-    @Column(nullable = false, length = 255)
     private String titre;
 
-    @Lob
-    @Column(columnDefinition = "LONGTEXT")
     private String description;
-
-    @NotBlank(message = "Le type est obligatoire.")
-    @Column(nullable = false, length = 100)
     private String type;
-
-    @NotNull(message = "La valeur cible est obligatoire.")
-    @Positive(message = "La valeur cible doit être un nombre positif.")
-    @Column(name = "valeur_cible", nullable = false)
     private Double valeurCible;
 
-    @Column(name = "valeur_actuelle")
     private Double valeurActuelle;
-
-    @NotNull(message = "La date de début est obligatoire.")
-    @Column(name = "date_debut", nullable = false)
     private LocalDate dateDebut;
-
-    @NotNull(message = "La date de fin est obligatoire.")
-    @Column(name = "date_fin", nullable = false)
     private LocalDate dateFin;
-
-    @NotBlank(message = "Le statut est obligatoire.")
-    @Column(nullable = false, length = 50)
     private String statut;
 
-    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "utilisateur_id", nullable = false)
     private Integer utilisateurId;
 
-    @Column(length = 255)
     private String slug;
-
-    @PrePersist
-    public void prePersist() {
-        if (createdAt == null) createdAt = LocalDateTime.now();
-        if (utilisateurId == null) utilisateurId = 1;
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 
     // Getters/Setters
     public Integer getId() { return id; }

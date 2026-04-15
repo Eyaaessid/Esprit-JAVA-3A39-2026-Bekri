@@ -11,7 +11,7 @@ import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import tn.esprit.pijavafx.model.QuestionEvaluationDto;
 import tn.esprit.pijavafx.service.IQuestionService;
-import tn.esprit.pijavafx.service.QuestionServiceHttp;
+import tn.esprit.pijavafx.service.QuestionServiceJdbc;
 
 import java.io.IOException;
 import java.util.List;
@@ -32,8 +32,7 @@ public class QuestionsController {
     private static final int PAGE_SIZE = 8;
     private int currentPage = 0;
     private List<QuestionEvaluationDto> filteredList = List.of();
-
-    private final IQuestionService service = new QuestionServiceHttp();
+    private final QuestionServiceJdbc service = new QuestionServiceJdbc();
     private List<QuestionEvaluationDto> allQuestions = List.of();
 
     @FXML
@@ -57,7 +56,6 @@ public class QuestionsController {
             @Override public String fromString(String s) { return s; }
         });
 
-        // Re-layout cards on every width change (window resize)
         cardsPane.widthProperty().addListener((obs, oldW, newW) -> {
             double w = newW.doubleValue();
             if (w > 0) relayout(w);
@@ -72,7 +70,7 @@ public class QuestionsController {
             allQuestions = service.getAll();
             applyFilter();
         } catch (Exception e) {
-            showError("Impossible de charger les questions : " + e.getMessage());
+            showError("Impossible de charger les questions.", e);
         }
     }
 
@@ -114,9 +112,7 @@ public class QuestionsController {
             cardsPane.getChildren().add(card);
         }
 
-        if (countLabel != null) {
-            countLabel.setText(total + " question(s)");
-        }
+        if (countLabel != null) countLabel.setText(total + " question(s)");
 
         pageLabel.setText("Page " + (currentPage + 1) + " / " + totalPages);
         btnPrev.setDisable(currentPage == 0);
@@ -136,10 +132,6 @@ public class QuestionsController {
         });
     }
 
-    /**
-     * 4 columns, 3 gaps of 20px each.
-     * -2 is a safe rounding buffer so cards never overflow to next row.
-     */
     private double computeCardWidth(double paneW) {
         if (paneW <= 0) return 220;
         return Math.floor((paneW - 3 * 20) / 4) - 2;
@@ -166,28 +158,23 @@ public class QuestionsController {
         card.getStyleClass().add("card");
         card.setPadding(new Insets(16));
 
-        // Category chip
         Label categoryChip = new Label(q.getCategory() != null ? q.getCategory().toUpperCase() : "—");
         categoryChip.getStyleClass().addAll("chip", "chip-type");
 
-        // Question text
         Label texteLabel = new Label(q.getTexte());
         texteLabel.getStyleClass().add("card-title");
         texteLabel.setWrapText(true);
         VBox.setVgrow(texteLabel, Priority.ALWAYS);
 
-        // Options as indigo pills
         FlowPane optionsBox = new FlowPane(6, 6);
         for (String opt : new String[]{ q.getOption1(), q.getOption2(), q.getOption3() }) {
             if (opt != null && !opt.isBlank()) {
                 Label badge = new Label(opt);
                 badge.getStyleClass().add("badge-option");
-                badge.setWrapText(false);
                 optionsBox.getChildren().add(badge);
             }
         }
 
-        // Action buttons — stretch to full width
         Button editBtn = new Button("✏  Modifier");
         editBtn.getStyleClass().add("btn-secondary");
         editBtn.setMaxWidth(Double.MAX_VALUE);
@@ -221,7 +208,7 @@ public class QuestionsController {
                     else service.update(existing.getId(), dto);
                     loadCards();
                 } catch (Exception ex) {
-                    showError("Erreur lors de la sauvegarde : " + ex.getMessage());
+                    showError("Erreur lors de la sauvegarde.", ex);
                 }
             });
 
@@ -236,7 +223,7 @@ public class QuestionsController {
             stage.setScene(scene);
             stage.showAndWait();
         } catch (IOException e) {
-            showError("Impossible d'ouvrir le formulaire : " + e.getMessage());
+            showError("Impossible d'ouvrir le formulaire.", e);
         }
     }
 
@@ -252,16 +239,35 @@ public class QuestionsController {
                 service.delete(q.getId());
                 loadCards();
             } catch (Exception e) {
-                showError("Erreur lors de la suppression : " + e.getMessage());
+                showError("Erreur lors de la suppression.", e);
             }
         }
     }
 
-    private void showError(String msg) {
+    // ── Error helper ──────────────────────────────────────────────────────────
+    /**
+     * Shows a clean, friendly error dialog.
+     * Prints the full stack trace to the console for debugging.
+     * Never shows raw stack trace text to the user.
+     */
+    private void showError(String friendlyMsg, Exception e) {
+        System.err.println("[ERROR] " + friendlyMsg);
+        e.printStackTrace();
+
+        String detail = getRootCauseMessage(e);
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Erreur");
-        alert.setHeaderText(null);
-        alert.setContentText(msg);
+        alert.setHeaderText(friendlyMsg);
+        alert.setContentText(detail);
         alert.showAndWait();
+    }
+
+    /** Walks to the deepest cause and returns only its first line */
+    private String getRootCauseMessage(Throwable t) {
+        Throwable cause = t;
+        while (cause.getCause() != null) cause = cause.getCause();
+        String msg = cause.getMessage();
+        if (msg == null || msg.isBlank()) return cause.getClass().getSimpleName();
+        return msg.split("\n")[0].trim();
     }
 }

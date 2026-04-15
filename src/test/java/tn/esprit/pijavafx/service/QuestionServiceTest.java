@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Base de données MySQL réelle requise (Spring Boot backend sur http://127.0.0.1:8080)
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class QuestionServiceHttpTest {
+class QuestionServiceTest {
 
     static IQuestionService service;
     static int idQuestionTest = -1;
@@ -21,7 +21,7 @@ class QuestionServiceHttpTest {
     // ── Setup ─────────────────────────────────────────────────────────────────
     @BeforeAll
     static void setup() {
-        service = new QuestionServiceHttp();
+        service = new QuestionServiceJdbc();
     }
 
     // ── Nettoyage après chaque test ───────────────────────────────────────────

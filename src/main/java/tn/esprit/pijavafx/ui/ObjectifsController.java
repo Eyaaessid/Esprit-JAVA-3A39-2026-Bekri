@@ -11,7 +11,7 @@ import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import tn.esprit.pijavafx.model.ObjectifBienEtreDto;
 import tn.esprit.pijavafx.service.IObjectifService;
-import tn.esprit.pijavafx.service.ObjectifServiceHttp;
+import tn.esprit.pijavafx.service.ObjectifServiceJdbc;
 
 import java.io.IOException;
 import java.util.List;
@@ -32,7 +32,7 @@ public class ObjectifsController {
     private int currentPage = 0;
     private List<ObjectifBienEtreDto> filteredList = List.of();
 
-    private final IObjectifService service = new ObjectifServiceHttp();
+    private final IObjectifService service = new ObjectifServiceJdbc();
     private List<ObjectifBienEtreDto> allObjectifs = List.of();
 
     @FXML
