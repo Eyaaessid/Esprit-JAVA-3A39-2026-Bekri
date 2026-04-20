@@ -1,0 +1,200 @@
+package tn.esprit.user.service;
+
+import at.favre.lib.crypto.bcrypt.BCrypt;
+import tn.esprit.user.dao.UtilisateurDao;
+import tn.esprit.user.entity.Utilisateur;
+import tn.esprit.user.enums.UtilisateurRole;
+import tn.esprit.user.enums.UtilisateurStatut;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+
+public class UtilisateurService {
+    private final UtilisateurDao dao = new UtilisateurDao();
+
+    public Utilisateur register(String nom, String prenom, String email, String password) {
+        return register(nom, prenom, email, password, null, null);
+    }
+
+    public Utilisateur register(String nom, String prenom, String email, String password,
+                                String telephone, LocalDate dateNaissance) {
+        if (dao.existsByEmail(email)) {
+            throw new IllegalArgumentException("Email déjà utilisé");
+        }
+        String hashed = BCrypt.withDefaults().hashToString(12, password.toCharArray());
+        Utilisateur u = new Utilisateur();
+        u.setNom(nom);
+        u.setPrenom(prenom);
+        u.setEmail(email);
+        u.setMotDePasse(hashed);
+        u.setRole(UtilisateurRole.USER);
+        u.setStatut(UtilisateurStatut.ACTIF);
+        u.setTelephone(telephone);
+        u.setDateNaissance(dateNaissance);
+        return dao.save(u);
+    }
+
+    public Utilisateur login(String email, String password) {
+        Utilisateur u = dao.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Email introuvable"));
+        var result = BCrypt.verifyer().verify(password.toCharArray(), u.getMotDePasse());
+        if (!result.verified) {
+            throw new IllegalArgumentException("Mot de passe incorrect");
+        }
+        return u;
+    }
+
+    public List<Utilisateur> getAllUsers() {
+        return dao.findAll();
+    }
+
+    public Utilisateur getUserById(Integer id) {
+        return dao.findById(id).orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable"));
+    }
+
+    public Utilisateur updateUser(Utilisateur u) {
+        return dao.save(u);
+    }
+
+    public void deleteUser(Integer id) {
+        dao.deleteById(id);
+    }
+
+    public Utilisateur updateRole(Integer id, UtilisateurRole role) {
+        Utilisateur u = getUserById(id);
+        u.setRole(role);
+        return dao.save(u);
+    }
+
+    public Utilisateur updateStatut(Integer id, UtilisateurStatut statut) {
+        Utilisateur u = getUserById(id);
+        u.setStatut(statut);
+        return dao.save(u);
+    }
+
+    public List<Utilisateur> findUtilisateursFiltered(String search, String roleFilter, String statutFilter) {
+        String s = search == null ? "" : search.trim().toLowerCase(Locale.ROOT);
+        String rf = roleFilter == null ? null : roleFilter.trim().toLowerCase(Locale.ROOT);
+        String sf = statutFilter == null ? null : statutFilter.trim().toLowerCase(Locale.ROOT);
+
+        return dao.findAll().stream()
+                .filter(u -> s.isEmpty() || matchesSearch(u, s))
+                .filter(u -> rf == null || rf.isEmpty() || u.getRoleKey().equals(rf))
+                .filter(u -> sf == null || sf.isEmpty() || matchesStatutFilter(u, sf))
+                .collect(Collectors.toList());
+    }
+
+    private boolean matchesSearch(Utilisateur u, String q) {
+        String nom = u.getNom() != null ? u.getNom().toLowerCase(Locale.ROOT) : "";
+        String prenom = u.getPrenom() != null ? u.getPrenom().toLowerCase(Locale.ROOT) : "";
+        String email = u.getEmail() != null ? u.getEmail().toLowerCase(Locale.ROOT) : "";
+        return nom.contains(q) || prenom.contains(q) || email.contains(q);
+    }
+
+    private boolean matchesStatutFilter(Utilisateur u, String sf) {
+        String key = u.getStatutKey();
+        if ("supprime".equals(sf)) {
+            return "inactif".equals(key);
+        }
+        return key.equals(sf);
+    }
+
+    public Utilisateur createUtilisateurAdmin(String nom, String prenom, String email, String password,
+                                                String telephone, LocalDate dateNaissance, String apiRole) {
+        if (dao.existsByEmail(email)) {
+            throw new IllegalArgumentException("Email déjà utilisé");
+        }
+        UtilisateurRole role = parseRole(apiRole);
+        String hashed = BCrypt.withDefaults().hashToString(12, password.toCharArray());
+        Utilisateur u = new Utilisateur();
+        u.setNom(nom);
+        u.setPrenom(prenom);
+        u.setEmail(email);
+        u.setMotDePasse(hashed);
+        u.setRole(role);
+        u.setStatut(UtilisateurStatut.ACTIF);
+        u.setTelephone(telephone);
+        u.setDateNaissance(dateNaissance);
+        return dao.save(u);
+    }
+
+    public Utilisateur updateUtilisateurAdmin(Integer id, String nom, String prenom, String email,
+                                               String telephone, LocalDate dateNaissance,
+                                               String newPasswordOrNull,
+                                               String apiRole, String apiStatut) {
+        Utilisateur u = getUserById(id);
+        u.setNom(nom);
+        u.setPrenom(prenom);
+        u.setEmail(email);
+        u.setTelephone(telephone);
+        u.setDateNaissance(dateNaissance);
+        if (newPasswordOrNull != null && !newPasswordOrNull.isBlank()) {
+            u.setMotDePasse(BCrypt.withDefaults().hashToString(12, newPasswordOrNull.toCharArray()));
+        }
+        if (apiRole != null) {
+            u.setRole(parseRole(apiRole));
+        }
+        if (apiStatut != null) {
+            u.setStatut(parseStatut(apiStatut));
+        }
+        return dao.save(u);
+    }
+
+    public Utilisateur updateProfile(Integer userId, String nom, String prenom, String email,
+                                     String telephone, LocalDate dateNaissance,
+                                     String photoProfil, String newPasswordOrNull) {
+        Utilisateur u = getUserById(userId);
+        u.setNom(nom);
+        u.setPrenom(prenom);
+        u.setEmail(email);
+        u.setTelephone(telephone);
+        u.setDateNaissance(dateNaissance);
+        if (photoProfil != null) {
+            u.setPhotoProfil(photoProfil);
+        }
+        if (newPasswordOrNull != null && !newPasswordOrNull.isBlank()) {
+            u.setMotDePasse(BCrypt.withDefaults().hashToString(12, newPasswordOrNull.toCharArray()));
+        }
+        return dao.save(u);
+    }
+
+    public static UtilisateurRole parseRole(String api) {
+        if (api == null || api.isBlank()) {
+            throw new IllegalArgumentException("Rôle invalide");
+        }
+        return switch (api.trim().toLowerCase(Locale.ROOT)) {
+            case "user" -> UtilisateurRole.USER;
+            case "coach" -> UtilisateurRole.COACH;
+            case "admin" -> UtilisateurRole.ADMIN;
+            default -> throw new IllegalArgumentException("Rôle invalide");
+        };
+    }
+
+    public static UtilisateurStatut parseStatut(String api) {
+        if (api == null || api.isBlank()) {
+            throw new IllegalArgumentException("Statut invalide");
+        }
+        return switch (api.trim().toLowerCase(Locale.ROOT)) {
+            case "actif" -> UtilisateurStatut.ACTIF;
+            case "inactif" -> UtilisateurStatut.INACTIF;
+            case "bloque" -> UtilisateurStatut.BANNI;
+            case "supprime" -> UtilisateurStatut.INACTIF;
+            default -> throw new IllegalArgumentException("Statut invalide");
+        };
+    }
+
+    public static LocalDate parseDateIso(String iso) {
+        if (iso == null || iso.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(iso.length() >= 10 ? iso.substring(0, 10) : iso, DateTimeFormatter.ISO_LOCAL_DATE);
+        } catch (DateTimeParseException e) {
+            return null;
+        }
+    }
+}

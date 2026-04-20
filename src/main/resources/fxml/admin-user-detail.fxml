@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.esprit.user.ui.AdminUserDetailController"
+      styleClass="dashboard-root"
+      prefWidth="1000" prefHeight="700">
+
+    <!-- TOP NAV -->
+    <HBox styleClass="topnav" alignment="CENTER_LEFT" spacing="12">
+        <padding><Insets top="14" right="28" bottom="14" left="28"/></padding>
+        <Label text="Bekri" styleClass="nav-brand"/>
+        <Label text="Détail utilisateur" styleClass="nav-section" HBox.hgrow="ALWAYS"/>
+        <Hyperlink text="← Retour à la liste" styleClass="nav-link" onAction="#goBack"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <VBox styleClass="dashboard-content" spacing="0">
+            <padding><Insets top="32" right="60" bottom="40" left="60"/></padding>
+
+            <Label text="Détail de l'utilisateur" styleClass="dashboard-title"/>
+            <Label fx:id="subtitleLabel" text="" styleClass="dashboard-sub"/>
+
+            <HBox spacing="28" alignment="TOP_LEFT">
+                <VBox.margin><Insets top="28"/></VBox.margin>
+
+                <!-- LEFT: avatar card + delete -->
+                <VBox styleClass="avatar-card" alignment="CENTER" spacing="12" minWidth="180">
+                    <Label fx:id="avatarLabel" text="—" styleClass="avatar-big"/>
+                    <Label fx:id="nameCard" text="" styleClass="profil-key"/>
+                    <Label fx:id="roleCard" text="" styleClass="role-badge"/>
+                    <Label fx:id="statutCard" text="" styleClass="statut-badge"/>
+                    <Button text="🗑  Supprimer l'utilisateur" styleClass="btn-danger"
+                            onAction="#handleDelete" maxWidth="Infinity">
+                        <VBox.margin><Insets top="12"/></VBox.margin>
+                    </Button>
+                </VBox>
+
+                <!-- RIGHT: info card -->
+                <VBox styleClass="profil-card" HBox.hgrow="ALWAYS" spacing="18">
+                    <Label text="📋  Informations utilisateur" styleClass="card-title"/>
+
+                    <HBox spacing="16">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Prénom" styleClass="field-label"/>
+                            <Label fx:id="prenomLabel" text="—" styleClass="info-value"/>
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Nom" styleClass="field-label"/>
+                            <Label fx:id="nomLabel" text="—" styleClass="info-value"/>
+                        </VBox>
+                    </HBox>
+
+                    <VBox spacing="4">
+                        <Label text="Email" styleClass="field-label"/>
+                        <Label fx:id="emailLabel" text="—" styleClass="info-value"/>
+                    </VBox>
+
+                    <HBox spacing="16">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Téléphone" styleClass="field-label"/>
+                            <Label fx:id="telLabel" text="—" styleClass="info-value"/>
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Date de naissance" styleClass="field-label"/>
+                            <Label fx:id="dateNaissanceLabel" text="—" styleClass="info-value"/>
+                        </VBox>
+                    </HBox>
+
+                    <HBox spacing="16">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Rôle" styleClass="field-label"/>
+                            <Label fx:id="roleLabel" text="—" styleClass="info-value"/>
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Statut" styleClass="field-label"/>
+                            <Label fx:id="statutLabel" text="—" styleClass="info-value"/>
+                        </VBox>
+                    </HBox>
+
+                    <HBox spacing="16">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Compte créé le" styleClass="field-label"/>
+                            <Label fx:id="createdAtLabel" text="—" styleClass="info-value"/>
+                        </VBox>
+                    </HBox>
+
+                    <Button text="✏️  Modifier cet utilisateur" styleClass="btn-primary form-submit-btn"
+                            onAction="#handleEdit" maxWidth="Infinity">
+                        <VBox.margin><Insets top="8"/></VBox.margin>
+                    </Button>
+                </VBox>
+            </HBox>
+        </VBox>
+    </ScrollPane>
+</VBox>

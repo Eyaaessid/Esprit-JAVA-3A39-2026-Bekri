@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.user.ui.AdminUsersController"
+            styleClass="page-bg"
+            prefWidth="1100" prefHeight="700">
+    <top>
+        <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="16">
+            <Button text="← Retour" styleClass="btn-ghost" onAction="#handleBack"/>
+            <Label text="Utilisateurs" styleClass="top-bar-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <VBox spacing="20">
+                <padding><Insets top="28" right="36" bottom="28" left="36"/></padding>
+                <VBox styleClass="card" spacing="16">
+
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Label text="Utilisateurs" styleClass="section-title" HBox.hgrow="ALWAYS"/>
+                <Button text="+ Ajouter" styleClass="btn-primary" onAction="#handleAdd"/>
+            </HBox>
+
+            <HBox spacing="14">
+                <VBox.margin><Insets top="18" bottom="18"/></VBox.margin>
+                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+                    <Label text="👥" styleClass="stat-icon"/>
+                    <Label fx:id="totalLabel" text="—" styleClass="stat-value"/>
+                    <Label text="Total" styleClass="stat-label"/>
+                </VBox>
+                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+                    <Label text="👤" styleClass="stat-icon"/>
+                    <Label fx:id="membresLabel" text="—" styleClass="stat-value"/>
+                    <Label text="Membres" styleClass="stat-label"/>
+                </VBox>
+                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+                    <Label text="🏋️" styleClass="stat-icon"/>
+                    <Label fx:id="coachsLabel" text="—" styleClass="stat-value"/>
+                    <Label text="Coachs" styleClass="stat-label"/>
+                </VBox>
+                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+                    <Label text="🛡️" styleClass="stat-icon"/>
+                    <Label fx:id="adminsLabel" text="—" styleClass="stat-value"/>
+                    <Label text="Admins" styleClass="stat-label"/>
+                </VBox>
+            </HBox>
+
+                <VBox styleClass="card-flat">
+                <Label text="🔍  Rechercher &amp; filtrer" styleClass="section-title"/>
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <VBox.margin><Insets top="12"/></VBox.margin>
+                    <TextField fx:id="searchField" styleClass="text-field" promptText="Nom, prénom ou email..." HBox.hgrow="ALWAYS"/>
+                    <ComboBox fx:id="roleFilter" styleClass="combo-box" prefWidth="150" promptText="Tous les rôles"/>
+                    <ComboBox fx:id="statutFilter" styleClass="combo-box" prefWidth="140" promptText="Tous statuts"/>
+                    <Button text="Chercher" styleClass="btn-primary" onAction="#handleSearch"/>
+                    <Button text="Réinitialiser" styleClass="btn-secondary" onAction="#handleReset"/>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="0" VBox.vgrow="ALWAYS" minHeight="0">
+                <VBox.margin><Insets top="16"/></VBox.margin>
+
+                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="card-flat">
+                    <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
+                    <Label text="UTILISATEUR" styleClass="muted" HBox.hgrow="ALWAYS"/>
+                    <Label text="ACTIONS" styleClass="muted" minWidth="200" alignment="CENTER_RIGHT"/>
+                </HBox>
+
+                <Label fx:id="resultCountLabel" text="" styleClass="muted">
+                    <VBox.margin><Insets top="8" bottom="8" left="16"/></VBox.margin>
+                </Label>
+
+                <ListView fx:id="usersListView" VBox.vgrow="ALWAYS" minHeight="0" prefHeight="400" styleClass="table-view"/>
+            </VBox>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>
