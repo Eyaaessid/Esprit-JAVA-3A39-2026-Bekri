@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.profil.ui.ProfilPsychologiqueController"
+            styleClass="page-bg"
+            prefWidth="1100" prefHeight="700">
+
+    <top>
+        <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="16">
+            <Button text="← Retour" onAction="#handleRetour" styleClass="btn-ghost"/>
+            <Label text="Mon Profil Psychologique" styleClass="top-bar-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <StackPane VBox.vgrow="ALWAYS">
+                <padding><Insets top="40" right="40" bottom="40" left="40"/></padding>
+
+                <VBox styleClass="card" spacing="24" alignment="CENTER"
+                      maxWidth="600" StackPane.alignment="CENTER">
+
+                    <!-- Empty state -->
+                    <VBox fx:id="emptyBox" spacing="16" alignment="CENTER"
+                          visible="false" managed="false">
+                        <Label text="🧠" style="-fx-font-size:48px;"/>
+                        <Label text="Aucun test effectué" styleClass="section-title"/>
+                        <Label text="Passez votre premier test psychologique pour voir vos résultats."
+                               styleClass="muted" wrapText="true" alignment="CENTER"/>
+                        <Button fx:id="passerTestBtn" text="Passer le test →"
+                                onAction="#handlePasserTest" styleClass="btn-primary"/>
+                    </VBox>
+
+                    <!-- Result state -->
+                    <VBox fx:id="resultBox" spacing="20" alignment="CENTER"
+                          visible="false" managed="false">
+
+                        <!-- Badge -->
+                        <Label fx:id="badgeLabel" text=""
+                               style="-fx-font-size:13px; -fx-font-weight:bold;
+                                      -fx-background-radius:20; -fx-padding: 6 20;"/>
+
+                        <!-- Score circle area -->
+                        <VBox alignment="CENTER" spacing="4">
+                            <Label fx:id="scoreLabel" text=""
+                                   style="-fx-font-size:36px; -fx-font-weight:bold;
+                                          -fx-text-fill:#19233B;"/>
+                            <Label fx:id="profilTypeLabel" text=""
+                                   style="-fx-font-size:15px; -fx-text-fill:#31487A;
+                                          -fx-font-weight:bold;"/>
+                        </VBox>
+
+                        <Separator maxWidth="400"/>
+
+                        <!-- Feedback -->
+                        <VBox spacing="6" alignment="CENTER" maxWidth="500">
+                            <Label text="📋 Analyse personnalisée"
+                                   style="-fx-font-size:12px; -fx-font-weight:bold;
+                                          -fx-text-fill:#8FB3E2;"/>
+                            <Label fx:id="feedbackLabel" text="" wrapText="true"
+                                   styleClass="body-text" alignment="CENTER"
+                                   style="-fx-text-alignment:center; -fx-line-spacing:4;"/>
+                        </VBox>
+
+                        <!-- Date -->
+                        <Label fx:id="dateLabel" text="" styleClass="muted"/>
+
+                        <!-- Actions -->
+                        <HBox spacing="12" alignment="CENTER">
+                            <Button fx:id="repasserBtn" text="🔄 Repasser le test"
+                                    onAction="#handleRepasser" styleClass="btn-secondary"/>
+                        </HBox>
+                    </VBox>
+
+                </VBox>
+            </StackPane>
+        </ScrollPane>
+    </center>
+</BorderPane>

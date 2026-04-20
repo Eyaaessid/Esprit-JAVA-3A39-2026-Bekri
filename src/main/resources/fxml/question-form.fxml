@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.objectif.ui.QuestionFormController"
+            styleClass="page-bg"
+            prefWidth="1100" prefHeight="700">
+    <top>
+        <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="16">
+            <Button text="← Retour" styleClass="btn-ghost" onAction="#handleBack"/>
+            <Label fx:id="formTitle" text="Nouvelle question" styleClass="top-bar-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <VBox spacing="20">
+                <padding><Insets top="28" right="36" bottom="28" left="36"/></padding>
+                <VBox spacing="12" styleClass="card">
+
+        <!-- Texte -->
+        <Label text="Texte de la question *" styleClass="input-label"/>
+        <TextArea fx:id="texteField"
+                  promptText="Ex : Comment évaluez-vous votre niveau d'énergie ce mois-ci ?"
+                  styleClass="text-area"
+                  prefRowCount="3"
+                  wrapText="true"/>
+        <Label fx:id="texteError" styleClass="error-label" text=""/>
+        <Region prefHeight="16"/>
+
+        <!-- Catégorie -->
+        <Label text="Catégorie *" styleClass="input-label"/>
+        <ComboBox fx:id="categoryCombo"
+                  promptText="Choisir une catégorie"
+                  styleClass="combo-box"
+                  maxWidth="Infinity"/>
+        <Label fx:id="categoryError" styleClass="error-label" text=""/>
+        <Region prefHeight="16"/>
+
+        <!-- Divider -->
+        <Region style="-fx-background-color: #e8ecf0; -fx-pref-height:1; -fx-min-height:1; -fx-max-height:1;"/>
+        <Region prefHeight="16"/>
+
+        <!-- Options header -->
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Label text="Options de réponse *"
+                   style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1a2332;"/>
+            <Label text="(3 options requises)"
+                   style="-fx-font-size: 12px; -fx-text-fill: #94a3b8;"/>
+        </HBox>
+        <Region prefHeight="12"/>
+
+        <!-- 3 options -->
+        <HBox spacing="16">
+
+            <!-- Option 1 -->
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Option 1 *" styleClass="input-label"/>
+                <TextField fx:id="option1Field" promptText="Ex : Très bien" styleClass="text-field"/>
+                <Label fx:id="option1Error" styleClass="error-label" text=""/>
+            </VBox>
+
+            <!-- Option 2 -->
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Option 2 *" styleClass="input-label"/>
+                <TextField fx:id="option2Field" promptText="Ex : Correctement" styleClass="text-field"/>
+                <Label fx:id="option2Error" styleClass="error-label" text=""/>
+            </VBox>
+
+            <!-- Option 3 -->
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Option 3 *" styleClass="input-label"/>
+                <TextField fx:id="option3Field" promptText="Ex : Pas bien du tout" styleClass="text-field"/>
+                <Label fx:id="option3Error" styleClass="error-label" text=""/>
+            </VBox>
+
+        </HBox>
+        <Region prefHeight="8"/>
+
+                    <HBox alignment="CENTER_RIGHT" spacing="12">
+                        <Button text="Annuler" onAction="#handleCancel" styleClass="btn-ghost"/>
+                        <Button text="💾  Enregistrer" onAction="#handleSave" styleClass="btn-primary"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

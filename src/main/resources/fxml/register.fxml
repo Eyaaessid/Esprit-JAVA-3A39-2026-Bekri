@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.user.ui.RegisterController"
+            prefWidth="960" prefHeight="640">
+    <center>
+        <HBox fillHeight="true">
+            <VBox alignment="CENTER" spacing="24" styleClass="auth-left-panel" minWidth="400">
+                <padding><Insets top="60" right="60" bottom="60" left="60"/></padding>
+                <Label text="bekri" styleClass="auth-left-title"/>
+                <Label text="💙" style="-fx-font-size: 64px; -fx-text-fill: #FFFFFF;"/>
+                <Label text="Rejoignez Bekri" textAlignment="CENTER" styleClass="auth-left-sub"/>
+                <Separator opacity="0.3"/>
+                <Label text="Créez votre compte pour démarrer&#10;votre parcours de bien-être."
+                       textAlignment="CENTER" styleClass="auth-left-sub"/>
+            </VBox>
+
+            <VBox alignment="CENTER" styleClass="auth-right-panel" HBox.hgrow="ALWAYS">
+                <padding><Insets top="48" right="48" bottom="48" left="48"/></padding>
+                <ScrollPane fitToWidth="true" styleClass="scroll-pane" prefHeight="560">
+                    <VBox alignment="CENTER">
+                        <VBox styleClass="auth-form-card" spacing="16">
+                            <VBox spacing="4">
+                                <Label text="Créer un compte ✨" styleClass="auth-title"/>
+                                <Label text="Commencez votre parcours de bien-être gratuitement" styleClass="auth-subtitle"/>
+                            </VBox>
+                            <Separator/>
+                            <VBox spacing="6">
+                                <Label text="Nom *" styleClass="input-label"/>
+                                <TextField fx:id="nomField" promptText="Votre nom" styleClass="text-field"/>
+                                <Label fx:id="nomErrorLabel" wrapText="true" managed="false" visible="false" styleClass="error-label"/>
+                            </VBox>
+                            <VBox spacing="6">
+                                <Label text="Prénom *" styleClass="input-label"/>
+                                <TextField fx:id="prenomField" promptText="Votre prénom" styleClass="text-field"/>
+                                <Label fx:id="prenomErrorLabel" wrapText="true" managed="false" visible="false" styleClass="error-label"/>
+                            </VBox>
+                            <VBox spacing="6">
+                                <Label text="Adresse email *" styleClass="input-label"/>
+                                <TextField fx:id="emailField" promptText="vous@exemple.com" styleClass="text-field"/>
+                                <Label fx:id="emailErrorLabel" wrapText="true" managed="false" visible="false" styleClass="error-label"/>
+                            </VBox>
+                            <VBox spacing="6">
+                                <Label text="Téléphone" styleClass="input-label"/>
+                                <TextField fx:id="telField" promptText="+216 XX XXX XXX" styleClass="text-field"/>
+                                <Label fx:id="telErrorLabel" wrapText="true" managed="false" visible="false" styleClass="error-label"/>
+                            </VBox>
+                            <VBox spacing="6">
+                                <Label text="Date de naissance" styleClass="input-label"/>
+                                <DatePicker fx:id="dateNaissancePicker" maxWidth="Infinity" styleClass="combo-box"/>
+                                <Label fx:id="dateErrorLabel" wrapText="true" managed="false" visible="false" styleClass="error-label"/>
+                            </VBox>
+                            <VBox spacing="6">
+                                <Label text="Mot de passe *" styleClass="input-label"/>
+                                <StackPane>
+                                    <PasswordField fx:id="passwordField" promptText="••••••••" styleClass="password-field"/>
+                                    <TextField fx:id="passwordPlainField" promptText="••••••••" visible="false" managed="false" styleClass="text-field"/>
+                                    <HBox alignment="CENTER_RIGHT" pickOnBounds="false">
+                                        <padding><Insets right="8"/></padding>
+                                        <Button fx:id="passwordToggleBtn" text="👁" styleClass="btn-ghost"/>
+                                    </HBox>
+                                </StackPane>
+                                <Label fx:id="passwordErrorLabel" wrapText="true" managed="false" visible="false" styleClass="error-label"/>
+                            </VBox>
+                            <VBox spacing="6">
+                                <Label text="Confirmer *" styleClass="input-label"/>
+                                <StackPane>
+                                    <PasswordField fx:id="confirmPasswordField" promptText="••••••••" styleClass="password-field"/>
+                                    <TextField fx:id="confirmPasswordPlainField" promptText="••••••••" visible="false" managed="false" styleClass="text-field"/>
+                                    <HBox alignment="CENTER_RIGHT" pickOnBounds="false">
+                                        <padding><Insets right="8"/></padding>
+                                        <Button fx:id="confirmPasswordToggleBtn" text="👁" styleClass="btn-ghost"/>
+                                    </HBox>
+                                </StackPane>
+                                <Label fx:id="confirmPasswordErrorLabel" wrapText="true" managed="false" visible="false" styleClass="error-label"/>
+                            </VBox>
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <CheckBox fx:id="termsCheckbox" wrapText="true" text="J'accepte les conditions d'utilisation"/>
+                            </HBox>
+                            <Label fx:id="termsErrorLabel" wrapText="true" managed="false" visible="false" styleClass="error-label"/>
+                            <Label fx:id="generalFormErrorLabel" wrapText="true" managed="false" visible="false" styleClass="error-label"/>
+                            <Label fx:id="errorLabel" wrapText="true" managed="false" visible="false" styleClass="error-label"/>
+                            <Button fx:id="registerBtn" text="Créer mon compte →" maxWidth="Infinity" onAction="#handleRegister" styleClass="btn-primary"/>
+                            <HBox alignment="CENTER" spacing="6">
+                                <Label text="Déjà un compte ?" styleClass="muted"/>
+                                <Hyperlink text="Se connecter" onAction="#goToLogin"/>
+                            </HBox>
+                        </VBox>
+                    </VBox>
+                </ScrollPane>
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>
+

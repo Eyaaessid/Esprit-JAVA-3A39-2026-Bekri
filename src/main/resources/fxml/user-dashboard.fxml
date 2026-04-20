@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.user.ui.UserDashboardController"
+            prefWidth="1100" prefHeight="700" styleClass="page-bg">
+
+    <left>
+        <VBox styleClass="sidebar">
+            <VBox styleClass="sidebar-logo-box" spacing="2">
+                <Label text="bekri" styleClass="sidebar-logo"/>
+                <Label text="Bien-être &amp; Objectifs" styleClass="sidebar-logo-sub"/>
+            </VBox>
+            <VBox styleClass="sidebar-nav-box" spacing="0">
+                <Label text="MENU" styleClass="sidebar-section-label"/>
+                <Button text="🏠  Accueil" styleClass="sidebar-btn sidebar-btn-active"/>
+                <Button text="🎯  Mes Objectifs" styleClass="sidebar-btn" onAction="#handleObjectifs"/>
+                <Button text="🧠  Test Psychologique" styleClass="sidebar-btn" onAction="#handleTest"/>
+                <Button text="📊  Mon Profil Psy" styleClass="sidebar-btn" onAction="#handleProfilPsy"/>
+                <Button text="👤  Mon Profil" styleClass="sidebar-btn" onAction="#handleProfil"/>
+            </VBox>
+            <Region VBox.vgrow="ALWAYS"/>
+            <VBox styleClass="sidebar-divider">
+                <Button text="⎋  Déconnexion" styleClass="sidebar-logout" onAction="#handleLogout"/>
+            </VBox>
+        </VBox>
+    </left>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <VBox spacing="24">
+                <padding><Insets top="32" right="36" bottom="32" left="36"/></padding>
+
+                <HBox styleClass="welcome-card" alignment="CENTER_LEFT" spacing="16">
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label fx:id="welcomeLabel" text="Bonjour 👋" styleClass="welcome-greeting"/>
+                        <Label fx:id="dateLabel" text="Aujourd'hui" styleClass="welcome-date"/>
+                        <Label text="Prenez soin de vous aujourd'hui. Votre bien-être compte." styleClass="welcome-tagline"/>
+                        <Label fx:id="roleSubtitleLabel" text="" styleClass="welcome-date"/>
+                    </VBox>
+                    <Label text="💙" style="-fx-font-size: 48px; -fx-text-fill: #FFFFFF; -fx-opacity: 0.6;"/>
+                </HBox>
+
+                <VBox spacing="16">
+                    <Label text="Accès rapide" styleClass="section-title"/>
+                    <FlowPane hgap="16" vgap="16">
+                        <VBox styleClass="quick-card" onMouseClicked="#handleObjectifs" alignment="CENTER" spacing="8">
+                            <Label text="🎯" styleClass="quick-card-icon"/>
+                            <Label text="Mes Objectifs" styleClass="quick-card-title"/>
+                            <Label text="Gérer vos objectifs" styleClass="quick-card-sub"/>
+                        </VBox>
+                        <VBox styleClass="quick-card" onMouseClicked="#handleTest" alignment="CENTER" spacing="8">
+                            <Label text="🧠" styleClass="quick-card-icon"/>
+                            <Label text="Test Psy" styleClass="quick-card-title"/>
+                            <Label text="Évaluation bien-être" styleClass="quick-card-sub"/>
+                        </VBox>
+                        <VBox styleClass="quick-card" onMouseClicked="#handleProfilPsy" alignment="CENTER" spacing="8">
+                            <Label text="📊" styleClass="quick-card-icon"/>
+                            <Label text="Mon Profil Psy" styleClass="quick-card-title"/>
+                            <Label text="Voir mes résultats" styleClass="quick-card-sub"/>
+                        </VBox>
+                        <VBox styleClass="quick-card" onMouseClicked="#handleProfil" alignment="CENTER" spacing="8">
+                            <Label text="👤" styleClass="quick-card-icon"/>
+                            <Label text="Mon Profil" styleClass="quick-card-title"/>
+                            <Label text="Mes informations" styleClass="quick-card-sub"/>
+                        </VBox>
+                    </FlowPane>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>
+

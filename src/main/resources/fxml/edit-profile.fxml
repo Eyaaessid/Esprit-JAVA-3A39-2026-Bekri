@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.user.ui.EditProfileController"
+            styleClass="page-bg"
+            prefWidth="1100" prefHeight="700">
+    <top>
+        <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="16">
+            <Button text="← Retour" styleClass="btn-ghost" onAction="#goBack"/>
+            <Label text="Modifier le profil" styleClass="top-bar-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <VBox spacing="20">
+                <padding><Insets top="28" right="36" bottom="28" left="36"/></padding>
+                <VBox styleClass="card" spacing="16">
+
+            <Label text="Modifier le profil" styleClass="section-title"/>
+            <Label text="Mettez à jour vos informations personnelles" styleClass="page-subtitle"/>
+
+            <Label fx:id="generalFormErrorLabel" styleClass="error-label" wrapText="true" managed="false" visible="false"/>
+
+            <Label fx:id="errorLabel" styleClass="error-label" wrapText="true"
+                   managed="false" visible="false"/>
+            <Label fx:id="successLabel" wrapText="true"
+                   managed="false" visible="false"/>
+            <VBox spacing="16">
+                <Label text="✏️  Photo &amp; informations" styleClass="section-title"/>
+
+                <StackPane fx:id="avatarStack" onMouseClicked="#onAvatarClicked" styleClass="avatar-edit-stack"
+                           maxWidth="96" maxHeight="120" alignment="TOP_CENTER">
+                    <VBox spacing="6" alignment="TOP_CENTER">
+                        <StackPane styleClass="card-flat" maxWidth="96" maxHeight="96">
+                            <ImageView fx:id="avatarImageView" fitWidth="96" fitHeight="96"
+                                       preserveRatio="true" pickOnBounds="true"/>
+                            <Label fx:id="avatarInitialsLabel" text="" styleClass="profile-avatar-initials"
+                                   minWidth="96" minHeight="96" maxWidth="96" maxHeight="96"
+                                   alignment="CENTER"/>
+                        </StackPane>
+                        <Label fx:id="changePhotoHintLabel" text="Cliquer pour changer la photo"
+                               styleClass="muted"/>
+                    </VBox>
+                </StackPane>
+
+                <HBox spacing="16">
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Prénom *" styleClass="input-label"/>
+                        <TextField fx:id="prenomField" styleClass="text-field"/>
+                        <Label fx:id="prenomErrorLabel" styleClass="error-label" wrapText="true"
+                               managed="false" visible="false"/>
+                    </VBox>
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Nom *" styleClass="input-label"/>
+                        <TextField fx:id="nomField" styleClass="text-field"/>
+                        <Label fx:id="nomErrorLabel" styleClass="error-label" wrapText="true"
+                               managed="false" visible="false"/>
+                    </VBox>
+                </HBox>
+
+                <VBox spacing="6">
+                    <Label text="Adresse email *" styleClass="input-label"/>
+                    <TextField fx:id="emailField" styleClass="text-field"/>
+                    <Label fx:id="emailErrorLabel" styleClass="error-label" wrapText="true"
+                           managed="false" visible="false"/>
+                </VBox>
+
+                <HBox spacing="16">
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Téléphone" styleClass="input-label"/>
+                        <TextField fx:id="telField" styleClass="text-field" promptText="+216 XX XXX XXX"/>
+                        <Label fx:id="telErrorLabel" styleClass="error-label" wrapText="true"
+                               managed="false" visible="false"/>
+                    </VBox>
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Date de naissance *" styleClass="input-label"/>
+                        <DatePicker fx:id="dateNaissancePicker" maxWidth="Infinity" styleClass="combo-box"/>
+                        <Label fx:id="dateErrorLabel" styleClass="error-label" wrapText="true"
+                               managed="false" visible="false"/>
+                    </VBox>
+                </HBox>
+
+                <Button fx:id="togglePasswordSectionBtn" text="Changer le mot de passe" styleClass="btn-secondary" onAction="#togglePasswordSection"/>
+
+                <VBox fx:id="passwordSection" spacing="12" managed="false" visible="false">
+                    <Label text="Nouveau mot de passe" styleClass="input-label"/>
+                    <StackPane styleClass="password-field-stack password-with-toggle" maxWidth="Infinity">
+                        <PasswordField fx:id="newPasswordField" styleClass="password-field" maxWidth="Infinity"/>
+                        <TextField fx:id="newPasswordPlainField" styleClass="text-field" maxWidth="Infinity" visible="false" managed="false"/>
+                        <HBox alignment="CENTER_RIGHT" pickOnBounds="false" maxWidth="Infinity" maxHeight="Infinity">
+                            <padding><Insets right="4"/></padding>
+                            <Button fx:id="newPasswordToggleBtn" text="👁"
+                                    styleClass="eye-button password-toggle-btn password-eye-integrated"/>
+                        </HBox>
+                    </StackPane>
+                    <Label fx:id="newPasswordErrorLabel" styleClass="error-label" wrapText="true"
+                           managed="false" visible="false"/>
+
+                    <Label text="Confirmer le mot de passe" styleClass="input-label"/>
+                    <StackPane styleClass="password-field-stack password-with-toggle" maxWidth="Infinity">
+                        <PasswordField fx:id="confirmNewPasswordField" styleClass="password-field" maxWidth="Infinity"/>
+                        <TextField fx:id="confirmNewPasswordPlainField" styleClass="text-field" maxWidth="Infinity" visible="false" managed="false"/>
+                        <HBox alignment="CENTER_RIGHT" pickOnBounds="false" maxWidth="Infinity" maxHeight="Infinity">
+                            <padding><Insets right="4"/></padding>
+                            <Button fx:id="confirmNewPasswordToggleBtn" text="👁"
+                                    styleClass="eye-button password-toggle-btn password-eye-integrated"/>
+                        </HBox>
+                    </StackPane>
+                    <Label fx:id="confirmNewPasswordErrorLabel" styleClass="error-label" wrapText="true"
+                           managed="false" visible="false"/>
+                </VBox>
+            </VBox>
+
+            <HBox spacing="12" alignment="CENTER_RIGHT">
+                <Button fx:id="resetBtn" text="Réinitialiser" styleClass="btn-secondary" onAction="#handleReset"/>
+                <Button fx:id="saveBtn" text="✓  Enregistrer les modifications" styleClass="btn-primary" onAction="#handleSave"/>
+            </HBox>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.objectif.ui.ObjectifsController"
+            styleClass="page-bg"
+            prefWidth="1100" prefHeight="700">
+    <top>
+        <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="16">
+            <Button text="← Retour" styleClass="btn-ghost" onAction="#handleBack"/>
+            <Label text="Mes Objectifs" styleClass="top-bar-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="+ Nouvel objectif" styleClass="btn-primary" onAction="#handleNew"/>
+        </HBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <VBox spacing="20">
+                <padding><Insets top="28" right="36" bottom="28" left="36"/></padding>
+                <VBox styleClass="card" spacing="16">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <TextField fx:id="searchField" promptText="Rechercher un objectif..." styleClass="text-field" HBox.hgrow="ALWAYS"/>
+                        <ComboBox fx:id="filterStatut" promptText="Tous les statuts" styleClass="combo-box" prefWidth="160"/>
+                        <Button text="Rechercher" styleClass="btn-primary" onAction="#handleSearch"/>
+                    </HBox>
+                    <FlowPane fx:id="cardsPane" hgap="16" vgap="16" prefWrapLength="9999"/>
+                    <HBox fx:id="paginationBar" alignment="CENTER" spacing="8">
+                        <Button fx:id="btnPrev" text="← Précédent" styleClass="btn-ghost" onAction="#handlePrev"/>
+                        <Label fx:id="pageLabel" text="Page 1 / 1" styleClass="muted"/>
+                        <Button fx:id="btnNext" text="Suivant →" styleClass="btn-ghost" onAction="#handleNext"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

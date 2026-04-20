@@ -1,0 +1,87 @@
+### Get all objectifs
+GET http://localhost:8080/api/objectifs
+Accept: application/json
+
+### Get one objectif by id
+GET http://localhost:8080/api/objectifs/4
+Accept: application/json
+
+### Create objectif
+POST http://localhost:8080/api/objectifs
+Content-Type: application/json
+Accept: application/json
+
+{
+  "titre": "Test objectif",
+  "description": "Created from IntelliJ HTTP Client",
+  "type": "stress",
+  "valeurCible": 10.0,
+  "valeurActuelle": 2.0,
+  "dateDebut": "2026-04-05",
+  "dateFin": "2026-05-05",
+  "statut": "en cours",
+  "utilisateurId": 1,
+  "slug": "test-objectif"
+}
+
+### Update objectif (change 1 to existing id)
+PUT http://localhost:8080/api/objectifs/20
+Content-Type: application/json
+Accept: application/json
+
+{
+  "titre": "Test objectif updated",
+  "description": "Updated from IntelliJ HTTP Client",
+  "type": "stress",
+  "valeurCible": 12.0,
+  "valeurActuelle": 3.0,
+  "dateDebut": "2026-04-05",
+  "dateFin": "2026-05-10",
+  "statut": "en cours",
+  "utilisateurId": 1,
+  "slug": "test-objectif"
+}
+
+### Delete objectif (change 1 to existing id)
+DELETE http://localhost:8080/api/objectifs/21
+Accept: application/json
+
+### Get all questions
+GET http://localhost:8080/api/questions
+Accept: application/json
+
+### Create question
+POST http://localhost:8080/api/questions
+Content-Type: application/json
+Accept: application/json
+
+{
+  "texte": "Comment évaluez-vous votre stress aujourd'hui ?",
+  "category": "sommeil",
+  "typeReponse": "choix",
+  "option1": "Faible",
+  "option2": "Moyen",
+  "option3": "Élevé",
+  "minValue": null,
+  "maxValue": null
+}
+
+### Update question (replace 1 with an existing id)
+PUT http://localhost:8080/api/questions/42
+Content-Type: application/json
+Accept: application/json
+
+{
+  "texte": "Comment évaluez-vous votre stress aujourd'hui ? (updated)",
+  "category": "stress",
+  "typeReponse": "choix",
+  "option1": "Bas",
+  "option2": "Moyen",
+  "option3": "Élevé",
+  "minValue": null,
+  "maxValue": null
+}
+
+### Delete question (replace 1 with an existing id)
+DELETE http://localhost:8080/api/questions/43
+Accept: application/json

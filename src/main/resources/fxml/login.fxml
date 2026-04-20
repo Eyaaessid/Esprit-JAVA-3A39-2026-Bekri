@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.user.ui.LoginController"
+            prefWidth="960" prefHeight="640">
+    <center>
+        <HBox fillHeight="true">
+            <VBox alignment="CENTER" spacing="24" styleClass="auth-left-panel" minWidth="400">
+                <padding><Insets top="60" right="60" bottom="60" left="60"/></padding>
+                <Label text="bekri" styleClass="auth-left-title"/>
+                <Label text="💙" style="-fx-font-size: 64px; -fx-text-fill: #FFFFFF;"/>
+                <Label text="Votre espace&#10;bien-être personnel" textAlignment="CENTER" styleClass="auth-left-sub"/>
+                <Separator opacity="0.3"/>
+                <Label text="Connectez-vous pour reprendre&#10;votre parcours de bien-être."
+                       textAlignment="CENTER" styleClass="auth-left-sub"/>
+            </VBox>
+
+            <VBox alignment="CENTER" styleClass="auth-right-panel" HBox.hgrow="ALWAYS">
+                <padding><Insets top="48" right="48" bottom="48" left="48"/></padding>
+                <VBox styleClass="auth-form-card" spacing="20">
+                    <VBox spacing="4">
+                        <Label text="Bon retour 👋" styleClass="auth-title"/>
+                        <Label text="Connectez-vous à votre espace bien-être" styleClass="auth-subtitle"/>
+                    </VBox>
+                    <Separator/>
+                    <VBox spacing="16">
+                        <VBox spacing="6">
+                            <Label text="Adresse email *" styleClass="input-label"/>
+                            <TextField fx:id="emailField" promptText="vous@exemple.com" styleClass="text-field"/>
+                            <Label fx:id="emailErrorLabel" wrapText="true" managed="false" visible="false" styleClass="error-label"/>
+                        </VBox>
+                        <VBox spacing="6">
+                            <Label text="Mot de passe *" styleClass="input-label"/>
+                            <StackPane>
+                                <PasswordField fx:id="passwordField" promptText="••••••••" styleClass="password-field"/>
+                                <TextField fx:id="passwordPlainField" promptText="••••••••" visible="false" managed="false" styleClass="text-field"/>
+                                <HBox alignment="CENTER_RIGHT" pickOnBounds="false">
+                                    <padding><Insets right="8"/></padding>
+                                    <Button fx:id="passwordToggleBtn" text="👁" styleClass="btn-ghost"/>
+                                </HBox>
+                            </StackPane>
+                            <Label fx:id="passwordErrorLabel" wrapText="true" managed="false" visible="false" styleClass="error-label"/>
+                        </VBox>
+                    </VBox>
+                    <Label fx:id="errorLabel" styleClass="error-label" managed="false" visible="false"/>
+                    <Label fx:id="generalFormErrorLabel" wrapText="true" managed="false" visible="false" styleClass="error-label"/>
+                    <Button fx:id="loginBtn" text="Se connecter →" maxWidth="Infinity" onAction="#handleLogin" defaultButton="true" styleClass="btn-primary"/>
+                    <HBox alignment="CENTER" spacing="10">
+                        <Hyperlink text="Mot de passe oublié ?" onAction="#goToForgotPassword"/>
+                        <Hyperlink fx:id="resendVerificationLink" text="Renvoyer l'email de vérification"
+                                   onAction="#handleResendVerification" managed="false" visible="false"/>
+                    </HBox>
+                    <HBox alignment="CENTER" spacing="6">
+                        <Label text="Pas encore de compte ?" styleClass="muted"/>
+                        <Hyperlink text="Créer un compte" onAction="#goToRegister"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>
+
