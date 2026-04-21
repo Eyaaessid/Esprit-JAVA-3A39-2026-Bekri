@@ -118,6 +118,9 @@
                             <Button text="✏️  Modifier mon profil"
                                     styleClass="btn-primary"
                                     onAction="#goToEditProfile"/>
+                            <Button text="📷  Reconnaissance faciale"
+                                    styleClass="btn-secondary"
+                                    onAction="#goToFaceRegister"/>
                         </HBox>
                     </VBox>
 

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<!-- saved from url=(0050)file:///C:/Users/hibab/Downloads/face_capture.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<style>
+  body { margin:0; background:#1a1a2e; display:flex; flex-direction:column;
+         align-items:center; padding:20px; font-family:Arial,sans-serif; }
+  #status { color:white; font-size:14px; margin:10px; text-align:center;
+            min-height:20px; }
+  #faceImg { display:none; }
+  #canvas  { display:none; }
+  .error   { color:#ff6b6b !important; }
+  .success { color:#51cf66 !important; }
+  .loading { color:#74c0fc !important; }
+</style>
+</head>
+<body>
+  <p id="status" class="loading">Initialisation...</p>
+  <img id="faceImg">
+  <canvas id="canvas"></canvas>
+
+<script>
+  // Flipped to true by the model loader injected from Java.
+  var modelsLoaded = false;
+
+  /**
+   * FIX: The entire detection pipeline is wrapped in a setTimeout(fn, 0) so
+   * that the executeScript() call in Java returns immediately and the JavaFX
+   * WebEngine JS-execution-timeout watchdog never fires.
+   * The descriptor / error is then delivered asynchronously via javaBridge.
+   */
+  function processImage(base64DataUrl) {
+    // Return to the Java caller right away — do the heavy lifting in the next tick
+    setTimeout(function() {
+      _doProcessImage(base64DataUrl);
+    }, 0);
+  }
+
+  async function _doProcessImage(base64DataUrl) {
+    if (!modelsLoaded) {
+      setStatus('Modèles pas encore chargés.', 'error');
+      if (window.javaBridge) window.javaBridge.onError('models not loaded');
+      return;
+    }
+    try {
+      setStatus('Analyse du visage...', 'loading');
+      console.log('[bekri] processImage called, dataUrl length: '
+                  + (base64DataUrl ? base64DataUrl.length : 'null'));
+
+      var img = document.getElementById('faceImg');
+      img.style.display = 'block';
+
+      await new Promise(function(resolve, reject) {
+        img.onload  = function() {
+          console.log('[bekri] image loaded: ' + img.width + 'x' + img.height);
+          resolve();
+        };
+        img.onerror = function(e) {
+          console.log('[bekri] image load error: ' + e);
+          reject(new Error('image load failed'));
+        };
+        img.src = base64DataUrl;
+      });
+
+      console.log('[bekri] running detectSingleFace...');
+      var result = await faceapi
+        .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({
+          inputSize: 160,
+          scoreThreshold: 0.3
+        }))
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      console.log('[bekri] detection result: ' + (result ? 'FOUND' : 'null'));
+
+      if (!result) {
+        setStatus('Aucun visage détecté. Réessayez.', 'error');
+        if (window.javaBridge) window.javaBridge.onError('no face');
+        return;
+      }
+
+      var descriptor = Array.from(result.descriptor);
+      setStatus('Visage capturé !', 'success');
+      if (window.javaBridge) {
+        window.javaBridge.onDescriptorReady(JSON.stringify(descriptor));
+      }
+    } catch(e) {
+      console.log('[bekri] processImage error: ' + e.message);
+      setStatus('Erreur: ' + e.message, 'error');
+      if (window.javaBridge) window.javaBridge.onError(e.message);
+    }
+  }
+
+  function setStatus(msg, cls) {
+    var el = document.getElementById('status');
+    el.textContent = msg;
+    el.className = cls || '';
+  }
+
+  // face-api.js and model loading are injected by Java after page load
+</script>
+
+
+</body></html>

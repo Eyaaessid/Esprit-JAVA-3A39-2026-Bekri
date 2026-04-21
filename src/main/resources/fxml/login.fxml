@@ -51,6 +51,7 @@
                     <Button fx:id="loginBtn" text="Se connecter →" maxWidth="Infinity" onAction="#handleLogin" defaultButton="true" styleClass="btn-primary"/>
                     <HBox alignment="CENTER" spacing="10">
                         <Hyperlink text="Mot de passe oublié ?" onAction="#goToForgotPassword"/>
+                        <Hyperlink text="Se connecter avec mon visage  →" onAction="#goToFaceLogin"/>
                         <Hyperlink fx:id="resendVerificationLink" text="Renvoyer l'email de vérification"
                                    onAction="#handleResendVerification" managed="false" visible="false"/>
                     </HBox>

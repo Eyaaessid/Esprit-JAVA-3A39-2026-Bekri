@@ -27,6 +27,8 @@ public final class SceneManager {
         m.put("forgot-password", "/fxml/forgot_password.fxml");
         m.put("reset-password", "/fxml/reset_password.fxml");
         m.put("email-verification", "/fxml/email_verification.fxml");
+        m.put("face-login", "/fxml/face_login.fxml");
+        m.put("face-register", "/fxml/face_register.fxml");
         m.put("user-dashboard", "/fxml/user-dashboard.fxml");
         m.put("admin-dashboard", "/fxml/admin-dashboard.fxml");
         m.put("objectifs", "/fxml/objectifs.fxml");

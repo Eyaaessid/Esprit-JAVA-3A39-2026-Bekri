@@ -188,6 +188,33 @@ public class UtilisateurDao {
             u.setLastLoginAt(null);
         }
         try {
+            u.setFaceDescriptor(rs.getString("face_descriptor"));
+        } catch (SQLException ignored) {
+            u.setFaceDescriptor(null);
+        }
+        try {
+            u.setFaceAuthEnabled(rs.getBoolean("face_auth_enabled"));
+        } catch (SQLException ignored) {
+            u.setFaceAuthEnabled(false);
+        }
+        try {
+            Timestamp fr = rs.getTimestamp("face_registered_at");
+            u.setFaceRegisteredAt(fr != null ? fr.toLocalDateTime() : null);
+        } catch (SQLException ignored) {
+            u.setFaceRegisteredAt(null);
+        }
+        try {
+            u.setFaceAuthFailedAttempts(rs.getInt("face_auth_failed_attempts"));
+        } catch (SQLException ignored) {
+            u.setFaceAuthFailedAttempts(0);
+        }
+        try {
+            Timestamp la = rs.getTimestamp("last_face_auth_attempt_at");
+            u.setLastFaceAuthAttemptAt(la != null ? la.toLocalDateTime() : null);
+        } catch (SQLException ignored) {
+            u.setLastFaceAuthAttemptAt(null);
+        }
+        try {
             u.setTelephone(rs.getString("telephone"));
         } catch (SQLException ignored) {
             u.setTelephone(null);

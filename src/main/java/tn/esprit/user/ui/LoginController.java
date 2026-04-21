@@ -198,6 +198,15 @@ public class LoginController {
     }
 
     @FXML
+    private void goToFaceLogin() {
+        try {
+            SceneManager.switchTo("face-login");
+        } catch (Exception e) {
+            showError("Erreur de navigation.");
+        }
+    }
+
+    @FXML
     private void handleResendVerification() {
         if (lastUnverifiedUser == null) {
             return;

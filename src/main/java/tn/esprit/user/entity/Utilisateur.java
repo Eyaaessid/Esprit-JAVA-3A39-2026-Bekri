@@ -30,6 +30,13 @@ public class Utilisateur {
     private boolean isVerified;                 // column: is_verified
     private LocalDateTime lastLoginAt;          // column: last_login_at
 
+    // Face authentication (shared with Symfony / face-api.js)
+    private String faceDescriptor;              // column: face_descriptor (JSON string)
+    private boolean faceAuthEnabled;            // column: face_auth_enabled
+    private LocalDateTime faceRegisteredAt;     // column: face_registered_at
+    private int faceAuthFailedAttempts;         // column: face_auth_failed_attempts
+    private LocalDateTime lastFaceAuthAttemptAt;// column: last_face_auth_attempt_at
+
     public Utilisateur() {}
 
     public Utilisateur(Integer id, String nom, String prenom, String email, String motDePasse,
@@ -97,6 +104,21 @@ public class Utilisateur {
 
     public LocalDateTime getLastLoginAt() { return lastLoginAt; }
     public void setLastLoginAt(LocalDateTime lastLoginAt) { this.lastLoginAt = lastLoginAt; }
+
+    public String getFaceDescriptor() { return faceDescriptor; }
+    public void setFaceDescriptor(String faceDescriptor) { this.faceDescriptor = faceDescriptor; }
+
+    public boolean isFaceAuthEnabled() { return faceAuthEnabled; }
+    public void setFaceAuthEnabled(boolean faceAuthEnabled) { this.faceAuthEnabled = faceAuthEnabled; }
+
+    public LocalDateTime getFaceRegisteredAt() { return faceRegisteredAt; }
+    public void setFaceRegisteredAt(LocalDateTime faceRegisteredAt) { this.faceRegisteredAt = faceRegisteredAt; }
+
+    public int getFaceAuthFailedAttempts() { return faceAuthFailedAttempts; }
+    public void setFaceAuthFailedAttempts(int faceAuthFailedAttempts) { this.faceAuthFailedAttempts = faceAuthFailedAttempts; }
+
+    public LocalDateTime getLastFaceAuthAttemptAt() { return lastFaceAuthAttemptAt; }
+    public void setLastFaceAuthAttemptAt(LocalDateTime lastFaceAuthAttemptAt) { this.lastFaceAuthAttemptAt = lastFaceAuthAttemptAt; }
 
     /** Lowercase key for CSS (user, admin, coach). */
     public String getRoleKey() {

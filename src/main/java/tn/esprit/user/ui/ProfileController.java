@@ -72,6 +72,19 @@ public class ProfileController implements Initializable {
         }
     }
 
+    @FXML
+    private void goToFaceRegister() {
+        try {
+            Utilisateur user = SessionManager.getInstance().getCurrentUser();
+            if (user == null) return;
+            var controller = SceneManager.switchToAndGetController("face-register");
+            //noinspection unchecked
+            ((tn.esprit.faceauth.ui.FaceRegisterController) controller).setUser(user);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private String nvl(String s) { return (s == null || s.isBlank()) ? "—" : s; }
 
     private String capitalize(String s) {
