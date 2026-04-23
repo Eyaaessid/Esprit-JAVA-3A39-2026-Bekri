@@ -20,6 +20,7 @@ import java.util.Optional;
 
 public class UtilisateurDao {
     private final Connection cnx = MyDataBase.getInstance().getCnx();
+    private final TwoFactorDAO twoFactorDAO = new TwoFactorDAO();
 
     public Optional<Utilisateur> findByEmail(String email) {
         String sql = "SELECT * FROM utilisateur WHERE email = ?";
@@ -27,7 +28,9 @@ public class UtilisateurDao {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return Optional.of(mapRow(rs));
+                    Utilisateur user = mapRow(rs);
+                    twoFactorDAO.loadTwoFactorFields(user);
+                    return Optional.of(user);
                 }
                 return Optional.empty();
             }
@@ -42,7 +45,9 @@ public class UtilisateurDao {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return Optional.of(mapRow(rs));
+                    Utilisateur user = mapRow(rs);
+                    twoFactorDAO.loadTwoFactorFields(user);
+                    return Optional.of(user);
                 }
                 return Optional.empty();
             }
@@ -57,7 +62,9 @@ public class UtilisateurDao {
              ResultSet rs = ps.executeQuery()) {
             List<Utilisateur> list = new ArrayList<>();
             while (rs.next()) {
-                list.add(mapRow(rs));
+                Utilisateur user = mapRow(rs);
+                twoFactorDAO.loadTwoFactorFields(user);
+                list.add(user);
             }
             return list;
         } catch (SQLException e) {
@@ -247,7 +254,9 @@ public class UtilisateurDao {
             ps.setString(1, token);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapRow(rs);
+                    Utilisateur user = mapRow(rs);
+                    twoFactorDAO.loadTwoFactorFields(user);
+                    return user;
                 }
                 return null;
             }
@@ -296,7 +305,9 @@ public class UtilisateurDao {
             ps.setString(1, token);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapRow(rs);
+                    Utilisateur user = mapRow(rs);
+                    twoFactorDAO.loadTwoFactorFields(user);
+                    return user;
                 }
                 return null;
             }

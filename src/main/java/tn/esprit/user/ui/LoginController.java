@@ -153,22 +153,26 @@ public class LoginController {
                     return;
                 }
 
-                try {
-                    utilisateurService.updateLastLogin(user.getId());
-                } catch (Exception e) {
-                    System.out.println("[Login] Failed to update last_login_at: " + e.getMessage());
-                }
-
                 Platform.runLater(() -> {
                     try {
-                        SessionManager.getInstance().setCurrentUser(user);
-                        UtilisateurRole role = user.getRole();
-                        if (role == UtilisateurRole.ADMIN) {
-                            SceneManager.switchTo("admin-dashboard");
-                        } else if (role == UtilisateurRole.USER || role == UtilisateurRole.COACH) {
-                            SceneManager.switchTo("user-dashboard");
+                        if (user.isTwoFactorEnabled()) {
+                            TwoFactorLoginController twoFactorController = SceneManager.switchToAndGetController("two-factor-login");
+                            twoFactorController.setUser(user);
                         } else {
-                            SceneManager.switchTo("user-dashboard");
+                            try {
+                                utilisateurService.updateLastLogin(user.getId());
+                            } catch (Exception e) {
+                                System.out.println("[Login] Failed to update last_login_at: " + e.getMessage());
+                            }
+                            SessionManager.getInstance().setCurrentUser(user);
+                            UtilisateurRole role = user.getRole();
+                            if (role == UtilisateurRole.ADMIN) {
+                                SceneManager.switchTo("admin-dashboard");
+                            } else if (role == UtilisateurRole.USER || role == UtilisateurRole.COACH) {
+                                SceneManager.switchTo("user-dashboard");
+                            } else {
+                                SceneManager.switchTo("user-dashboard");
+                            }
                         }
                     } catch (IOException e) {
                         showError("Erreur de navigation : " + e.getMessage());

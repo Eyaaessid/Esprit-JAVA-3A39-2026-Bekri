@@ -43,6 +43,10 @@ public final class SceneManager {
         m.put("admin-edit-user", "/fxml/admin-edit-user.fxml");
         m.put("test", "/fxml/test.fxml");
         m.put("profil-psychologique", "/fxml/profil-psychologique.fxml");
+        m.put("two-factor-setup", "/fxml/TwoFactorSetup.fxml");
+        m.put("two-factor-disable", "/fxml/TwoFactorDisable.fxml");
+        m.put("two-factor-backup-codes", "/fxml/TwoFactorBackupCodes.fxml");
+        m.put("two-factor-login", "/fxml/TwoFactorLogin.fxml");
         SCENES = Collections.unmodifiableMap(m);
     }
 

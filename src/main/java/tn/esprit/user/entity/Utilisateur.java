@@ -37,6 +37,12 @@ public class Utilisateur {
     private int faceAuthFailedAttempts;         // column: face_auth_failed_attempts
     private LocalDateTime lastFaceAuthAttemptAt;// column: last_face_auth_attempt_at
 
+    // Two-Factor Authentication
+    private String totpSecret;                  // column: totp_secret
+    private boolean isTwoFactorEnabled;         // column: is_two_factor_enabled
+    private String backupCodes;                 // column: backup_codes (JSON string)
+    private LocalDateTime twoFactorEnabledAt;   // column: two_factor_enabled_at
+
     public Utilisateur() {}
 
     public Utilisateur(Integer id, String nom, String prenom, String email, String motDePasse,
@@ -119,6 +125,26 @@ public class Utilisateur {
 
     public LocalDateTime getLastFaceAuthAttemptAt() { return lastFaceAuthAttemptAt; }
     public void setLastFaceAuthAttemptAt(LocalDateTime lastFaceAuthAttemptAt) { this.lastFaceAuthAttemptAt = lastFaceAuthAttemptAt; }
+
+    public String getTotpSecret() { return totpSecret; }
+    public void setTotpSecret(String totpSecret) { this.totpSecret = totpSecret; }
+
+    public boolean isTwoFactorEnabled() { return isTwoFactorEnabled; }
+    public void setTwoFactorEnabled(boolean twoFactorEnabled) { isTwoFactorEnabled = twoFactorEnabled; }
+
+    public String getBackupCodes() { return backupCodes; }
+    public void setBackupCodes(String backupCodes) { this.backupCodes = backupCodes; }
+
+    public LocalDateTime getTwoFactorEnabledAt() { return twoFactorEnabledAt; }
+    public void setTwoFactorEnabledAt(LocalDateTime twoFactorEnabledAt) { this.twoFactorEnabledAt = twoFactorEnabledAt; }
+
+    /** Clears all 2FA data (used when disabling). */
+    public void resetTwoFactorAuth() {
+        this.totpSecret = null;
+        this.isTwoFactorEnabled = false;
+        this.backupCodes = null;
+        this.twoFactorEnabledAt = null;
+    }
 
     /** Lowercase key for CSS (user, admin, coach). */
     public String getRoleKey() {

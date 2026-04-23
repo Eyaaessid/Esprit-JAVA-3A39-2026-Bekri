@@ -113,6 +113,24 @@
 
                         <Separator/>
 
+                        <VBox spacing="10">
+                            <Label text="Sécurité" styleClass="section-title"/>
+                            <Label fx:id="twoFactorStatusLabel" text="Authentification à deux facteurs : désactivée"/>
+                            <HBox spacing="10">
+                                <Button fx:id="enableTwoFactorBtn" text="Activer 2FA"
+                                        styleClass="btn-primary"
+                                        onAction="#goToTwoFactorSetup"/>
+                                <Button fx:id="disableTwoFactorBtn" text="Désactiver 2FA"
+                                        styleClass="btn-danger" visible="false" managed="false"
+                                        onAction="#goToTwoFactorDisable"/>
+                                <Button fx:id="regenerateBackupCodesBtn" text="Régénérer les codes de secours"
+                                        styleClass="btn-secondary" visible="false" managed="false"
+                                        onAction="#goToRegenerateBackupCodes"/>
+                            </HBox>
+                        </VBox>
+
+                        <Separator/>
+
                         <!-- Action button -->
                         <HBox spacing="12">
                             <Button text="✏️  Modifier mon profil"

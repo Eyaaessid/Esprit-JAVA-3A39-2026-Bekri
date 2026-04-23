@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.user.ui.TwoFactorSetupController"
+            prefWidth="900" prefHeight="680">
+    <center>
+        <ScrollPane fitToWidth="true">
+            <VBox spacing="16" maxWidth="700" styleClass="card">
+                <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                <Label text="Configuration de l'authentification à deux facteurs" styleClass="section-title"/>
+                <Separator/>
+
+                <Label text="Étape 1 — Scannez ce QR code avec Google Authenticator ou Authy."/>
+                <HBox spacing="20" alignment="CENTER_LEFT">
+                    <ImageView fx:id="qrCodeImageView" fitWidth="250" fitHeight="250" preserveRatio="true"/>
+                    <VBox spacing="8">
+                        <Label text="Clé secrète (manuel)"/>
+                        <Label fx:id="secretLabel" style="-fx-font-family: 'Consolas'; -fx-font-size: 14px;"/>
+                    </VBox>
+                </HBox>
+
+                <Label text="Étape 2 — Saisissez le code de vérification et confirmez votre mot de passe."/>
+                <VBox spacing="8">
+                    <Label text="Code de vérification (6 chiffres)"/>
+                    <TextField fx:id="verificationCodeField" promptText="123456"/>
+                    <Label text="Mot de passe actuel"/>
+                    <PasswordField fx:id="currentPasswordField" promptText="••••••••"/>
+                </VBox>
+
+                <Label fx:id="statusLabel" textFill="#555555"/>
+                <HBox spacing="10">
+                    <Button text="Vérifier et activer" styleClass="btn-primary" onAction="#handleVerifyAndEnable"/>
+                    <Button text="Annuler" styleClass="btn-secondary" onAction="#handleCancel"/>
+                </HBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

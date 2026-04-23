@@ -5,6 +5,7 @@ import tn.esprit.shared.SceneManager;
 import tn.esprit.user.entity.Utilisateur;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 
 import java.net.URL;
@@ -22,6 +23,10 @@ public class ProfileController implements Initializable {
     @FXML private Label dateNaissanceLabel;
     @FXML private Label statutLabel;
     @FXML private Label createdAtLabel;
+    @FXML private Label twoFactorStatusLabel;
+    @FXML private Button enableTwoFactorBtn;
+    @FXML private Button disableTwoFactorBtn;
+    @FXML private Button regenerateBackupCodesBtn;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -42,6 +47,7 @@ public class ProfileController implements Initializable {
         statutLabel.setText(user.getStatut() != null ? capitalize(user.getStatutKey()) : "—");
         createdAtLabel.setText(user.getCreatedAt() != null
                 ? user.getCreatedAt().toLocalDate().toString() : "—");
+        refreshTwoFactorSection(user);
     }
 
     @FXML
@@ -85,10 +91,56 @@ public class ProfileController implements Initializable {
         }
     }
 
+    @FXML
+    private void goToTwoFactorSetup() {
+        try {
+            SceneManager.switchTo("two-factor-setup");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void goToTwoFactorDisable() {
+        try {
+            SceneManager.switchTo("two-factor-disable");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void goToRegenerateBackupCodes() {
+        try {
+            TwoFactorDisableController controller = SceneManager.switchToAndGetController("two-factor-disable");
+            controller.setRegenerateMode(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private String nvl(String s) { return (s == null || s.isBlank()) ? "—" : s; }
 
     private String capitalize(String s) {
         if (s == null || s.isEmpty()) return s;
         return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
+    }
+
+    private void refreshTwoFactorSection(Utilisateur user) {
+        boolean enabled = user.isTwoFactorEnabled();
+        if (enabled) {
+            String since = user.getTwoFactorEnabledAt() != null
+                    ? user.getTwoFactorEnabledAt().toLocalDate().toString()
+                    : "date inconnue";
+            twoFactorStatusLabel.setText("Authentification à deux facteurs : activée depuis " + since);
+        } else {
+            twoFactorStatusLabel.setText("Authentification à deux facteurs : désactivée");
+        }
+        enableTwoFactorBtn.setVisible(!enabled);
+        enableTwoFactorBtn.setManaged(!enabled);
+        disableTwoFactorBtn.setVisible(enabled);
+        disableTwoFactorBtn.setManaged(enabled);
+        regenerateBackupCodesBtn.setVisible(enabled);
+        regenerateBackupCodesBtn.setManaged(enabled);
     }
 }
