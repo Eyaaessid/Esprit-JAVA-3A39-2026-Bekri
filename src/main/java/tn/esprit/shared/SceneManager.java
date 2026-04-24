@@ -73,6 +73,16 @@ public final class SceneManager {
         stage.setMinHeight(600);
     }
 
+    public static void resizePrimaryStage(double width, double height) {
+        if (primaryStage == null) {
+            return;
+        }
+        primaryStage.setMaximized(false);
+        primaryStage.setWidth(width);
+        primaryStage.setHeight(height);
+        primaryStage.centerOnScreen();
+    }
+
     private static URL resolveFxmlUrl(String viewName) throws IOException {
         String path = SCENES.get(viewName);
         if (path == null) {
