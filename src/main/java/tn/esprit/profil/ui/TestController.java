@@ -1,11 +1,7 @@
 package tn.esprit.profil.ui;
 
-import tn.esprit.profil.service.ProfilPsychologiqueService;
-import tn.esprit.session.SessionManager;
-import tn.esprit.shared.DialogHelper;
-import tn.esprit.shared.SceneManager;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.layout.Priority;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -14,15 +10,17 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import tn.esprit.profil.service.GroqAiService;
+import tn.esprit.profil.service.ProfilPsychologiqueService;
+import tn.esprit.session.SessionManager;
+import tn.esprit.shared.DialogHelper;
+import tn.esprit.shared.SceneManager;
+import tn.esprit.utils.AppConfig;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Test psychologique multi-pages (échelle de Likert). Les tableaux de questions et la logique
- * de score sont regroupés ici de façon explicite.
- */
 public class TestController {
 
     private static final String[] SECTION_TITLES = {
@@ -31,9 +29,6 @@ public class TestController {
             "Sommeil, lien social et ressources personnelles"
     };
 
-    /**
-     * Formulations où un accord plus fort indique davantage de symptômes / détresse (1 = pas du tout … 5 = tout le temps).
-     */
     private static final String[][] QUESTIONS = {
             {
                     "Je ressens souvent nervosité ou tension interne.",
@@ -95,12 +90,10 @@ public class TestController {
             int qIndex = i;
             int globalIndex = currentPage * 4 + i + 1;
 
-            // ── Question card ──────────────────────────────────
             VBox card = new VBox(14);
             card.getStyleClass().add("question-card");
             card.setPadding(new Insets(20, 24, 20, 24));
 
-            // Question number badge + text row
             HBox headerRow = new HBox(12);
             headerRow.setAlignment(Pos.CENTER_LEFT);
 
@@ -115,7 +108,6 @@ public class TestController {
 
             headerRow.getChildren().addAll(numBadge, qLabel);
 
-            // ── Likert scale ──────────────────────────────────
             ToggleGroup group = new ToggleGroup();
 
             HBox scaleRow = new HBox(0);
@@ -132,10 +124,7 @@ public class TestController {
                 RadioButton rb = new RadioButton();
                 rb.setToggleGroup(group);
                 rb.setText("");
-                rb.setStyle(
-                        "-fx-padding: 0;" +
-                                "-fx-cursor: hand;"
-                );
+                rb.setStyle("-fx-padding: 0;-fx-cursor: hand;");
                 if (pageAnswers[qIndex] == value) {
                     rb.setSelected(true);
                 }
@@ -144,13 +133,8 @@ public class TestController {
                 });
 
                 Label optLabel = new Label(LIKERT_LABELS[v - 1]);
-                optLabel.setStyle(
-                        "-fx-font-size: 11px;" +
-                                "-fx-text-fill: #8FB3E2;" +
-                                "-fx-text-alignment: center;" +
-                                "-fx-wrap-text: true;" +
-                                "-fx-max-width: 90px;"
-                );
+                optLabel.setStyle("-fx-font-size: 11px;-fx-text-fill: #8FB3E2;-fx-text-alignment: center;"
+                        + "-fx-wrap-text: true;-fx-max-width: 90px;");
                 optLabel.setAlignment(Pos.CENTER);
                 optLabel.setWrapText(true);
 
@@ -165,6 +149,7 @@ public class TestController {
         prevBtn.setDisable(currentPage == 0);
         boolean last = currentPage == QUESTIONS.length - 1;
         nextBtn.setText(last ? "Terminer ✓" : "Suivant →");
+        nextBtn.setDisable(false);
     }
 
     @FXML
@@ -211,27 +196,71 @@ public class TestController {
         }
         int scoreGlobal = computeScoreGlobal(sum, count);
         String profilType = getProfilType(scoreGlobal);
-        String aiFeedback = generateFeedback(scoreGlobal);
+        int section1Sum = sumSection(answersPerPage.get(0));
+        int section2Sum = sumSection(answersPerPage.get(1));
+        int section3Sum = sumSection(answersPerPage.get(2));
 
+        Integer userId = SessionManager.getInstance().getCurrentUser() != null
+                ? SessionManager.getInstance().getCurrentUser().getId() : null;
+        if (userId == null) {
+            DialogHelper.showError("Session", "Utilisateur non identifié.");
+            return;
+        }
+
+        nextBtn.setText("Analyse en cours…");
+        nextBtn.setDisable(true);
+
+        Task<String> aiTask = new Task<>() {
+            @Override
+            protected String call() {
+                String apiKey = AppConfig.get("groq.api.key");
+                GroqAiService ai = new GroqAiService(apiKey);
+                return ai.generateEmotionalInsight(
+                        scoreGlobal, profilType, section1Sum, section2Sum, section3Sum
+                );
+            }
+        };
+
+        aiTask.setOnSucceeded(event -> saveAndNavigate(userId, scoreGlobal, profilType, aiTask.getValue()));
+        aiTask.setOnFailed(event -> {
+            if (aiTask.getException() != null) {
+                aiTask.getException().printStackTrace();
+            }
+            saveAndNavigate(userId, scoreGlobal, profilType, null);
+        });
+
+        Thread thread = new Thread(aiTask, "groq-profil-analysis");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void saveAndNavigate(Integer userId, int scoreGlobal, String profilType, String feedback) {
+        String finalFeedback = (feedback == null || feedback.isBlank())
+                ? generateFeedback(scoreGlobal)
+                : feedback;
         try {
             ProfilPsychologiqueService service = new ProfilPsychologiqueService();
-            Integer userId = SessionManager.getInstance().getCurrentUser().getId();
-            if (userId == null) {
-                DialogHelper.showError("Session", "Utilisateur non identifié.");
-                return;
-            }
-            service.submitProfil(userId, scoreGlobal, profilType, aiFeedback);
+            service.submitProfil(userId, scoreGlobal, profilType, finalFeedback);
             SceneManager.switchTo("profil-psychologique");
         } catch (IOException e) {
             DialogHelper.showError("Navigation", e.getMessage());
+            nextBtn.setText("Terminer ✓");
+            nextBtn.setDisable(false);
         } catch (RuntimeException e) {
             DialogHelper.showError("Enregistrement", e.getMessage() != null ? e.getMessage() : "Erreur inconnue");
+            nextBtn.setText("Terminer ✓");
+            nextBtn.setDisable(false);
         }
     }
 
-    /**
-     * Somme des réponses sur l'échelle 1–5 ; normalisation sur 0–100 (plus le score est élevé, plus la détresse est forte).
-     */
+    private int sumSection(int[] answers) {
+        int total = 0;
+        for (int v : answers) {
+            total += v;
+        }
+        return total;
+    }
+
     private static int computeScoreGlobal(int sum, int count) {
         if (count == 0) {
             return 0;
@@ -243,9 +272,6 @@ public class TestController {
         return Math.max(0, Math.min(100, score));
     }
 
-    /**
-     * Libellé court du profil (cohérent avec les seuils d'affichage du résultat).
-     */
     private static String getProfilType(int scoreGlobal) {
         if (scoreGlobal <= 25) {
             return "Profil résilient";
@@ -279,6 +305,7 @@ public class TestController {
                 + "médical : nous vous encourageons vivement à consulter un professionnel de santé ou un psychologue "
                 + "afin d'obtenir une évaluation personnalisée et un soutien adapté.";
     }
+
     @FXML
     private void handleRetour() {
         try {

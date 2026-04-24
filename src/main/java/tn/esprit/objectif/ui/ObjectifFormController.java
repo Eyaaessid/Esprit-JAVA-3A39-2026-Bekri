@@ -1,6 +1,7 @@
 package tn.esprit.objectif.ui;
 
 import tn.esprit.session.SessionManager;
+import tn.esprit.shared.ObjectifContext;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.objectif.model.ObjectifBienEtreDto;
 import javafx.fxml.FXML;
@@ -72,6 +73,16 @@ public class ObjectifFormController {
             if(dateFinPicker.getValue()!=null) liveDateFin();
         });
         dateFinPicker.valueProperty().addListener((o,a,b) -> liveDateFin());
+
+        String pt = ObjectifContext.getPendingType();
+        String pl = ObjectifContext.getPendingLabel();
+        if (pt != null) {
+            typeCombo.setValue(pt);
+            ObjectifContext.clear();
+        } else if (pl != null) {
+            typeCombo.setValue(pl == null ? null : pl.toLowerCase());
+            ObjectifContext.clear();
+        }
     }
 
     public void setObjectif(ObjectifBienEtreDto o) {
