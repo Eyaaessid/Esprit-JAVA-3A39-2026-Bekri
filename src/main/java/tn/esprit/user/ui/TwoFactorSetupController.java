@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.image.ImageView;
 import org.mindrot.jbcrypt.BCrypt;
 import tn.esprit.session.SessionManager;
@@ -31,6 +32,9 @@ public class TwoFactorSetupController {
 
     @FXML
     private void initialize() {
+        verificationCodeField.setTextFormatter(new TextFormatter<>(change ->
+                change.getControlNewText().matches("\\d{0,6}") ? change : null
+        ));
         user = SessionManager.getInstance().getCurrentUser();
         if (user == null) {
             showStatus("Session invalide. Veuillez vous reconnecter.", true);

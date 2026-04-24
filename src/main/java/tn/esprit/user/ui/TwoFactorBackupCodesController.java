@@ -1,14 +1,19 @@
 package tn.esprit.user.ui;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.user.entity.Utilisateur;
-import tn.esprit.user.enums.UtilisateurRole;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +22,7 @@ public class TwoFactorBackupCodesController {
 
     @FXML private VBox codesContainer;
     @FXML private Label statusLabel;
+    @FXML private Button downloadButton;
 
     private Utilisateur sourceUser;
 
@@ -43,14 +49,34 @@ public class TwoFactorBackupCodesController {
     }
 
     @FXML
+    private void handleDownload() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Enregistrer les codes de secours");
+        fileChooser.setInitialFileName("bekri-backup-codes.txt");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichiers texte", "*.txt"));
+        Stage stage = (Stage) downloadButton.getScene().getWindow();
+        File file = fileChooser.showSaveDialog(stage);
+        if (file == null) {
+            return;
+        }
+        try (FileWriter fw = new FileWriter(file)) {
+            fw.write("Bekri Wellbeing - Codes de secours 2FA\n");
+            fw.write("Conservez ces codes en lieu sûr.\n\n");
+            for (String code : pendingBackupCodes) {
+                fw.write(code + "\n");
+            }
+            statusLabel.setText("✓ Codes téléchargés avec succès.");
+        } catch (IOException e) {
+            statusLabel.setText("Erreur lors du téléchargement.");
+        }
+    }
+
+    @FXML
     private void handleSaved() {
         pendingBackupCodes.clear();
         try {
-            if (sourceUser != null && sourceUser.getRole() == UtilisateurRole.ADMIN) {
-                SceneManager.switchTo("admin-dashboard");
-            } else {
-                SceneManager.switchTo("profile");
-            }
+            // All roles return to the unified profile screen (no role restriction on security features)
+            SceneManager.switchTo("profile");
         } catch (Exception e) {
             statusLabel.setText("Impossible de revenir au profil.");
         }

@@ -18,6 +18,7 @@
             <Separator/>
             <HBox spacing="10">
                 <Button text="Copier tous les codes" styleClass="btn-secondary" onAction="#handleCopyAll"/>
+                <Button fx:id="downloadButton" text="Télécharger les codes" styleClass="btn-secondary" onAction="#handleDownload"/>
                 <Button text="J'ai sauvegardé mes codes" styleClass="btn-primary" onAction="#handleSaved"/>
             </HBox>
             <Label fx:id="statusLabel"/>

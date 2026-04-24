@@ -11,10 +11,11 @@ import javafx.scene.image.ImageView;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
-import tn.esprit.faceauth.FaceAuthService;
 import tn.esprit.faceauth.FaceAuthResourceExtractor;
+import tn.esprit.faceauth.FaceAuthService;
 import tn.esprit.faceauth.JSBridge;
 import tn.esprit.faceauth.ModelLoader;
+import tn.esprit.session.SessionManager;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.user.entity.Utilisateur;
 
@@ -31,25 +32,22 @@ import java.util.Base64;
 public class FaceRegisterController {
 
     @FXML private ImageView cameraView;
-    @FXML private WebView   webView;
-    @FXML private Button    captureBtn;
-    @FXML private Button    registerBtn;
-    @FXML private Button    disableBtn;
-    @FXML private Label     statusLabel;
+    @FXML private WebView webView;
+    @FXML private Button captureBtn;
+    @FXML private Button registerBtn;
+    @FXML private Button disableBtn;
+    @FXML private Label statusLabel;
 
-    private Webcam   webcam;
-    private volatile boolean       webcamRunning = false;
-    // FIX: cache every good frame so handleCapture() never gets null
-    private volatile BufferedImage lastFrame     = null;
+    private Webcam webcam;
+    private volatile boolean webcamRunning = false;
+    private volatile BufferedImage lastFrame = null;
 
-    private double[]        capturedDescriptor = null;
-    private Utilisateur     user;
-    private JSBridge        jsBridge;           // MUST be a field – GC protection
-    private Thread          webcamThread;
+    private double[] capturedDescriptor = null;
+    private Utilisateur user;
+    private JSBridge jsBridge;
+    private Thread webcamThread;
 
     private final FaceAuthService faceAuthService = new FaceAuthService();
-
-    // ---------------------------------------------------------------- init
 
     @FXML
     public void initialize() {
@@ -57,8 +55,9 @@ public class FaceRegisterController {
         startWebcam();
 
         Platform.runLater(() -> {
-            if (cameraView.getScene() != null && cameraView.getScene().getWindow() != null)
+            if (cameraView.getScene() != null && cameraView.getScene().getWindow() != null) {
                 cameraView.getScene().getWindow().setOnCloseRequest(e -> stopWebcam());
+            }
         });
     }
 
@@ -66,18 +65,15 @@ public class FaceRegisterController {
         this.user = user;
         if (user != null && user.isFaceAuthEnabled()) {
             disableBtn.setVisible(true);
-            statusLabel.setText("Visage déjà enregistré. Vous pouvez le remplacer ou désactiver.");
+            statusLabel.setText("Visage déjà enregistré. Vous pouvez le remplacer ou le désactiver.");
         }
     }
-
-    // --------------------------------------------------------------- WebView
 
     private void loadWebView() {
         WebEngine engine = webView.getEngine();
 
         jsBridge = new JSBridge(
-                () -> {   // onFaceApiReady
-                    System.out.println("[FaceAuth] faceapi ready – loading models...");
+                () -> {
                     try {
                         engine.executeScript(ModelLoader.buildLoadModelsScript());
                         statusLabel.setText("Chargement des modèles...");
@@ -87,18 +83,18 @@ public class FaceRegisterController {
                         statusLabel.setStyle("-fx-text-fill: #c92a2a;");
                     }
                 },
-                () -> {   // onModelsLoaded
+                () -> {
                     captureBtn.setDisable(false);
-                    statusLabel.setText("Prêt — regardez la caméra et cliquez Capturer.");
+                    statusLabel.setText("Prêt : regardez la caméra puis cliquez sur Capturer.");
                     statusLabel.setStyle("-fx-text-fill: #2d6a4f;");
                 },
-                descriptor -> {   // onDescriptorReady
+                descriptor -> {
                     capturedDescriptor = descriptor;
                     registerBtn.setDisable(false);
-                    statusLabel.setText("Visage capturé ! Cliquez Enregistrer pour confirmer.");
+                    statusLabel.setText("Visage capturé. Cliquez sur Enregistrer pour confirmer.");
                     statusLabel.setStyle("-fx-text-fill: #2d6a4f;");
                 },
-                error -> {   // onError — always re-enable capture so user can retry
+                error -> {
                     captureBtn.setDisable(false);
                     statusLabel.setText("Erreur: " + error);
                     statusLabel.setStyle("-fx-text-fill: #c92a2a;");
@@ -106,14 +102,14 @@ public class FaceRegisterController {
         );
 
         engine.getLoadWorker().stateProperty().addListener((obs, old, newState) -> {
-            if (newState != Worker.State.SUCCEEDED) return;
+            if (newState != Worker.State.SUCCEEDED) {
+                return;
+            }
             Platform.runLater(() -> {
                 try {
-                    // 1 – bridge
                     JSObject win = (JSObject) engine.executeScript("window");
                     win.setMember("javaBridge", jsBridge);
 
-                    // 2 – redirect console to Java stdout
                     engine.executeScript(
                             "window.console={" +
                                     "log:function(m){if(window.javaBridge)window.javaBridge.onError('LOG: '+m);}," +
@@ -122,21 +118,19 @@ public class FaceRegisterController {
                                     "};"
                     );
 
-                    // 3 – fetch override (must be before face-api loads)
                     engine.executeScript(ModelLoader.buildFetchOverrideScript());
 
-                    // 4 – inject face-api.min.js via <script src>
                     Path tmpDir = FaceAuthResourceExtractor.extractToTemp();
-                    String uri  = tmpDir.resolve("face-api.min.js").toUri().toString();
-                    if (uri.startsWith("file:/") && !uri.startsWith("file:///"))
+                    String uri = tmpDir.resolve("face-api.min.js").toUri().toString();
+                    if (uri.startsWith("file:/") && !uri.startsWith("file:///")) {
                         uri = "file:///" + uri.substring(6);
+                    }
                     engine.executeScript(
                             "var __s=document.createElement('script');" +
                                     "__s.src=" + toJsString(uri) + ";" +
                                     "document.head.appendChild(__s);"
                     );
 
-                    // 5 – poll until faceapi is defined, then notify Java
                     engine.executeScript(
                             "var __wfa=setInterval(function(){" +
                                     "  if(typeof faceapi!=='undefined'){" +
@@ -162,8 +156,6 @@ public class FaceRegisterController {
         }
     }
 
-    // --------------------------------------------------------------- Webcam
-
     private void startWebcam() {
         webcamThread = new Thread(() -> {
             try {
@@ -179,13 +171,12 @@ public class FaceRegisterController {
                 webcam.setViewSize(new Dimension(640, 480));
                 webcam.open();
 
-                // FIX: webcam4j needs several frames to warm up after open().
-                // Poll until we receive at least one non-null image.
-                System.out.println("[FaceAuth] warming up webcam...");
                 BufferedImage firstFrame = null;
                 for (int attempt = 0; attempt < 50 && firstFrame == null; attempt++) {
                     firstFrame = webcam.getImage();
-                    if (firstFrame == null) Thread.sleep(100);
+                    if (firstFrame == null) {
+                        Thread.sleep(100);
+                    }
                 }
 
                 if (firstFrame == null) {
@@ -196,11 +187,9 @@ public class FaceRegisterController {
                     return;
                 }
 
-                lastFrame     = firstFrame;
+                lastFrame = firstFrame;
                 webcamRunning = true;
-                System.out.println("[FaceAuth] webcam ready ✓");
 
-                // Live preview loop — store every good frame
                 while (webcamRunning) {
                     BufferedImage frame = webcam.getImage();
                     if (frame != null) {
@@ -211,11 +200,9 @@ public class FaceRegisterController {
                             cameraView.setPreserveRatio(true);
                         });
                     }
-                    Thread.sleep(33); // ~30 fps
+                    Thread.sleep(33);
                 }
-
             } catch (InterruptedException ignored) {
-                // normal shutdown via stopWebcam()
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     statusLabel.setText("Erreur webcam: " + e.getMessage());
@@ -228,12 +215,10 @@ public class FaceRegisterController {
         webcamThread.start();
     }
 
-    // --------------------------------------------------------------- Capture
-
     @FXML
     private void handleCapture() {
         if (!webcamRunning || lastFrame == null) {
-            statusLabel.setText("Webcam pas encore prête — patientez un instant.");
+            statusLabel.setText("Webcam pas encore prête. Patientez un instant.");
             statusLabel.setStyle("-fx-text-fill: #c92a2a;");
             return;
         }
@@ -242,15 +227,10 @@ public class FaceRegisterController {
         statusLabel.setText("Analyse du visage en cours...");
         statusLabel.setStyle("-fx-text-fill: #1971c2;");
 
-        // FIX: take a deep copy NOW on the FX thread so the webcam loop can
-        // keep writing to lastFrame without any race condition.
         final BufferedImage snapshot = deepCopy(lastFrame);
 
         new Thread(() -> {
             try {
-                // FIX: always render into TYPE_INT_RGB.
-                // Webcam4j returns TYPE_3BYTE_BGR (type 5) which the JDK JPEG
-                // encoder may mishandle on Windows, producing tiny/corrupt files.
                 BufferedImage resized = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
                 Graphics2D g2d = resized.createGraphics();
                 g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
@@ -258,29 +238,19 @@ public class FaceRegisterController {
                 g2d.drawImage(snapshot, 0, 0, 320, 240, null);
                 g2d.dispose();
 
-                System.out.println("[FaceAuth] capture frame type=" + resized.getType()
-                        + " " + resized.getWidth() + "x" + resized.getHeight());
-
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 boolean wrote = ImageIO.write(resized, "jpg", baos);
-                System.out.println("[FaceAuth] JPEG wrote=" + wrote + " bytes=" + baos.size());
 
                 String dataUrl;
                 if (!wrote || baos.size() < 2000) {
-                    // PNG fallback — always works, larger but reliable
                     baos.reset();
                     ImageIO.write(resized, "png", baos);
-                    System.out.println("[FaceAuth] PNG fallback bytes=" + baos.size());
-                    dataUrl = "data:image/png;base64,"
-                            + Base64.getEncoder().encodeToString(baos.toByteArray());
+                    dataUrl = "data:image/png;base64," + Base64.getEncoder().encodeToString(baos.toByteArray());
                 } else {
-                    dataUrl = "data:image/jpeg;base64,"
-                            + Base64.getEncoder().encodeToString(baos.toByteArray());
+                    dataUrl = "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(baos.toByteArray());
                 }
 
-                System.out.println("[FaceAuth] dataUrl length=" + dataUrl.length());
                 dispatchToJs(dataUrl);
-
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     statusLabel.setText("Erreur capture: " + e.getMessage());
@@ -292,12 +262,6 @@ public class FaceRegisterController {
         }, "capture-thread").start();
     }
 
-    /**
-     * Sends the data-URL to JS via a window member so we never embed a huge
-     * base64 string inside an executeScript() argument string.
-     * processImage() in face_capture.html wraps detection in setTimeout(0),
-     * so executeScript returns immediately — no JS watchdog can fire.
-     */
     private void dispatchToJs(String dataUrl) {
         Platform.runLater(() -> {
             try {
@@ -314,13 +278,11 @@ public class FaceRegisterController {
         });
     }
 
-    // --------------------------------------------------------------- Register
-
     @FXML
     private void handleRegister() {
         double[] toSave = capturedDescriptor;
         if (toSave == null) {
-            statusLabel.setText("Aucun visage capturé — cliquez d'abord Capturer.");
+            statusLabel.setText("Aucun visage capturé. Cliquez d'abord sur Capturer.");
             statusLabel.setStyle("-fx-text-fill: #c92a2a;");
             return;
         }
@@ -337,8 +299,11 @@ public class FaceRegisterController {
         new Thread(() -> {
             try {
                 faceAuthService.storeFaceDescriptor(user.getId(), toSave);
+                user.setFaceAuthEnabled(true);
+                user.setFaceRegisteredAt(java.time.LocalDateTime.now());
                 Platform.runLater(() -> {
-                    statusLabel.setText("✓ Reconnaissance faciale activée avec succès !");
+                    SessionManager.getInstance().setCurrentUser(user);
+                    statusLabel.setText("Reconnaissance faciale activée avec succès.");
                     statusLabel.setStyle("-fx-text-fill: #2d6a4f;");
                     disableBtn.setVisible(true);
                 });
@@ -353,15 +318,19 @@ public class FaceRegisterController {
         }, "register-thread").start();
     }
 
-    // --------------------------------------------------------------- Disable
-
     @FXML
     private void handleDisable() {
-        if (user == null || user.getId() == null) return;
+        if (user == null || user.getId() == null) {
+            return;
+        }
         new Thread(() -> {
             try {
                 faceAuthService.disableFaceAuth(user.getId());
+                user.setFaceAuthEnabled(false);
+                user.setFaceDescriptor(null);
+                user.setFaceRegisteredAt(null);
                 Platform.runLater(() -> {
+                    SessionManager.getInstance().setCurrentUser(user);
                     disableBtn.setVisible(false);
                     capturedDescriptor = null;
                     registerBtn.setDisable(true);
@@ -379,23 +348,31 @@ public class FaceRegisterController {
         }, "disable-thread").start();
     }
 
-    // --------------------------------------------------------------- Back / stop
-
     @FXML
     private void handleBack() {
         stopWebcam();
-        try { SceneManager.switchTo("profile"); } catch (Exception ignored) {}
+        try {
+            SceneManager.switchTo("profile");
+        } catch (Exception ignored) {
+        }
     }
 
     public void stopWebcam() {
         webcamRunning = false;
-        if (webcamThread != null) try { webcamThread.interrupt(); } catch (Exception ignored) {}
-        if (webcam != null && webcam.isOpen()) try { webcam.close(); } catch (Exception ignored) {}
+        if (webcamThread != null) {
+            try {
+                webcamThread.interrupt();
+            } catch (Exception ignored) {
+            }
+        }
+        if (webcam != null && webcam.isOpen()) {
+            try {
+                webcam.close();
+            } catch (Exception ignored) {
+            }
+        }
     }
 
-    // --------------------------------------------------------------- Helpers
-
-    /** Returns a TYPE_INT_RGB copy of src — thread-safe snapshot for capture. */
     private static BufferedImage deepCopy(BufferedImage src) {
         BufferedImage copy = new BufferedImage(
                 src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_RGB);
@@ -413,10 +390,10 @@ public class FaceRegisterController {
             switch (c) {
                 case '\\' -> sb.append("\\\\");
                 case '\'' -> sb.append("\\'");
-                case '\n'  -> sb.append("\\n");
-                case '\r'  -> sb.append("\\r");
-                case '\t'  -> sb.append("\\t");
-                default    -> sb.append(c);
+                case '\n' -> sb.append("\\n");
+                case '\r' -> sb.append("\\r");
+                case '\t' -> sb.append("\\t");
+                default -> sb.append(c);
             }
         }
         return sb.append('\'').toString();

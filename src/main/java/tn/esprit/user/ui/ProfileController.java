@@ -1,12 +1,13 @@
 package tn.esprit.user.ui;
 
-import tn.esprit.session.SessionManager;
-import tn.esprit.shared.SceneManager;
-import tn.esprit.user.entity.Utilisateur;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import tn.esprit.faceauth.FaceAuthService;
+import tn.esprit.session.SessionManager;
+import tn.esprit.shared.SceneManager;
+import tn.esprit.user.entity.Utilisateur;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -24,14 +25,21 @@ public class ProfileController implements Initializable {
     @FXML private Label statutLabel;
     @FXML private Label createdAtLabel;
     @FXML private Label twoFactorStatusLabel;
+    @FXML private Label faceAuthStatusLabel;
     @FXML private Button enableTwoFactorBtn;
     @FXML private Button disableTwoFactorBtn;
     @FXML private Button regenerateBackupCodesBtn;
+    @FXML private Button enableFaceAuthBtn;
+    @FXML private Button disableFaceAuthBtn;
+
+    private final FaceAuthService faceAuthService = new FaceAuthService();
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         Utilisateur user = SessionManager.getInstance().getCurrentUser();
-        if (user == null) return;
+        if (user == null) {
+            return;
+        }
 
         avatarLabel.setText(user.getInitials());
         fullNameLabel.setText(user.getFullName());
@@ -43,11 +51,11 @@ public class ProfileController implements Initializable {
         emailLabel.setText(nvl(user.getEmail()));
         telLabel.setText(nvl(user.getTelephone()));
         dateNaissanceLabel.setText(user.getDateNaissance() != null
-                ? user.getDateNaissance().toString() : "—");
-        statutLabel.setText(user.getStatut() != null ? capitalize(user.getStatutKey()) : "—");
+                ? user.getDateNaissance().toString() : "-");
+        statutLabel.setText(user.getStatut() != null ? capitalize(user.getStatutKey()) : "-");
         createdAtLabel.setText(user.getCreatedAt() != null
-                ? user.getCreatedAt().toLocalDate().toString() : "—");
-        refreshTwoFactorSection(user);
+                ? user.getCreatedAt().toLocalDate().toString() : "-");
+        refreshSecuritySection(user);
     }
 
     @FXML
@@ -62,7 +70,11 @@ public class ProfileController implements Initializable {
     @FXML
     private void goBack() {
         try {
-            SceneManager.switchTo("user-dashboard");
+            if (SessionManager.getInstance().isAdmin()) {
+                SceneManager.switchTo("admin-dashboard");
+            } else {
+                SceneManager.switchTo("user-dashboard");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -82,10 +94,29 @@ public class ProfileController implements Initializable {
     private void goToFaceRegister() {
         try {
             Utilisateur user = SessionManager.getInstance().getCurrentUser();
-            if (user == null) return;
+            if (user == null || !SessionManager.getInstance().canUseSecurityFeatures()) {
+                return;
+            }
             var controller = SceneManager.switchToAndGetController("face-register");
-            //noinspection unchecked
             ((tn.esprit.faceauth.ui.FaceRegisterController) controller).setUser(user);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleDisableFaceAuth() {
+        Utilisateur user = SessionManager.getInstance().getCurrentUser();
+        if (user == null || user.getId() == null || !SessionManager.getInstance().canUseSecurityFeatures()) {
+            return;
+        }
+        try {
+            faceAuthService.disableFaceAuth(user.getId());
+            user.setFaceAuthEnabled(false);
+            user.setFaceDescriptor(null);
+            user.setFaceRegisteredAt(null);
+            SessionManager.getInstance().setCurrentUser(user);
+            refreshSecuritySection(user);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -94,6 +125,9 @@ public class ProfileController implements Initializable {
     @FXML
     private void goToTwoFactorSetup() {
         try {
+            if (!SessionManager.getInstance().canUseSecurityFeatures()) {
+                return;
+            }
             SceneManager.switchTo("two-factor-setup");
         } catch (Exception e) {
             e.printStackTrace();
@@ -103,6 +137,9 @@ public class ProfileController implements Initializable {
     @FXML
     private void goToTwoFactorDisable() {
         try {
+            if (!SessionManager.getInstance().canUseSecurityFeatures()) {
+                return;
+            }
             SceneManager.switchTo("two-factor-disable");
         } catch (Exception e) {
             e.printStackTrace();
@@ -112,35 +149,55 @@ public class ProfileController implements Initializable {
     @FXML
     private void goToRegenerateBackupCodes() {
         try {
+            if (!SessionManager.getInstance().canUseSecurityFeatures()) {
+                return;
+            }
             TwoFactorDisableController controller = SceneManager.switchToAndGetController("two-factor-disable");
-            controller.setRegenerateMode(true);
+            controller.setMode("regenerate");
+            controller.setUser(SessionManager.getInstance().getCurrentUser());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private String nvl(String s) { return (s == null || s.isBlank()) ? "—" : s; }
+    private String nvl(String s) {
+        return (s == null || s.isBlank()) ? "-" : s;
+    }
 
     private String capitalize(String s) {
         if (s == null || s.isEmpty()) return s;
         return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
     }
 
-    private void refreshTwoFactorSection(Utilisateur user) {
-        boolean enabled = user.isTwoFactorEnabled();
-        if (enabled) {
+    private void refreshSecuritySection(Utilisateur user) {
+        boolean twoFactorEnabled = user.isTwoFactorEnabled();
+        if (twoFactorEnabled) {
             String since = user.getTwoFactorEnabledAt() != null
                     ? user.getTwoFactorEnabledAt().toLocalDate().toString()
                     : "date inconnue";
-            twoFactorStatusLabel.setText("Authentification à deux facteurs : activée depuis " + since);
+            twoFactorStatusLabel.setText("Authentification a deux facteurs : activee depuis " + since);
         } else {
-            twoFactorStatusLabel.setText("Authentification à deux facteurs : désactivée");
+            twoFactorStatusLabel.setText("Authentification a deux facteurs : desactivee");
         }
-        enableTwoFactorBtn.setVisible(!enabled);
-        enableTwoFactorBtn.setManaged(!enabled);
-        disableTwoFactorBtn.setVisible(enabled);
-        disableTwoFactorBtn.setManaged(enabled);
-        regenerateBackupCodesBtn.setVisible(enabled);
-        regenerateBackupCodesBtn.setManaged(enabled);
+        enableTwoFactorBtn.setVisible(!twoFactorEnabled);
+        enableTwoFactorBtn.setManaged(!twoFactorEnabled);
+        disableTwoFactorBtn.setVisible(twoFactorEnabled);
+        disableTwoFactorBtn.setManaged(twoFactorEnabled);
+        regenerateBackupCodesBtn.setVisible(twoFactorEnabled);
+        regenerateBackupCodesBtn.setManaged(twoFactorEnabled);
+
+        boolean faceEnabled = user.isFaceAuthEnabled();
+        if (faceEnabled) {
+            String since = user.getFaceRegisteredAt() != null
+                    ? user.getFaceRegisteredAt().toLocalDate().toString()
+                    : "date inconnue";
+            faceAuthStatusLabel.setText("Reconnaissance faciale : activee depuis " + since);
+        } else {
+            faceAuthStatusLabel.setText("Reconnaissance faciale : desactivee");
+        }
+        enableFaceAuthBtn.setVisible(!faceEnabled);
+        enableFaceAuthBtn.setManaged(!faceEnabled);
+        disableFaceAuthBtn.setVisible(faceEnabled);
+        disableFaceAuthBtn.setManaged(faceEnabled);
     }
 }

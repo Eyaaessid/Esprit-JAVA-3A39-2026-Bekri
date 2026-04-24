@@ -2,6 +2,7 @@ package tn.esprit.user.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import org.mindrot.jbcrypt.BCrypt;
@@ -18,25 +19,32 @@ public class TwoFactorDisableController {
     private final TwoFactorDAO twoFactorDAO = new TwoFactorDAO();
     private final TwoFactorService twoFactorService = new TwoFactorService();
 
+    @FXML private Label titleLabel;
     @FXML private Label warningLabel;
     @FXML private PasswordField currentPasswordField;
     @FXML private Label statusLabel;
+    @FXML private Button actionButton;
 
-    private boolean regenerateMode;
+    private String mode = "disable";
+    private Utilisateur user;
 
     @FXML
     private void initialize() {
-        updateWarningText();
+        this.user = SessionManager.getInstance().getCurrentUser();
+        applyModeUi();
     }
 
-    public void setRegenerateMode(boolean regenerateMode) {
-        this.regenerateMode = regenerateMode;
-        updateWarningText();
+    public void setMode(String mode) {
+        this.mode = mode == null ? "disable" : mode;
+        applyModeUi();
+    }
+
+    public void setUser(Utilisateur user) {
+        this.user = user;
     }
 
     @FXML
     private void handleConfirm() {
-        Utilisateur user = SessionManager.getInstance().getCurrentUser();
         if (user == null) {
             showStatus("Session invalide.", true);
             return;
@@ -51,7 +59,7 @@ public class TwoFactorDisableController {
             return;
         }
         try {
-            if (regenerateMode) {
+            if ("regenerate".equals(mode)) {
                 List<String> plainCodes = twoFactorService.generateBackupCodes();
                 String json = OBJECT_MAPPER.writeValueAsString(twoFactorService.hashBackupCodes(plainCodes));
                 twoFactorDAO.updateBackupCodes(user.getId(), json);
@@ -82,13 +90,23 @@ public class TwoFactorDisableController {
         }
     }
 
-    private void updateWarningText() {
-        if (warningLabel == null) {
+    private void applyModeUi() {
+        if (warningLabel == null || titleLabel == null || actionButton == null) {
             return;
         }
-        warningLabel.setText(regenerateMode
-                ? "Confirmez votre mot de passe pour régénérer vos codes de secours."
-                : "Cette action supprimera la protection 2FA de votre compte.");
+        if ("regenerate".equals(mode)) {
+            titleLabel.setText("Régénérer les codes de secours");
+            warningLabel.setText("Confirmez votre mot de passe pour régénérer vos codes de secours.");
+            warningLabel.setStyle("-fx-text-fill: #c0392b; -fx-font-weight: bold;");
+            actionButton.setText("Régénérer les codes");
+            actionButton.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white;");
+        } else {
+            titleLabel.setText("Désactivation de l'authentification à deux facteurs");
+            warningLabel.setText("Cette action supprimera la protection 2FA de votre compte.");
+            warningLabel.setStyle("-fx-text-fill: #b42318; -fx-font-weight: bold;");
+            actionButton.setText("Désactiver 2FA");
+            actionButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
+        }
     }
 
     private void showStatus(String message, boolean error) {

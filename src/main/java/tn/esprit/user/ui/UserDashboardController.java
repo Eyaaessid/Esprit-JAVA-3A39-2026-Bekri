@@ -19,6 +19,7 @@ public class UserDashboardController {
     private void initialize() {
         Utilisateur user = SessionManager.getInstance().getCurrentUser();
         if (user == null) {
+            try { SceneManager.switchTo("login"); } catch (IOException e) { DialogHelper.showError("Session", e.getMessage()); }
             return;
         }
         String prenom = user.getPrenom() != null ? user.getPrenom() : "";

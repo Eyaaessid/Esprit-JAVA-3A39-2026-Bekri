@@ -5,12 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.VBox;
 import tn.esprit.session.SessionManager;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.user.dao.TwoFactorDAO;
 import tn.esprit.user.entity.Utilisateur;
-import tn.esprit.user.enums.UtilisateurRole;
 import tn.esprit.user.service.TwoFactorService;
 import tn.esprit.user.service.UtilisateurService;
 
@@ -37,6 +37,12 @@ public class TwoFactorLoginController {
 
     @FXML
     private void initialize() {
+        totpCodeField.setTextFormatter(new TextFormatter<>(change ->
+                change.getControlNewText().matches("\\d{0,6}") ? change : null
+        ));
+        backupCodeField.setTextFormatter(new TextFormatter<>(change ->
+                change.getControlNewText().matches("\\d*") ? change : null
+        ));
         if (backupCodeContainer != null) {
             backupCodeContainer.setManaged(false);
             backupCodeContainer.setVisible(false);
@@ -120,9 +126,14 @@ public class TwoFactorLoginController {
     private void completeLogin() {
         try {
             SessionManager.getInstance().setCurrentUser(user);
+            System.out.println("Logged in as: " + user.getClass().getSimpleName());
+            System.out.println("isAdmin: " + SessionManager.getInstance().isAdmin());
+            System.out.println("isCoach: " + SessionManager.getInstance().isCoach());
             utilisateurService.updateLastLogin(user.getId());
-            if (user.getRole() == UtilisateurRole.ADMIN) {
+            if (SessionManager.getInstance().isAdmin()) {
                 SceneManager.switchTo("admin-dashboard");
+            } else if (SessionManager.getInstance().isCoach()) {
+                SceneManager.switchTo("user-dashboard");
             } else {
                 SceneManager.switchTo("user-dashboard");
             }

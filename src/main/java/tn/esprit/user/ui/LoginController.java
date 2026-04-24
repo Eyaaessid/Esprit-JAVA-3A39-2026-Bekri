@@ -1,13 +1,6 @@
 package tn.esprit.user.ui;
 
-import tn.esprit.session.SessionManager;
-import tn.esprit.shared.FormFieldStyles;
-import tn.esprit.shared.PasswordUiHelper;
-import tn.esprit.shared.SceneManager;
-import tn.esprit.shared.FormValidators;
-import tn.esprit.user.entity.Utilisateur;
-import tn.esprit.user.enums.UtilisateurRole;
-import tn.esprit.user.service.UtilisateurService;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
@@ -16,6 +9,16 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.util.Duration;
+import tn.esprit.session.SessionManager;
+import tn.esprit.shared.CaptchaDialogHelper;
+import tn.esprit.shared.FormFieldStyles;
+import tn.esprit.shared.FormValidators;
+import tn.esprit.shared.PasswordUiHelper;
+import tn.esprit.shared.SceneManager;
+import tn.esprit.user.entity.Utilisateur;
+import tn.esprit.user.service.UtilisateurService;
+import tn.esprit.utils.CaptchaService;
 
 import java.io.IOException;
 
@@ -35,7 +38,12 @@ public class LoginController {
     private final ChangeListener<String> recompute = (o, a, b) -> updateSubmitEnabled();
 
     private final UtilisateurService utilisateurService = new UtilisateurService();
+    private final CaptchaService captchaService = new CaptchaService();
     private Utilisateur lastUnverifiedUser;
+    private int loginAttempts;
+    private boolean cooldownActive;
+    private static final int MAX_ATTEMPTS = 5;
+    private static final int COOLDOWN_SECONDS = 30;
 
     @FXML
     private void initialize() {
@@ -80,8 +88,6 @@ public class LoginController {
         FormFieldStyles.applyInputStyle(emailField, !invalid, showInvalid);
         if (showInvalid) {
             FormFieldStyles.showErrorLabel(emailErrorLabel, err);
-        } else if (!invalid) {
-            FormFieldStyles.hideErrorLabel(emailErrorLabel);
         } else {
             FormFieldStyles.hideErrorLabel(emailErrorLabel);
         }
@@ -99,8 +105,6 @@ public class LoginController {
         FormFieldStyles.applyInputStyle(passwordPlainField, !invalid, showInvalid);
         if (showInvalid) {
             FormFieldStyles.showErrorLabel(passwordErrorLabel, err);
-        } else if (!invalid) {
-            FormFieldStyles.hideErrorLabel(passwordErrorLabel);
         } else {
             FormFieldStyles.hideErrorLabel(passwordErrorLabel);
         }
@@ -112,7 +116,7 @@ public class LoginController {
     }
 
     private void updateSubmitEnabled() {
-        loginBtn.setDisable(!formValidSilent());
+        loginBtn.setDisable(cooldownActive || !formValidSilent());
     }
 
     @FXML
@@ -133,9 +137,14 @@ public class LoginController {
         String email = emailField.getText().trim();
         String password = pwd();
 
+        if (loginAttempts >= 2 && !CaptchaDialogHelper.showCaptchaDialog(captchaService)) {
+            showInfo("Verification annulee.");
+            return;
+        }
+
         loginBtn.setDisable(true);
         loginBtn.setText("Connexion...");
-        hideError();
+        hideStatus();
 
         new Thread(() -> {
             try {
@@ -143,7 +152,7 @@ public class LoginController {
                 if (!user.isVerified()) {
                     lastUnverifiedUser = user;
                     Platform.runLater(() -> {
-                        showError("Veuillez vérifier votre email avant de vous connecter.");
+                        showInfo("Veuillez verifier votre email avant de vous connecter.");
                         if (resendVerificationLink != null) {
                             resendVerificationLink.setVisible(true);
                             resendVerificationLink.setManaged(true);
@@ -165,14 +174,8 @@ public class LoginController {
                                 System.out.println("[Login] Failed to update last_login_at: " + e.getMessage());
                             }
                             SessionManager.getInstance().setCurrentUser(user);
-                            UtilisateurRole role = user.getRole();
-                            if (role == UtilisateurRole.ADMIN) {
-                                SceneManager.switchTo("admin-dashboard");
-                            } else if (role == UtilisateurRole.USER || role == UtilisateurRole.COACH) {
-                                SceneManager.switchTo("user-dashboard");
-                            } else {
-                                SceneManager.switchTo("user-dashboard");
-                            }
+                            loginAttempts = 0;
+                            navigateToDashboard();
                         }
                     } catch (IOException e) {
                         showError("Erreur de navigation : " + e.getMessage());
@@ -181,11 +184,13 @@ public class LoginController {
                 });
             } catch (Exception e) {
                 Platform.runLater(() -> {
+                    loginAttempts++;
                     showError(e.getMessage());
                     if (resendVerificationLink != null) {
                         resendVerificationLink.setVisible(false);
                         resendVerificationLink.setManaged(false);
                     }
+                    triggerCooldownIfNeeded();
                     resetBtn();
                 });
             }
@@ -233,19 +238,52 @@ public class LoginController {
     }
 
     private void showError(String message) {
-        errorLabel.setText(message);
+        errorLabel.setText("\u26a0 " + message);
+        errorLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 12px;");
         errorLabel.setVisible(true);
         errorLabel.setManaged(true);
     }
 
-    private void hideError() {
+    private void showInfo(String message) {
+        errorLabel.setText("\u2139 " + message);
+        errorLabel.setStyle("-fx-text-fill: #2980b9; -fx-font-size: 12px;");
+        errorLabel.setVisible(true);
+        errorLabel.setManaged(true);
+    }
+
+    private void hideStatus() {
         errorLabel.setVisible(false);
         errorLabel.setManaged(false);
     }
 
     private void resetBtn() {
-        loginBtn.setDisable(false);
+        loginBtn.setDisable(cooldownActive);
         loginBtn.setText("Se connecter");
         updateSubmitEnabled();
+    }
+
+    private void triggerCooldownIfNeeded() {
+        if (loginAttempts < MAX_ATTEMPTS || cooldownActive) {
+            return;
+        }
+        cooldownActive = true;
+        loginBtn.setDisable(true);
+        showError("Trop de tentatives. Reessayez dans " + COOLDOWN_SECONDS + " secondes.");
+        PauseTransition pause = new PauseTransition(Duration.seconds(COOLDOWN_SECONDS));
+        pause.setOnFinished(event -> {
+            loginAttempts = 0;
+            cooldownActive = false;
+            hideStatus();
+            updateSubmitEnabled();
+        });
+        pause.play();
+    }
+
+    private void navigateToDashboard() throws IOException {
+        if (SessionManager.getInstance().isAdmin()) {
+            SceneManager.switchTo("admin-dashboard");
+        } else {
+            SceneManager.switchTo("user-dashboard");
+        }
     }
 }

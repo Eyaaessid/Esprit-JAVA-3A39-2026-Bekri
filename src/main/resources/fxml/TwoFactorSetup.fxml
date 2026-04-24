@@ -27,7 +27,7 @@
                 <Label text="Étape 2 — Saisissez le code de vérification et confirmez votre mot de passe."/>
                 <VBox spacing="8">
                     <Label text="Code de vérification (6 chiffres)"/>
-                    <TextField fx:id="verificationCodeField" promptText="123456"/>
+                    <TextField fx:id="verificationCodeField" promptText="000000" prefColumnCount="6"/>
                     <Label text="Mot de passe actuel"/>
                     <PasswordField fx:id="currentPasswordField" promptText="••••••••"/>
                 </VBox>

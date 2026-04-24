@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class UtilisateurService {
@@ -43,8 +44,10 @@ public class UtilisateurService {
     }
 
     public Utilisateur login(String email, String password) {
-        Utilisateur u = dao.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Email introuvable"));
+        Utilisateur u = dao.findByEmailWithSubtype(email);
+        if (u == null) {
+            throw new IllegalArgumentException("Email introuvable");
+        }
         var result = BCrypt.verifyer().verify(password.toCharArray(), u.getMotDePasse());
         if (!result.verified) {
             throw new IllegalArgumentException("Mot de passe incorrect");
@@ -151,16 +154,16 @@ public class UtilisateurService {
         return dao.findAll();
     }
 
+    public void deleteById(Integer id) {
+        dao.deleteById(id);
+    }
+
     public Utilisateur getUserById(Integer id) {
         return dao.findById(id).orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable"));
     }
 
     public Utilisateur updateUser(Utilisateur u) {
         return dao.save(u);
-    }
-
-    public void deleteUser(Integer id) {
-        dao.deleteById(id);
     }
 
     public Utilisateur updateRole(Integer id, UtilisateurRole role) {
@@ -175,6 +178,10 @@ public class UtilisateurService {
         return dao.save(u);
     }
 
+    public void updateRoleAndStatus(Integer id, UtilisateurRole role, UtilisateurStatut statut) {
+        dao.updateRoleAndStatus(id, role, statut);
+    }
+
     public List<Utilisateur> findUtilisateursFiltered(String search, String roleFilter, String statutFilter) {
         String s = search == null ? "" : search.trim().toLowerCase(Locale.ROOT);
         String rf = roleFilter == null ? null : roleFilter.trim().toLowerCase(Locale.ROOT);
@@ -182,9 +189,13 @@ public class UtilisateurService {
 
         return dao.findAll().stream()
                 .filter(u -> s.isEmpty() || matchesSearch(u, s))
-                .filter(u -> rf == null || rf.isEmpty() || u.getRoleKey().equals(rf))
+                .filter(u -> rf == null || rf.isEmpty() || u.getRoleKey().equalsIgnoreCase(rf))
                 .filter(u -> sf == null || sf.isEmpty() || matchesStatutFilter(u, sf))
                 .collect(Collectors.toList());
+    }
+
+    public Map<String, Integer> getRoleStats() {
+        return dao.fetchRoleStats();
     }
 
     private boolean matchesSearch(Utilisateur u, String q) {
@@ -199,7 +210,7 @@ public class UtilisateurService {
         if ("supprime".equals(sf)) {
             return "inactif".equals(key);
         }
-        return key.equals(sf);
+        return key.equalsIgnoreCase(sf);
     }
 
     public Utilisateur createUtilisateurAdmin(String nom, String prenom, String email, String password,

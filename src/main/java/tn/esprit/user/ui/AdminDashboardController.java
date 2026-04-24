@@ -17,10 +17,11 @@ public class AdminDashboardController {
     private void initialize() {
         Utilisateur user = SessionManager.getInstance().getCurrentUser();
         if (user == null) {
+            try { SceneManager.switchTo("login"); } catch (IOException ignored) {}
             return;
         }
         String prenom = user.getPrenom() != null ? user.getPrenom() : "";
-        String nom = user.getNom() != null ? user.getNom() : "";
+        String nom    = user.getNom()    != null ? user.getNom()    : "";
         welcomeLabel.setText("Bonjour Admin, " + prenom + " " + nom + " 👋");
     }
 
@@ -54,7 +55,8 @@ public class AdminDashboardController {
     @FXML
     private void handleProfil() {
         try {
-            SceneManager.switchTo("edit-profile");
+            // Navigate to the unified profile screen (has 2FA + face auth for all roles)
+            SceneManager.switchTo("profile");
         } catch (IOException e) {
             DialogHelper.showError("Navigation", e.getMessage());
         }

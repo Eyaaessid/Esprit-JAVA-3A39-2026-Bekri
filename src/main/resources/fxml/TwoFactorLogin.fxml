@@ -12,7 +12,7 @@
             <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
             <Label text="Vérification à deux facteurs" styleClass="section-title"/>
             <Label text="Saisissez le code à 6 chiffres de votre application d'authentification."/>
-            <TextField fx:id="totpCodeField" promptText="123456"/>
+            <TextField fx:id="totpCodeField" promptText="000000" prefColumnCount="6"/>
             <Separator/>
             <Hyperlink text="Utiliser un code de secours" onAction="#handleUseBackupCode"/>
             <VBox fx:id="backupCodeContainer" spacing="6" visible="false" managed="false">

@@ -10,7 +10,7 @@
     <center>
         <VBox spacing="14" maxWidth="500" styleClass="card">
             <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-            <Label text="Désactivation de l'authentification à deux facteurs" styleClass="section-title"/>
+            <Label fx:id="titleLabel" text="Désactivation de l'authentification à deux facteurs" styleClass="section-title"/>
             <Label fx:id="warningLabel" text="Cette action supprimera la protection 2FA de votre compte."
                    wrapText="true" style="-fx-text-fill: #b42318; -fx-font-weight: bold;"/>
             <Separator/>
@@ -18,7 +18,7 @@
             <PasswordField fx:id="currentPasswordField" promptText="••••••••"/>
             <Label fx:id="statusLabel"/>
             <HBox spacing="10">
-                <Button text="Désactiver 2FA" styleClass="btn-danger" onAction="#handleConfirm"/>
+                <Button fx:id="actionButton" text="Désactiver 2FA" styleClass="btn-danger" onAction="#handleConfirm"/>
                 <Button text="Annuler" styleClass="btn-secondary" onAction="#handleCancel"/>
             </HBox>
         </VBox>

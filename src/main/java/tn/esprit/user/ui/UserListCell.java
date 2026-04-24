@@ -1,97 +1,37 @@
 package tn.esprit.user.ui;
 
-import tn.esprit.user.entity.Utilisateur;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import tn.esprit.session.SessionManager;
+import tn.esprit.user.entity.Utilisateur;
+import tn.esprit.user.enums.UtilisateurRole;
+import tn.esprit.user.enums.UtilisateurStatut;
+import tn.esprit.user.service.UtilisateurService;
 
 import java.util.function.Consumer;
 
-/**
- * Cellule ListView admin : avatar à gauche, nom + email au centre, badges + actions à droite.
- */
 public class UserListCell extends ListCell<Utilisateur> {
 
-    private final HBox row = new HBox(14);
-    private final Label avatarLabel = new Label();
-    private final Label nameLabel = new Label();
-    private final Label emailLabel = new Label();
-    private final Label dateHintLabel = new Label();
-    private final Label roleLabel = new Label();
-    private final Label statutLabel = new Label();
-    private final Button viewBtn = new Button("👁");
-    private final Button editBtn = new Button("✏️");
-    private final Button deleteBtn = new Button("🗑");
-    private final Region spacer = new Region();
+    private final Consumer<Utilisateur> onEditAction;
+    private final UtilisateurService utilisateurService;
+    private final Runnable onRefresh;
 
-    public UserListCell(Consumer<Utilisateur> onViewAction,
-                        Consumer<Utilisateur> onEditAction,
-                        Consumer<Utilisateur> onDeleteAction) {
-        super();
-
-        row.setMinHeight(72);
-
-        avatarLabel.getStyleClass().add("list-avatar");
-        avatarLabel.setMinSize(44, 44);
-        avatarLabel.setPrefSize(44, 44);
-        avatarLabel.setMaxSize(44, 44);
-        avatarLabel.setAlignment(Pos.CENTER);
-
-        nameLabel.getStyleClass().add("list-name");
-        emailLabel.getStyleClass().add("list-email");
-        dateHintLabel.getStyleClass().add("list-sub");
-        dateHintLabel.setStyle("-fx-font-size: 10px;");
-
-        VBox center = new VBox(4, nameLabel, emailLabel, dateHintLabel);
-        center.setAlignment(Pos.CENTER_LEFT);
-        center.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(center, Priority.ALWAYS);
-
-        roleLabel.setMinWidth(70);
-        statutLabel.setMinWidth(70);
-        roleLabel.setAlignment(Pos.CENTER);
-        statutLabel.setAlignment(Pos.CENTER);
-
-        viewBtn.getStyleClass().add("icon-btn-view");
-        editBtn.getStyleClass().add("icon-btn-edit");
-        deleteBtn.getStyleClass().add("icon-btn-delete");
-
-        HBox actions = new HBox(8, viewBtn, editBtn, deleteBtn);
-        actions.setAlignment(Pos.CENTER_RIGHT);
-
-        HBox right = new HBox(12, roleLabel, statutLabel, spacer, actions);
-        right.setAlignment(Pos.CENTER_RIGHT);
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        row.getChildren().addAll(avatarLabel, center, right);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.getStyleClass().add("user-list-row");
-        row.setPadding(new Insets(12, 16, 12, 16));
-
-        viewBtn.setOnAction(e -> {
-            Utilisateur u = getItem();
-            if (u != null) {
-                onViewAction.accept(u);
-            }
-        });
-        editBtn.setOnAction(e -> {
-            Utilisateur u = getItem();
-            if (u != null) {
-                onEditAction.accept(u);
-            }
-        });
-        deleteBtn.setOnAction(e -> {
-            Utilisateur u = getItem();
-            if (u != null) {
-                onDeleteAction.accept(u);
-            }
-        });
+    public UserListCell(Consumer<Utilisateur> onEditAction,
+                        UtilisateurService utilisateurService,
+                        Runnable onRefresh) {
+        this.onEditAction = onEditAction;
+        this.utilisateurService = utilisateurService;
+        this.onRefresh = onRefresh;
     }
 
     @Override
@@ -99,45 +39,200 @@ public class UserListCell extends ListCell<Utilisateur> {
         super.updateItem(user, empty);
         if (empty || user == null) {
             setGraphic(null);
-            getStyleClass().removeAll("user-row-even", "user-row-odd");
+            setStyle("-fx-padding: 0; -fx-background-color: transparent;");
             return;
         }
 
-        int idx = getIndex();
-        getStyleClass().removeAll("user-row-even", "user-row-odd");
-        if (idx >= 0) {
-            getStyleClass().add(idx % 2 == 0 ? "user-row-even" : "user-row-odd");
-        }
+        Label avatar = new Label(user.getInitials());
+        avatar.setStyle(
+                "-fx-background-color: " + getRoleColor(user.getRole()) + "; " +
+                        "-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; " +
+                        "-fx-min-width: 44px; -fx-min-height: 44px; -fx-max-width: 44px; " +
+                        "-fx-max-height: 44px; -fx-background-radius: 22px; -fx-alignment: center;"
+        );
 
-        avatarLabel.setText(user.getInitials());
+        Label nameLabel = new Label(user.getFullName().trim());
+        nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2c3e50;");
 
-        nameLabel.setText(user.getFullName().trim());
-        emailLabel.setText(user.getEmail());
-        String created = user.getCreatedAt() != null
-                ? user.getCreatedAt().toLocalDate().toString()
-                : "—";
-        dateHintLabel.setText("Inscrit le " + created);
+        Label emailLabel = new Label(user.getEmail());
+        emailLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #7f8c8d;");
 
-        roleLabel.getStyleClass().removeIf(c -> c.startsWith("badge-"));
-        roleLabel.setText(capitalize(user.getRoleKey()));
-        roleLabel.getStyleClass().addAll("role-badge-row", "badge-" + user.getRoleKey());
+        VBox nameBox = new VBox(2, nameLabel, emailLabel);
+        nameBox.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(nameBox, Priority.ALWAYS);
 
-        statutLabel.getStyleClass().removeIf(c -> c.startsWith("statut-"));
-        String statut = user.getStatutKey() != null && !user.getStatutKey().isEmpty()
-                ? user.getStatutKey() : "—";
-        statutLabel.setText(capitalize(statut));
-        statutLabel.getStyleClass().addAll("statut-badge-row", "statut-" + statut.toLowerCase());
+        Label roleBadge = new Label(user.getRole() != null ? user.getRole().name() : "-");
+        roleBadge.setStyle(
+                "-fx-background-color: " + getRoleBgColor(user.getRole()) + "; " +
+                        "-fx-text-fill: " + getRoleColor(user.getRole()) + "; " +
+                        "-fx-background-radius: 12; -fx-padding: 3 10; -fx-font-size: 11px; " +
+                        "-fx-font-weight: bold;"
+        );
 
-        deleteBtn.setVisible(!"admin".equalsIgnoreCase(user.getRoleKey()));
+        String statutDisplay = (user.getStatutKey() != null && !user.getStatutKey().isEmpty())
+                ? user.getStatutKey().toUpperCase() : "-";
+        Label statutBadge = new Label(statutDisplay);
+        statutBadge.setStyle(
+                "-fx-background-color: " + getStatutBgColor(user.getStatut()) + "; " +
+                        "-fx-text-fill: " + getStatutColor(user.getStatut()) + "; " +
+                        "-fx-background-radius: 12; -fx-padding: 3 10; -fx-font-size: 11px;"
+        );
+
+        Button editBtn = new Button("Modifier");
+        String editStyle = "-fx-background-color: #1e3a5f; -fx-text-fill: white; -fx-background-radius: 8; " +
+                "-fx-padding: 10 24; -fx-font-weight: bold; -fx-cursor: hand; -fx-font-size: 13px;";
+        editBtn.setStyle(editStyle);
+        wirePrimaryHover(editBtn, editStyle);
+        editBtn.setOnAction(e -> {
+            if (onEditAction != null) {
+                onEditAction.accept(user);
+            }
+        });
+
+        Utilisateur currentAdmin = SessionManager.getInstance().getCurrentUser();
+        boolean canDelete = currentAdmin != null
+                && !UtilisateurRole.ADMIN.equals(user.getRole())
+                && !user.getId().equals(currentAdmin.getId());
+
+        Button deleteBtn = new Button("Supprimer");
+        deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 8; " +
+                "-fx-padding: 10 24; -fx-font-weight: bold; -fx-cursor: hand; -fx-font-size: 13px;");
+        deleteBtn.setVisible(canDelete);
+        deleteBtn.setManaged(canDelete);
+        deleteBtn.setOnAction(e -> {
+            if (showDeleteConfirmation(user)) {
+                try {
+                    utilisateurService.deleteById(user.getId());
+                    if (onRefresh != null) {
+                        onRefresh.run();
+                    }
+                } catch (Exception ex) {
+                    showErrorDialog("Impossible de supprimer l'utilisateur.", ex.getMessage());
+                }
+            }
+        });
+
+        HBox badgeBox = new HBox(8, roleBadge, statutBadge);
+        badgeBox.setAlignment(Pos.CENTER_LEFT);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox actionsBox = new HBox(8, editBtn, deleteBtn);
+        actionsBox.setAlignment(Pos.CENTER_RIGHT);
+
+        HBox row = new HBox(12, avatar, nameBox, badgeBox, spacer, actionsBox);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setStyle(
+                "-fx-background-color: white; -fx-background-radius: 10; " +
+                        "-fx-padding: 12 16; " +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 1);"
+        );
 
         setGraphic(row);
-        setStyle("-fx-padding: 0; -fx-background-color: transparent;");
+        setStyle("-fx-padding: 6 8; -fx-background-color: transparent;");
     }
 
-    private String capitalize(String s) {
-        if (s == null || s.isEmpty()) {
-            return s;
-        }
-        return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
+    private boolean showDeleteConfirmation(Utilisateur user) {
+        Dialog<Boolean> dialog = new Dialog<>();
+        dialog.setTitle("Confirmer la suppression");
+        dialog.setHeaderText(null);
+
+        VBox content = new VBox(16);
+        content.setStyle("-fx-padding: 28 32 12 32; -fx-background-color: white;");
+        content.setAlignment(Pos.CENTER);
+
+        Label icon = new Label("X");
+        icon.setStyle("-fx-font-size: 40px; -fx-text-fill: #e74c3c;");
+
+        Label title = new Label("Supprimer cet utilisateur ?");
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+
+        VBox userCard = new VBox(4);
+        userCard.setAlignment(Pos.CENTER);
+        userCard.setStyle("-fx-background-color: #fdf2f2; -fx-background-radius: 8; " +
+                "-fx-padding: 12 20; -fx-border-color: #fadbd8; " +
+                "-fx-border-radius: 8; -fx-border-width: 1;");
+
+        Label userName = new Label(user.getFullName());
+        userName.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #c0392b;");
+
+        Label userEmail = new Label(user.getEmail());
+        userEmail.setStyle("-fx-font-size: 12px; -fx-text-fill: #888;");
+
+        userCard.getChildren().addAll(userName, userEmail);
+
+        Label warning = new Label("Cette action est irreversible.");
+        warning.setStyle("-fx-text-fill: #e67e22; -fx-font-size: 12px; -fx-font-weight: bold;");
+
+        content.getChildren().addAll(icon, title, userCard, warning);
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().setStyle("-fx-background-color: white; -fx-background-radius: 12; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 16, 0, 0, 4);");
+
+        ButtonType deleteType = new ButtonType("Supprimer", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelType = new ButtonType("Annuler", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(deleteType, cancelType);
+
+        Button deleteBtn = (Button) dialog.getDialogPane().lookupButton(deleteType);
+        deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; " +
+                "-fx-background-radius: 8; -fx-padding: 8 24; -fx-font-weight: bold;");
+
+        Button cancelBtn = (Button) dialog.getDialogPane().lookupButton(cancelType);
+        cancelBtn.setStyle("-fx-background-color: #ecf0f1; -fx-text-fill: #555; " +
+                "-fx-background-radius: 8; -fx-padding: 8 24;");
+
+        dialog.setResultConverter(btn -> btn == deleteType);
+        return dialog.showAndWait().orElse(false);
+    }
+
+    private void showErrorDialog(String titleText, String message) {
+        Alert error = new Alert(Alert.AlertType.ERROR);
+        error.setTitle("Erreur");
+        error.setHeaderText(titleText);
+        error.setContentText(message);
+        error.showAndWait();
+    }
+
+    private void wirePrimaryHover(Button button, String baseStyle) {
+        String hoverStyle = baseStyle.replace("#1e3a5f", "#2c5282");
+        button.setOnMouseEntered(e -> button.setStyle(hoverStyle));
+        button.setOnMouseExited(e -> button.setStyle(baseStyle));
+    }
+
+    private String getRoleColor(UtilisateurRole role) {
+        if (role == null) return "#95a5a6";
+        return switch (role) {
+            case ADMIN -> "#8e44ad";
+            case COACH -> "#2980b9";
+            default -> "#27ae60";
+        };
+    }
+
+    private String getRoleBgColor(UtilisateurRole role) {
+        if (role == null) return "#f0f0f0";
+        return switch (role) {
+            case ADMIN -> "#f5eef8";
+            case COACH -> "#eaf4fb";
+            default -> "#eafaf1";
+        };
+    }
+
+    private String getStatutColor(UtilisateurStatut statut) {
+        if (statut == null) return "#95a5a6";
+        return switch (statut) {
+            case ACTIF -> "#27ae60";
+            case INACTIF -> "#e67e22";
+            case BANNI -> "#e74c3c";
+        };
+    }
+
+    private String getStatutBgColor(UtilisateurStatut statut) {
+        if (statut == null) return "#f0f0f0";
+        return switch (statut) {
+            case ACTIF -> "#eafaf1";
+            case INACTIF -> "#fef9e7";
+            case BANNI -> "#fdedec";
+        };
     }
 }

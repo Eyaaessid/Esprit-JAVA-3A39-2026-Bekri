@@ -1,5 +1,7 @@
 package tn.esprit.user.dao;
 
+import tn.esprit.user.entity.Admin;
+import tn.esprit.user.entity.Coach;
 import tn.esprit.user.entity.Utilisateur;
 import tn.esprit.user.enums.UtilisateurRole;
 import tn.esprit.user.enums.UtilisateurStatut;
@@ -15,7 +17,9 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class UtilisateurDao {
@@ -57,7 +61,7 @@ public class UtilisateurDao {
     }
 
     public List<Utilisateur> findAll() {
-        String sql = "SELECT * FROM utilisateur ORDER BY created_at DESC";
+        String sql = "SELECT * FROM utilisateur ORDER BY id DESC";
         try (PreparedStatement ps = cnx.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             List<Utilisateur> list = new ArrayList<>();
@@ -127,16 +131,6 @@ public class UtilisateurDao {
         }
     }
 
-    public void deleteById(Integer id) {
-        String sql = "DELETE FROM utilisateur WHERE id = ?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public boolean existsByEmail(String email) {
         String sql = "SELECT COUNT(*) FROM utilisateur WHERE email = ?";
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
@@ -161,11 +155,11 @@ public class UtilisateurDao {
         u.setMotDePasse(rs.getString("mot_de_passe"));
         String roleStr = rs.getString("role");
         if (roleStr != null && !roleStr.isBlank()) {
-            u.setRole(UtilisateurRole.valueOf(roleStr.trim().toUpperCase()));
+            u.setRole(UtilisateurRole.fromString(roleStr.trim()));
         }
         String statutStr = rs.getString("statut");
         if (statutStr != null && !statutStr.isBlank()) {
-            u.setStatut(UtilisateurStatut.valueOf(statutStr.trim().toUpperCase()));
+            u.setStatut(UtilisateurStatut.fromString(statutStr.trim()));
         }
         u.setPhotoProfil(rs.getString("avatar"));
         Timestamp ca = rs.getTimestamp("created_at");
@@ -233,6 +227,66 @@ public class UtilisateurDao {
             u.setDateNaissance(null);
         }
         return u;
+    }
+
+    public Utilisateur findByEmailWithSubtype(String email) {
+        Utilisateur user = findByEmail(email).orElse(null);
+        if (user == null || user.getRole() == null) {
+            return user;
+        }
+        return switch (user.getRole()) {
+            case ADMIN -> {
+                Admin admin = new Admin();
+                copyFields(user, admin);
+                yield admin;
+            }
+            case COACH -> {
+                Coach coach = new Coach();
+                copyFields(user, coach);
+                yield coach;
+            }
+            default -> user;
+        };
+    }
+
+    public void updateRoleAndStatus(int userId, UtilisateurRole role, UtilisateurStatut statut) {
+        String sql = "UPDATE utilisateur SET role = ?, statut = ? WHERE id = ?";
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setString(1, role != null ? role.name() : null);
+            ps.setString(2, statut != null ? statut.name() : null);
+            ps.setInt(3, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void copyFields(Utilisateur src, Utilisateur dst) {
+        dst.setId(src.getId());
+        dst.setNom(src.getNom());
+        dst.setPrenom(src.getPrenom());
+        dst.setEmail(src.getEmail());
+        dst.setMotDePasse(src.getMotDePasse());
+        dst.setRole(src.getRole());
+        dst.setStatut(src.getStatut());
+        dst.setPhotoProfil(src.getPhotoProfil());
+        dst.setCreatedAt(src.getCreatedAt());
+        dst.setUpdatedAt(src.getUpdatedAt());
+        dst.setTelephone(src.getTelephone());
+        dst.setDateNaissance(src.getDateNaissance());
+        dst.setResetToken(src.getResetToken());
+        dst.setResetTokenExpiresAt(src.getResetTokenExpiresAt());
+        dst.setVerified(src.isVerified());
+        dst.setLastLoginAt(src.getLastLoginAt());
+        dst.setFaceDescriptor(src.getFaceDescriptor());
+        dst.setFaceAuthEnabled(src.isFaceAuthEnabled());
+        dst.setFaceRegisteredAt(src.getFaceRegisteredAt());
+        dst.setFaceAuthFailedAttempts(src.getFaceAuthFailedAttempts());
+        dst.setLastFaceAuthAttemptAt(src.getLastFaceAuthAttemptAt());
+        dst.setTotpSecret(src.getTotpSecret());
+        dst.setTwoFactorEnabled(src.isTwoFactorEnabled());
+        dst.setBackupCodes(src.getBackupCodes());
+        dst.setTwoFactorEnabledAt(src.getTwoFactorEnabledAt());
     }
 
     // Reset password
@@ -333,6 +387,40 @@ public class UtilisateurDao {
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public Map<String, Integer> fetchRoleStats() {
+        Map<String, Integer> stats = new LinkedHashMap<>();
+        stats.put("total", countBySql("SELECT COALESCE(COUNT(*), 0) FROM utilisateur"));
+        stats.put("user", countBySql("SELECT COALESCE(COUNT(*), 0) FROM utilisateur WHERE UPPER(role) = 'USER'"));
+        stats.put("coach", countBySql("SELECT COALESCE(COUNT(*), 0) FROM utilisateur WHERE UPPER(role) = 'COACH'"));
+        stats.put("admin", countBySql("SELECT COALESCE(COUNT(*), 0) FROM utilisateur WHERE UPPER(role) = 'ADMIN'"));
+        return stats;
+    }
+
+    private int countBySql(String sql) {
+        try (PreparedStatement ps = cnx.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            return 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void deleteById(int userId) {
+        String sql = "DELETE FROM utilisateur WHERE id = ?";
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            int affected = ps.executeUpdate();
+            if (affected == 0) {
+                throw new RuntimeException("Aucun utilisateur supprimé — id introuvable : " + userId);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la suppression (id=" + userId + ") : " + e.getMessage(), e);
         }
     }
 }
