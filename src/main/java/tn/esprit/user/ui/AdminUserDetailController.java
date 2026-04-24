@@ -3,8 +3,6 @@ package tn.esprit.user.ui;
 import tn.esprit.user.entity.Utilisateur;
 import tn.esprit.shared.DialogHelper;
 import tn.esprit.shared.SceneManager;
-import tn.esprit.user.service.UtilisateurService;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
@@ -25,8 +23,6 @@ public class AdminUserDetailController {
     @FXML private Label createdAtLabel;
 
     private Utilisateur currentUser;
-    private final UtilisateurService utilisateurService = new UtilisateurService();
-
     public void setUser(Utilisateur user) {
         this.currentUser = user;
         populate(user);
@@ -60,36 +56,12 @@ public class AdminUserDetailController {
     @FXML
     private void handleEdit() {
         try {
-            AdminEditUserController ctrl =
+            AdminUserEditController ctrl =
                     SceneManager.switchToAndGetController("admin-edit-user");
             ctrl.setUser(currentUser);
         } catch (Exception e) {
             DialogHelper.showError("Navigation", e.getMessage());
         }
-    }
-
-    @FXML
-    private void handleDelete() {
-        if (!DialogHelper.showConfirm("Confirmer la suppression",
-                "Supprimer définitivement " + currentUser.getFullName().trim()
-                        + " ? Cette action est irréversible.")) {
-            return;
-        }
-        new Thread(() -> {
-            try {
-                utilisateurService.deleteUser(currentUser.getId());
-                Platform.runLater(() -> {
-                    try {
-                        SceneManager.switchTo("admin-users");
-                        DialogHelper.showSuccess("Succès", "Utilisateur supprimé avec succès.");
-                    } catch (Exception e) {
-                        DialogHelper.showError("Navigation", e.getMessage());
-                    }
-                });
-            } catch (Exception e) {
-                Platform.runLater(() -> DialogHelper.showError("Erreur", e.getMessage()));
-            }
-        }).start();
     }
 
     @FXML

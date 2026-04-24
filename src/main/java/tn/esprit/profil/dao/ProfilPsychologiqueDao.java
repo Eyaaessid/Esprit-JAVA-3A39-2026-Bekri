@@ -14,7 +14,10 @@ import java.util.List;
 import java.util.Optional;
 
 public class ProfilPsychologiqueDao {
-    private final Connection cnx = MyDataBase.getInstance().getCnx();
+
+    private Connection getCnx() {
+        return MyDataBase.getInstance().getCnx();
+    }
 
     public ProfilPsychologique save(ProfilPsychologique p) {
         try {
@@ -22,7 +25,7 @@ public class ProfilPsychologiqueDao {
                 String sql = "INSERT INTO profil_psychologique "
                         + "(utilisateur_id, score_global, profil_type, date_evaluation, ai_feedback) "
                         + "VALUES (?, ?, ?, NOW(), ?)";
-                try (PreparedStatement ps = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                try (PreparedStatement ps = getCnx().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                     ps.setInt(1, p.getUtilisateurId());
                     ps.setInt(2, p.getScoreGlobal());
                     ps.setString(3, p.getProfilType());
@@ -39,7 +42,7 @@ public class ProfilPsychologiqueDao {
                 String sql = "UPDATE profil_psychologique "
                         + "SET score_global=?, profil_type=?, date_evaluation=NOW(), ai_feedback=? "
                         + "WHERE id=?";
-                try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+                try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
                     ps.setInt(1, p.getScoreGlobal());
                     ps.setString(2, p.getProfilType());
                     ps.setString(3, p.getAiFeedback());
@@ -62,7 +65,7 @@ public class ProfilPsychologiqueDao {
 
     private Optional<ProfilPsychologique> findById(Integer id) {
         String sql = "SELECT * FROM profil_psychologique WHERE id = ?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -78,7 +81,7 @@ public class ProfilPsychologiqueDao {
     public Optional<ProfilPsychologique> findByUtilisateurId(Integer utilisateurId) {
         String sql = "SELECT * FROM profil_psychologique WHERE utilisateur_id = ? "
                 + "ORDER BY date_evaluation DESC LIMIT 1";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setInt(1, utilisateurId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -93,7 +96,7 @@ public class ProfilPsychologiqueDao {
 
     public List<ProfilPsychologique> findAll() {
         String sql = "SELECT * FROM profil_psychologique ORDER BY date_evaluation DESC";
-        try (PreparedStatement ps = cnx.prepareStatement(sql);
+        try (PreparedStatement ps = getCnx().prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             List<ProfilPsychologique> list = new ArrayList<>();
             while (rs.next()) {

@@ -1,11 +1,9 @@
-<<<<<<< HEAD
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
 .apt_generated
 .classpath
 .factorypath
@@ -14,13 +12,12 @@ target/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
+out/
 
-### NetBeans ###
 /nbproject/private/
 /nbbuild/
 /dist/
@@ -30,24 +27,11 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
 .vscode/
-=======
-# Maven
-target/
-!.mvn/wrapper/maven-wrapper.jar
 
-# IntelliJ
-.idea/
-*.iml
-*.iws
-out/
-
-# Spring Boot
 application-local.properties
 .env
-
-# OS
 .DS_Store
 Thumbs.db
->>>>>>> 6a7a515 (feat: initial Spring Boot project setup - module auth/users)
+
+src/main/resources/config.properties

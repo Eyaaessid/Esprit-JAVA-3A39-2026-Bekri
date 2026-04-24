@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.web.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.esprit.faceauth.ui.FaceRegisterController"
+      spacing="16" style="-fx-padding: 24; -fx-background-color: #f8f9fa;">
+
+  <!-- Header -->
+  <HBox alignment="CENTER_LEFT" spacing="16">
+    <Button text="← Retour" onAction="#handleBack"
+            style="-fx-background-color: white; -fx-border-color: #dee2e6;
+                   -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8 16;"/>
+    <Label text="Enregistrement du visage"
+           style="-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
+  </HBox>
+
+  <!-- Status label -->
+  <Label fx:id="statusLabel" text="Chargement des modèles de détection..."
+         wrapText="true"
+         style="-fx-text-fill: #666; -fx-font-size: 13;"/>
+
+  <!-- Camera preview — JavaFX ImageView, NOT WebView -->
+  <ImageView fx:id="cameraView"
+             fitWidth="640" fitHeight="400"
+             preserveRatio="true"
+             style="-fx-background-color: black; -fx-border-color: #333;
+                    -fx-border-radius: 8;"/>
+
+  <!-- Buttons -->
+  <HBox spacing="12" alignment="CENTER_LEFT">
+    <Button fx:id="captureBtn" text="Capturer" onAction="#handleCapture"
+            disable="true"
+            style="-fx-background-color: #4dabf7; -fx-text-fill: white;
+                   -fx-background-radius: 8; -fx-padding: 10 24; -fx-font-size: 14;"/>
+    <Button fx:id="registerBtn" text="Enregistrer mon visage" onAction="#handleRegister"
+            disable="true"
+            style="-fx-background-color: #51cf66; -fx-text-fill: white;
+                   -fx-background-radius: 8; -fx-padding: 10 24; -fx-font-size: 14;"/>
+    <Button fx:id="disableBtn" text="Désactiver" onAction="#handleDisable"
+            visible="false"
+            style="-fx-background-color: #ff6b6b; -fx-text-fill: white;
+                   -fx-background-radius: 8; -fx-padding: 10 24; -fx-font-size: 14;"/>
+  </HBox>
+
+  <!-- Hidden WebView — only for face-api.js processing, never shown to user -->
+  <WebView fx:id="webView" maxWidth="1" maxHeight="1"
+           prefWidth="1" prefHeight="1"
+           style="-fx-opacity: 0;"/>
+
+</VBox>

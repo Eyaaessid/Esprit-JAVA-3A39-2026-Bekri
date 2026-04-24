@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.user.ui.TwoFactorBackupCodesController"
+            prefWidth="820" prefHeight="620">
+    <center>
+        <VBox spacing="14" maxWidth="620" styleClass="card">
+            <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+            <Label text="Codes de secours 2FA" styleClass="section-title"/>
+            <Label text="Enregistrez ces codes immédiatement — ils ne seront plus affichés."
+                   style="-fx-text-fill: #b42318; -fx-font-weight: bold;"/>
+            <Separator/>
+            <VBox fx:id="codesContainer" spacing="6"/>
+            <Separator/>
+            <HBox spacing="10">
+                <Button text="Copier tous les codes" styleClass="btn-secondary" onAction="#handleCopyAll"/>
+                <Button fx:id="downloadButton" text="Télécharger les codes" styleClass="btn-secondary" onAction="#handleDownload"/>
+                <Button text="J'ai sauvegardé mes codes" styleClass="btn-primary" onAction="#handleSaved"/>
+            </HBox>
+            <Label fx:id="statusLabel"/>
+        </VBox>
+    </center>
+</BorderPane>

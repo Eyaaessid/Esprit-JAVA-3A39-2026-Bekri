@@ -24,6 +24,11 @@ public final class SceneManager {
         Map<String, String> m = new LinkedHashMap<>();
         m.put("login", "/fxml/login.fxml");
         m.put("register", "/fxml/register.fxml");
+        m.put("forgot-password", "/fxml/forgot_password.fxml");
+        m.put("reset-password", "/fxml/reset_password.fxml");
+        m.put("email-verification", "/fxml/email_verification.fxml");
+        m.put("face-login", "/fxml/face_login.fxml");
+        m.put("face-register", "/fxml/face_register.fxml");
         m.put("user-dashboard", "/fxml/user-dashboard.fxml");
         m.put("admin-dashboard", "/fxml/admin-dashboard.fxml");
         m.put("objectifs", "/fxml/objectifs.fxml");
@@ -38,6 +43,14 @@ public final class SceneManager {
         m.put("admin-edit-user", "/fxml/admin-edit-user.fxml");
         m.put("test", "/fxml/test.fxml");
         m.put("profil-psychologique", "/fxml/profil-psychologique.fxml");
+        m.put("suivi-today", "/fxml/suivi_today.fxml");
+        m.put("weekly-insight", "/fxml/weekly-insight.fxml");
+        m.put("plan-weekly", "/fxml/plan-weekly.fxml");
+        m.put("chat-coach", "/fxml/chat-coach.fxml");
+        m.put("two-factor-setup", "/fxml/TwoFactorSetup.fxml");
+        m.put("two-factor-disable", "/fxml/TwoFactorDisable.fxml");
+        m.put("two-factor-backup-codes", "/fxml/TwoFactorBackupCodes.fxml");
+        m.put("two-factor-login", "/fxml/TwoFactorLogin.fxml");
         SCENES = Collections.unmodifiableMap(m);
     }
 

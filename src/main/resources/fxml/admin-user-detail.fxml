@@ -26,16 +26,12 @@
             <HBox spacing="28" alignment="TOP_LEFT">
                 <VBox.margin><Insets top="28"/></VBox.margin>
 
-                <!-- LEFT: avatar card + delete -->
+                <!-- LEFT: avatar card -->
                 <VBox styleClass="avatar-card" alignment="CENTER" spacing="12" minWidth="180">
                     <Label fx:id="avatarLabel" text="—" styleClass="avatar-big"/>
                     <Label fx:id="nameCard" text="" styleClass="profil-key"/>
                     <Label fx:id="roleCard" text="" styleClass="role-badge"/>
                     <Label fx:id="statutCard" text="" styleClass="statut-badge"/>
-                    <Button text="🗑  Supprimer l'utilisateur" styleClass="btn-danger"
-                            onAction="#handleDelete" maxWidth="Infinity">
-                        <VBox.margin><Insets top="12"/></VBox.margin>
-                    </Button>
                 </VBox>
 
                 <!-- RIGHT: info card -->

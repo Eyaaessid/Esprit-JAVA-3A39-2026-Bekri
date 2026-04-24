@@ -20,6 +20,29 @@ public class Utilisateur {
     private String telephone;
     private LocalDate dateNaissance;
 
+    // Reset password + email verification.
+    // Convention (shared DB with Symfony): `reset_token` is dual-purpose.
+    // - If `is_verified = 0`, it is used as a verification token.
+    // - If `is_verified = 1`, it is used as a password reset token.
+    // Token is always cleared after use.
+    private String resetToken;                  // column: reset_token
+    private LocalDateTime resetTokenExpiresAt;  // column: reset_token_expires_at
+    private boolean isVerified;                 // column: is_verified
+    private LocalDateTime lastLoginAt;          // column: last_login_at
+
+    // Face authentication (shared with Symfony / face-api.js)
+    private String faceDescriptor;              // column: face_descriptor (JSON string)
+    private boolean faceAuthEnabled;            // column: face_auth_enabled
+    private LocalDateTime faceRegisteredAt;     // column: face_registered_at
+    private int faceAuthFailedAttempts;         // column: face_auth_failed_attempts
+    private LocalDateTime lastFaceAuthAttemptAt;// column: last_face_auth_attempt_at
+
+    // Two-Factor Authentication
+    private String totpSecret;                  // column: totp_secret
+    private boolean isTwoFactorEnabled;         // column: is_two_factor_enabled
+    private String backupCodes;                 // column: backup_codes (JSON string)
+    private LocalDateTime twoFactorEnabledAt;   // column: two_factor_enabled_at
+
     public Utilisateur() {}
 
     public Utilisateur(Integer id, String nom, String prenom, String email, String motDePasse,
@@ -75,6 +98,53 @@ public class Utilisateur {
 
     public LocalDate getDateNaissance() { return dateNaissance; }
     public void setDateNaissance(LocalDate dateNaissance) { this.dateNaissance = dateNaissance; }
+
+    public String getResetToken() { return resetToken; }
+    public void setResetToken(String resetToken) { this.resetToken = resetToken; }
+
+    public LocalDateTime getResetTokenExpiresAt() { return resetTokenExpiresAt; }
+    public void setResetTokenExpiresAt(LocalDateTime resetTokenExpiresAt) { this.resetTokenExpiresAt = resetTokenExpiresAt; }
+
+    public boolean isVerified() { return isVerified; }
+    public void setVerified(boolean verified) { isVerified = verified; }
+
+    public LocalDateTime getLastLoginAt() { return lastLoginAt; }
+    public void setLastLoginAt(LocalDateTime lastLoginAt) { this.lastLoginAt = lastLoginAt; }
+
+    public String getFaceDescriptor() { return faceDescriptor; }
+    public void setFaceDescriptor(String faceDescriptor) { this.faceDescriptor = faceDescriptor; }
+
+    public boolean isFaceAuthEnabled() { return faceAuthEnabled; }
+    public void setFaceAuthEnabled(boolean faceAuthEnabled) { this.faceAuthEnabled = faceAuthEnabled; }
+
+    public LocalDateTime getFaceRegisteredAt() { return faceRegisteredAt; }
+    public void setFaceRegisteredAt(LocalDateTime faceRegisteredAt) { this.faceRegisteredAt = faceRegisteredAt; }
+
+    public int getFaceAuthFailedAttempts() { return faceAuthFailedAttempts; }
+    public void setFaceAuthFailedAttempts(int faceAuthFailedAttempts) { this.faceAuthFailedAttempts = faceAuthFailedAttempts; }
+
+    public LocalDateTime getLastFaceAuthAttemptAt() { return lastFaceAuthAttemptAt; }
+    public void setLastFaceAuthAttemptAt(LocalDateTime lastFaceAuthAttemptAt) { this.lastFaceAuthAttemptAt = lastFaceAuthAttemptAt; }
+
+    public String getTotpSecret() { return totpSecret; }
+    public void setTotpSecret(String totpSecret) { this.totpSecret = totpSecret; }
+
+    public boolean isTwoFactorEnabled() { return isTwoFactorEnabled; }
+    public void setTwoFactorEnabled(boolean twoFactorEnabled) { isTwoFactorEnabled = twoFactorEnabled; }
+
+    public String getBackupCodes() { return backupCodes; }
+    public void setBackupCodes(String backupCodes) { this.backupCodes = backupCodes; }
+
+    public LocalDateTime getTwoFactorEnabledAt() { return twoFactorEnabledAt; }
+    public void setTwoFactorEnabledAt(LocalDateTime twoFactorEnabledAt) { this.twoFactorEnabledAt = twoFactorEnabledAt; }
+
+    /** Clears all 2FA data (used when disabling). */
+    public void resetTwoFactorAuth() {
+        this.totpSecret = null;
+        this.isTwoFactorEnabled = false;
+        this.backupCodes = null;
+        this.twoFactorEnabledAt = null;
+    }
 
     /** Lowercase key for CSS (user, admin, coach). */
     public String getRoleKey() {

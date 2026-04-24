@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.suivi.ui.WeeklyInsightController"
+            prefWidth="1200" prefHeight="720"
+            styleClass="sym-root">
+
+    <!-- Sidebar -->
+    <left>
+        <VBox prefWidth="300" styleClass="sym-sidebar">
+            <!-- teal header -->
+            <HBox styleClass="sym-sidebar-header" alignment="CENTER_LEFT" spacing="14">
+                <Label text="B" styleClass="sym-avatar"/>
+                <Label text="bekri" styleClass="sym-brand"/>
+            </HBox>
+
+            <VBox styleClass="sym-nav" spacing="6">
+                <Button text="Accueil" styleClass="sym-nav-item" onAction="#handleBack"/>
+                <Button text="Mon profil" styleClass="sym-nav-item" onAction="#handleBack"/>
+                <Button text="Mes objectifs" styleClass="sym-nav-item" onAction="#handleBack"/>
+                <Button text="Mes suivis" styleClass="sym-nav-item" onAction="#handleCheckIn"/>
+                <Button text="Tests mentaux" styleClass="sym-nav-item" onAction="#handleBack"/>
+                <Button text="Posts" styleClass="sym-nav-item" onAction="#handleBack"/>
+                <Button text="Événements" styleClass="sym-nav-item" onAction="#handleBack"/>
+            </VBox>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <HBox styleClass="sym-sidebar-footer" alignment="CENTER_LEFT">
+                <Label text="Déconnexion" styleClass="sym-logout"/>
+            </HBox>
+        </VBox>
+    </left>
+
+    <!-- Main -->
+    <center>
+        <BorderPane styleClass="sym-main">
+
+            <!-- Topbar -->
+            <top>
+                <HBox styleClass="sym-topbar" alignment="CENTER_LEFT">
+                    <Label text="Résumé des 7 derniers jours" styleClass="sym-topbar-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="periodLabel" text="Période" styleClass="sym-topbar-period"/>
+                </HBox>
+            </top>
+
+            <!-- Content -->
+            <center>
+                <ScrollPane fx:id="rootScroll" fitToWidth="true" styleClass="sym-scroll">
+                    <content>
+                        <VBox spacing="26" styleClass="sym-content">
+                            <padding><Insets top="22" right="26" bottom="28" left="26"/></padding>
+
+                            <!-- Empty state -->
+                            <VBox fx:id="emptyStateBox" visible="false" managed="false" spacing="10" styleClass="sym-empty">
+                                <Label text="Aucune donnée disponible" styleClass="sym-empty-title"/>
+                                <Label text="Vous n'avez pas encore rempli de check-in cette semaine. Commencez dès aujourd'hui !"
+                                       wrapText="true" styleClass="sym-empty-text"/>
+                                <Button text="Faire mon check-in aujourd'hui" onAction="#handleCheckIn" styleClass="sym-btn sym-btn-teal"/>
+                            </VBox>
+
+                            <!-- All content -->
+                            <VBox fx:id="contentSections" spacing="26">
+
+                                <!-- Stat cards -->
+                                <HBox spacing="18" alignment="CENTER">
+                                    <VBox styleClass="sym-stat-card" spacing="10" HBox.hgrow="ALWAYS">
+                                        <Label text="Jours complétés" styleClass="sym-stat-label"/>
+                                        <Label fx:id="daysFilledLabel" text="0 / 7" styleClass="sym-stat-value sym-stat-value-teal"/>
+                                    </VBox>
+
+                                    <VBox styleClass="sym-stat-card" spacing="10" HBox.hgrow="ALWAYS">
+                                        <Label text="Meilleur jour" styleClass="sym-stat-label"/>
+                                        <Label fx:id="bestDayLabel" text="—" styleClass="sym-stat-value sym-stat-value-green"/>
+                                    </VBox>
+
+                                    <VBox styleClass="sym-stat-card" spacing="10" HBox.hgrow="ALWAYS">
+                                        <Label text="Jour le plus difficile" styleClass="sym-stat-label"/>
+                                        <Label fx:id="worstDayLabel" text="—" styleClass="sym-stat-value sym-stat-value-red"/>
+                                    </VBox>
+
+                                    <VBox styleClass="sym-stat-card" spacing="10" HBox.hgrow="ALWAYS">
+                                        <Label text="Score moyen global" styleClass="sym-stat-label"/>
+                                        <Label fx:id="globalAvgLabel" text="0.0" styleClass="sym-stat-value sym-stat-value-teal"/>
+                                    </VBox>
+                                </HBox>
+
+                                <!-- Recommendations panel -->
+                                <VBox styleClass="sym-reco-panel" spacing="18">
+                                    <HBox spacing="12" alignment="CENTER_LEFT">
+                                        <Label text="💡" styleClass="sym-reco-icon"/>
+                                        <Label text="Recommandations personnalisées" styleClass="sym-reco-title"/>
+                                    </HBox>
+
+                                    <!-- Keep using existing HBox fx:id so controller can populate -->
+                                    <HBox fx:id="recommendationBox" spacing="18"/>
+                                </VBox>
+
+                                <!-- Charts row (like screenshot) -->
+                                <HBox spacing="22">
+                                    <VBox styleClass="sym-card" spacing="12" HBox.hgrow="ALWAYS">
+                                        <Label text="Progression globale" styleClass="sym-card-title"/>
+                                        <StackPane styleClass="sym-donut-wrap">
+                                            <PieChart fx:id="globalPieChart" legendVisible="false" labelsVisible="false" styleClass="sym-donut"/>
+                                            <Label fx:id="donutCenterLabel" text="0/7" styleClass="sym-donut-center"/>
+                                        </StackPane>
+                                    </VBox>
+
+                                    <VBox styleClass="sym-card" spacing="12" HBox.hgrow="ALWAYS">
+                                        <Label text="Scores par catégorie" styleClass="sym-card-title"/>
+                                        <BarChart fx:id="categoryBarChart" animated="false">
+                                            <xAxis><CategoryAxis/></xAxis>
+                                            <yAxis><NumberAxis lowerBound="0" upperBound="100" autoRanging="false"/></yAxis>
+                                        </BarChart>
+                                    </VBox>
+                                </HBox>
+
+                                <!-- Mood chart full width -->
+                                <VBox styleClass="sym-card" spacing="12">
+                                    <Label text="Évolution de l'humeur" styleClass="sym-card-title"/>
+                                    <LineChart fx:id="humeurLineChart" createSymbols="true" animated="false">
+                                        <xAxis><CategoryAxis/></xAxis>
+                                        <yAxis><NumberAxis lowerBound="0" upperBound="100" autoRanging="false"/></yAxis>
+                                    </LineChart>
+                                </VBox>
+
+                                <!-- Trends & highlights -->
+                                <HBox spacing="22">
+                                    <VBox styleClass="sym-card" spacing="12" HBox.hgrow="ALWAYS">
+                                        <Label text="Tendances observées" styleClass="sym-card-title"/>
+                                        <VBox spacing="10">
+                                            <!-- minimal placeholder; you can expand later -->
+                                            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="sym-trend-row">
+                                                <Label text="Humeur" styleClass="sym-trend-label"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Label text="En déclin" styleClass="sym-trend-badge sym-trend-down"/>
+                                            </HBox>
+                                        </VBox>
+                                    </VBox>
+
+                                    <VBox styleClass="sym-card" spacing="12" HBox.hgrow="ALWAYS">
+                                        <Label text="Points forts et à améliorer" styleClass="sym-card-title"/>
+                                        <VBox spacing="12">
+                                            <VBox styleClass="sym-highlight sym-highlight-green" spacing="8">
+                                                <Label text="Meilleur jour" styleClass="sym-highlight-title sym-highlight-title-green"/>
+                                                <Label fx:id="bestHighlightLabel" text="—" wrapText="true" styleClass="sym-highlight-text"/>
+                                            </VBox>
+
+                                            <VBox styleClass="sym-highlight sym-highlight-red" spacing="8">
+                                                <Label text="Jour le plus difficile" styleClass="sym-highlight-title sym-highlight-title-red"/>
+                                                <Label fx:id="worstHighlightLabel" text="—" wrapText="true" styleClass="sym-highlight-text"/>
+                                            </VBox>
+                                        </VBox>
+                                    </VBox>
+                                </HBox>
+
+                                <!-- Encouragement -->
+                                <VBox styleClass="sym-encourage" spacing="18">
+                                    <Label text="Continuez sur cette lancée !" styleClass="sym-encourage-title"/>
+                                    <Label fx:id="encouragementLabel"
+                                           text="Message"
+                                           wrapText="true"
+                                           styleClass="sym-encourage-text"/>
+                                    <Button text="Faire mon check-in aujourd'hui" onAction="#handleCheckIn" styleClass="sym-btn sym-btn-teal-wide"/>
+                                    <HBox spacing="12" alignment="CENTER">
+                                        <Button text="Télécharger PDF" onAction="#handleExportPdf" styleClass="sym-btn sym-btn-outline"/>
+                                        <Button text="Retour" onAction="#handleBack" styleClass="sym-btn sym-btn-ghost"/>
+                                    </HBox>
+                                </VBox>
+
+                            </VBox>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </center>
+        </BorderPane>
+    </center>
+</BorderPane>

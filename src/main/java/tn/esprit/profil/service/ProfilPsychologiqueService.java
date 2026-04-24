@@ -26,4 +26,12 @@ public class ProfilPsychologiqueService {
     public List<ProfilPsychologique> getAllProfils() {
         return dao.findAll();
     }
+
+    public ProfilPsychologique updateAiFeedback(Integer utilisateurId, String newFeedback) {
+        Optional<ProfilPsychologique> opt = dao.findByUtilisateurId(utilisateurId);
+        if (opt.isEmpty()) throw new RuntimeException("Profil introuvable");
+        ProfilPsychologique p = opt.get();
+        p.setAiFeedback(newFeedback);
+        return dao.save(p);
+    }
 }

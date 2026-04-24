@@ -14,11 +14,14 @@ import java.util.List;
 import java.util.Optional;
 
 public class ObjectifBienEtreDao {
-    private final Connection cnx = MyDataBase.getInstance().getCnx();
+
+    private Connection getCnx() {
+        return MyDataBase.getInstance().getCnx();
+    }
 
     public List<ObjectifBienEtre> findByUtilisateurId(Integer utilisateurId) {
         String sql = "SELECT * FROM objectif_bien_etre WHERE utilisateur_id = ?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setInt(1, utilisateurId);
             try (ResultSet rs = ps.executeQuery()) {
                 List<ObjectifBienEtre> list = new ArrayList<>();
@@ -34,7 +37,7 @@ public class ObjectifBienEtreDao {
 
     public Optional<ObjectifBienEtre> findById(Integer id) {
         String sql = "SELECT * FROM objectif_bien_etre WHERE id = ?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -54,7 +57,7 @@ public class ObjectifBienEtreDao {
                         + "(titre, description, type, valeur_cible, valeur_actuelle, "
                         + "date_debut, date_fin, statut, created_at, utilisateur_id, slug) "
                         + "VALUES (?,?,?,?,?,?,?,?,NOW(),?,?)";
-                try (PreparedStatement ps = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                try (PreparedStatement ps = getCnx().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                     ps.setString(1, o.getTitre());
                     ps.setString(2, o.getDescription());
                     ps.setString(3, o.getType());
@@ -84,7 +87,7 @@ public class ObjectifBienEtreDao {
                     + "valeur_actuelle=?, date_debut=?, date_fin=?, "
                     + "statut=?, updated_at=NOW(), utilisateur_id=?, slug=? "
                     + "WHERE id=?";
-            try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
                 ps.setString(1, o.getTitre());
                 ps.setString(2, o.getDescription());
                 ps.setString(3, o.getType());
@@ -110,7 +113,7 @@ public class ObjectifBienEtreDao {
 
     public boolean existsById(Integer id) {
         String sql = "SELECT COUNT(*) FROM objectif_bien_etre WHERE id = ?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -125,7 +128,7 @@ public class ObjectifBienEtreDao {
 
     public void deleteById(Integer id) {
         String sql = "DELETE FROM objectif_bien_etre WHERE id = ?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
         } catch (SQLException e) {

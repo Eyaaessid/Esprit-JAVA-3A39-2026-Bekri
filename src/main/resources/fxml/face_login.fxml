@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.web.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.esprit.faceauth.ui.FaceLoginController"
+      spacing="16" style="-fx-padding: 24; -fx-background-color: #f8f9fa;">
+
+  <Label text="Connexion par reconnaissance faciale"
+         style="-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
+  <Label text="Entrez votre email puis cliquez Capturer."
+         style="-fx-text-fill: #666; -fx-font-size: 13;"/>
+
+  <TextField fx:id="emailField" promptText="votre@email.com"
+             style="-fx-background-radius: 8; -fx-border-radius: 8;
+                    -fx-padding: 10; -fx-font-size: 14;"/>
+
+  <Label fx:id="statusLabel" text="Chargement..."
+         wrapText="true"
+         style="-fx-text-fill: #666; -fx-font-size: 13;"/>
+
+  <!-- Live camera preview via JavaFX ImageView -->
+  <ImageView fx:id="cameraView"
+             fitWidth="640" fitHeight="380"
+             preserveRatio="true"/>
+
+  <HBox spacing="12" alignment="CENTER_LEFT">
+    <Button fx:id="captureBtn" text="Capturer" onAction="#handleCapture"
+            disable="true"
+            style="-fx-background-color: #4dabf7; -fx-text-fill: white;
+                   -fx-background-radius: 8; -fx-padding: 10 24; -fx-font-size: 14;"/>
+    <Button fx:id="loginBtn" text="Se connecter" onAction="#handleLogin"
+            disable="true"
+            style="-fx-background-color: #1a1a2e; -fx-text-fill: white;
+                   -fx-background-radius: 8; -fx-padding: 10 24; -fx-font-size: 14;"/>
+    <Hyperlink text="← Connexion classique" onAction="#handleBack"/>
+  </HBox>
+
+  <!-- Hidden WebView for face-api.js only -->
+  <WebView fx:id="webView" maxWidth="1" maxHeight="1"
+           prefWidth="1" prefHeight="1"
+           style="-fx-opacity: 0;"/>
+
+</VBox>

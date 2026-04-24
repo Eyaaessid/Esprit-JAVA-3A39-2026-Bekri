@@ -15,11 +15,13 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class AdminUsersController implements Initializable {
@@ -33,8 +35,11 @@ public class AdminUsersController implements Initializable {
     @FXML private Label coachsLabel;
     @FXML private Label adminsLabel;
     @FXML private Label resultCountLabel;
+    @FXML private Label emptyStateLabel;
 
     private final ObservableList<Utilisateur> userItems = FXCollections.observableArrayList();
+
+    // Shared service instance — passed into each cell so the same connection is used.
     private final UtilisateurService utilisateurService = new UtilisateurService();
 
     @Override
@@ -45,13 +50,14 @@ public class AdminUsersController implements Initializable {
                 "", "actif", "bloque", "inactif", "supprime"));
 
         usersListView.setItems(userItems);
+        // Pass the shared service + a refresh runnable so delete reloads from DB
         usersListView.setCellFactory(lv -> new UserListCell(
-                this::handleView,
                 this::handleEdit,
-                this::handleDelete
+                utilisateurService,
+                this::refreshList
         ));
         usersListView.setMinHeight(0);
-        usersListView.setFixedCellSize(88);
+        usersListView.setFixedCellSize(Region.USE_COMPUTED_SIZE);
         VBox.setVgrow(usersListView, Priority.ALWAYS);
 
         searchField.setOnAction(e -> handleSearch());
@@ -68,13 +74,18 @@ public class AdminUsersController implements Initializable {
         }
     }
 
+    // ── Data loading ────────────────────────────────────────────────────────
+
     private void loadUsers(String search, String role, String statut) {
         new Thread(() -> {
             try {
                 List<Utilisateur> users = utilisateurService.findUtilisateursFiltered(search, role, statut);
+                Map<String, Integer> stats = utilisateurService.getRoleStats();
                 Platform.runLater(() -> {
                     userItems.setAll(users);
-                    applyStatsFromCurrentList();
+                    applyStatsFromDb(stats);
+                    resultCountLabel.setText(users.size() + " résultat" + (users.size() > 1 ? "s" : ""));
+                    showEmptyState(users.isEmpty());
                 });
             } catch (Exception e) {
                 Platform.runLater(() -> DialogHelper.showError("Erreur", e.getMessage()));
@@ -82,26 +93,39 @@ public class AdminUsersController implements Initializable {
         }).start();
     }
 
-    private void applyStatsFromCurrentList() {
-        List<Utilisateur> users = List.copyOf(userItems);
-        resultCountLabel.setText(users.size() + " résultat" + (users.size() > 1 ? "s" : ""));
-        long membres = users.stream().filter(u -> "user".equalsIgnoreCase(u.getRoleKey())).count();
-        long coachs = users.stream().filter(u -> "coach".equalsIgnoreCase(u.getRoleKey())).count();
-        long admins = users.stream().filter(u -> "admin".equalsIgnoreCase(u.getRoleKey())).count();
-        totalLabel.setText(String.valueOf(users.size()));
-        membresLabel.setText(String.valueOf(membres));
-        coachsLabel.setText(String.valueOf(coachs));
-        adminsLabel.setText(String.valueOf(admins));
+    /**
+     * Full reload from DB — called after delete and after edit-save to keep the
+     * list in sync with the actual database state.
+     */
+    public void refreshList() {
+        // Preserve current filter state when refreshing
+        String search = searchField.getText().trim();
+        String role   = roleFilter.getValue();
+        String statut = statutFilter.getValue();
+        loadUsers(
+                search.isEmpty() ? null : search,
+                (role   == null || role.isEmpty())   ? null : role,
+                (statut == null || statut.isEmpty()) ? null : statut
+        );
     }
+
+    private void applyStatsFromDb(Map<String, Integer> stats) {
+        totalLabel.setText(String.valueOf(stats.getOrDefault("total", 0)));
+        membresLabel.setText(String.valueOf(stats.getOrDefault("user", 0)));
+        coachsLabel.setText(String.valueOf(stats.getOrDefault("coach", 0)));
+        adminsLabel.setText(String.valueOf(stats.getOrDefault("admin", 0)));
+    }
+
+    // ── Handlers ────────────────────────────────────────────────────────────
 
     @FXML
     private void handleSearch() {
         String search = searchField.getText().trim();
-        String role = roleFilter.getValue();
+        String role   = roleFilter.getValue();
         String statut = statutFilter.getValue();
         loadUsers(
                 search.isEmpty() ? null : search,
-                (role == null || role.isEmpty()) ? null : role,
+                (role   == null || role.isEmpty())   ? null : role,
                 (statut == null || statut.isEmpty()) ? null : statut
         );
     }
@@ -114,52 +138,24 @@ public class AdminUsersController implements Initializable {
         loadUsers(null, null, null);
     }
 
-    @FXML
-    private void handleAdd() {
-        try {
-            SceneManager.switchTo("admin-add-user");
-        } catch (Exception e) {
-            DialogHelper.showError("Navigation", "Erreur de navigation : " + e.getMessage());
-        }
-    }
-
-    private void handleView(Utilisateur user) {
-        try {
-            AdminUserDetailController ctrl =
-                    SceneManager.switchToAndGetController("admin-user-detail");
-            ctrl.setUser(user);
-        } catch (Exception e) {
-            DialogHelper.showError("Navigation", e.getMessage());
-        }
-    }
-
     private void handleEdit(Utilisateur user) {
         try {
-            AdminEditUserController ctrl =
+            AdminUserEditController ctrl =
                     SceneManager.switchToAndGetController("admin-edit-user");
             ctrl.setUser(user);
+            // When the edit dialog saves and closes, refresh this list
+            ctrl.setOnSuccess(this::refreshList);
         } catch (Exception e) {
             DialogHelper.showError("Navigation", e.getMessage());
         }
     }
 
-    private void handleDelete(Utilisateur user) {
-        if (!DialogHelper.showConfirm("Confirmer la suppression",
-                "Supprimer définitivement " + user.getFullName().trim()
-                        + " ? Cette action est irréversible.")) {
-            return;
+    private void showEmptyState(boolean show) {
+        if (emptyStateLabel != null) {
+            emptyStateLabel.setVisible(show);
+            emptyStateLabel.setManaged(show);
         }
-        new Thread(() -> {
-            try {
-                utilisateurService.deleteUser(user.getId());
-                Platform.runLater(() -> {
-                    userItems.remove(user);
-                    applyStatsFromCurrentList();
-                    DialogHelper.showSuccess("Succès", "Utilisateur supprimé avec succès.");
-                });
-            } catch (Exception e) {
-                Platform.runLater(() -> DialogHelper.showError("Erreur", e.getMessage()));
-            }
-        }).start();
+        usersListView.setVisible(!show);
+        usersListView.setManaged(!show);
     }
 }

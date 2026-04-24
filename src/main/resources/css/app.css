@@ -665,3 +665,80 @@
 .hyperlink:hover {
     -fx-text-fill: #0F4674;
 }
+
+/* ════════════════════════════════
+   ADMIN — USER LIST CELLS
+════════════════════════════════ */
+
+/* Make the ListView background transparent so white card cells show cleanly */
+.list-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 4 8;
+    -fx-border-color: transparent;
+}
+
+.list-view .list-cell:filled:hover {
+    -fx-background-color: transparent;
+}
+
+.list-view .list-cell:filled:selected,
+.list-view .list-cell:filled:selected:hover {
+    -fx-background-color: transparent;
+}
+
+/* Keep old CSS-class names used by any surviving code */
+.list-avatar {
+    -fx-background-radius: 22px;
+    -fx-alignment: center;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.list-name {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-text-fill: #2c3e50;
+}
+
+.list-email {
+    -fx-font-size: 12px;
+    -fx-text-fill: #7f8c8d;
+}
+
+.list-sub {
+    -fx-font-size: 10px;
+    -fx-text-fill: #95a5a6;
+}
+
+.icon-btn-edit {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-background-radius: 7;
+    -fx-padding: 6 14;
+    -fx-cursor: hand;
+    -fx-font-size: 12px;
+}
+
+.icon-btn-edit:hover {
+    -fx-background-color: #2980b9;
+}
+
+.icon-btn-delete {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-background-radius: 7;
+    -fx-padding: 6 14;
+    -fx-cursor: hand;
+    -fx-font-size: 12px;
+}
+
+.icon-btn-delete:hover {
+    -fx-background-color: #c0392b;
+}

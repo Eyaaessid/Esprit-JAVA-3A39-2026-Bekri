@@ -14,15 +14,23 @@
                 <Label text="bekri" styleClass="sidebar-logo"/>
                 <Label text="Bien-être &amp; Objectifs" styleClass="sidebar-logo-sub"/>
             </VBox>
+
             <VBox styleClass="sidebar-nav-box" spacing="0">
                 <Label text="MENU" styleClass="sidebar-section-label"/>
+
                 <Button text="🏠  Accueil" styleClass="sidebar-btn sidebar-btn-active"/>
-                <Button text="🎯  Mes Objectifs" styleClass="sidebar-btn" onAction="#handleObjectifs"/>
+                <Button text="🎯  Mes Objectifs"      styleClass="sidebar-btn" onAction="#handleObjectifs"/>
+                <Button text="✅  Daily Check-in"     styleClass="sidebar-btn" onAction="#handleDailyCheckIn"/>
+                <Button text="📅  Plan de la semaine" styleClass="sidebar-btn" onAction="#handleWeekPlan"/>
+                <Button text="📈  Weekly Insights"    styleClass="sidebar-btn" onAction="#handleWeeklyInsights"/>
+                <Button text="🤖  Chatbot"            styleClass="sidebar-btn" onAction="#handleChatBot"/>
                 <Button text="🧠  Test Psychologique" styleClass="sidebar-btn" onAction="#handleTest"/>
-                <Button text="📊  Mon Profil Psy" styleClass="sidebar-btn" onAction="#handleProfilPsy"/>
-                <Button text="👤  Mon Profil" styleClass="sidebar-btn" onAction="#handleProfil"/>
+                <Button text="📊  Mon Profil Psy"     styleClass="sidebar-btn" onAction="#handleProfilPsy"/>
+                <Button text="👤  Mon Profil"         styleClass="sidebar-btn" onAction="#handleProfil"/>
             </VBox>
+
             <Region VBox.vgrow="ALWAYS"/>
+
             <VBox styleClass="sidebar-divider">
                 <Button text="⎋  Déconnexion" styleClass="sidebar-logout" onAction="#handleLogout"/>
             </VBox>
@@ -36,10 +44,10 @@
 
                 <HBox styleClass="welcome-card" alignment="CENTER_LEFT" spacing="16">
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
-                        <Label fx:id="welcomeLabel" text="Bonjour 👋" styleClass="welcome-greeting"/>
-                        <Label fx:id="dateLabel" text="Aujourd'hui" styleClass="welcome-date"/>
+                        <Label fx:id="welcomeLabel"      text="Bonjour 👋"   styleClass="welcome-greeting"/>
+                        <Label fx:id="dateLabel"         text="Aujourd'hui"  styleClass="welcome-date"/>
                         <Label text="Prenez soin de vous aujourd'hui. Votre bien-être compte." styleClass="welcome-tagline"/>
-                        <Label fx:id="roleSubtitleLabel" text="" styleClass="welcome-date"/>
+                        <Label fx:id="roleSubtitleLabel" text=""             styleClass="welcome-date"/>
                     </VBox>
                     <Label text="💙" style="-fx-font-size: 48px; -fx-text-fill: #FFFFFF; -fx-opacity: 0.6;"/>
                 </HBox>
@@ -47,30 +55,66 @@
                 <VBox spacing="16">
                     <Label text="Accès rapide" styleClass="section-title"/>
                     <FlowPane hgap="16" vgap="16">
-                        <VBox styleClass="quick-card" onMouseClicked="#handleObjectifs" alignment="CENTER" spacing="8">
+
+                        <VBox styleClass="quick-card" onMouseClicked="#handleObjectifsClick"
+                              alignment="CENTER" spacing="8">
                             <Label text="🎯" styleClass="quick-card-icon"/>
-                            <Label text="Mes Objectifs" styleClass="quick-card-title"/>
+                            <Label text="Mes Objectifs"   styleClass="quick-card-title"/>
                             <Label text="Gérer vos objectifs" styleClass="quick-card-sub"/>
                         </VBox>
-                        <VBox styleClass="quick-card" onMouseClicked="#handleTest" alignment="CENTER" spacing="8">
+
+                        <VBox styleClass="quick-card" onMouseClicked="#handleDailyCheckInClick"
+                              alignment="CENTER" spacing="8">
+                            <Label text="✅" styleClass="quick-card-icon"/>
+                            <Label text="Daily Check-in" styleClass="quick-card-title"/>
+                            <Label text="Suivi quotidien" styleClass="quick-card-sub"/>
+                        </VBox>
+
+                        <VBox styleClass="quick-card" onMouseClicked="#handleWeekPlanClick"
+                              alignment="CENTER" spacing="8">
+                            <Label text="📅" styleClass="quick-card-icon"/>
+                            <Label text="Plan semaine"        styleClass="quick-card-title"/>
+                            <Label text="Organiser la semaine" styleClass="quick-card-sub"/>
+                        </VBox>
+
+                        <VBox styleClass="quick-card" onMouseClicked="#handleWeeklyInsightsClick"
+                              alignment="CENTER" spacing="8">
+                            <Label text="📈" styleClass="quick-card-icon"/>
+                            <Label text="Weekly Insights"   styleClass="quick-card-title"/>
+                            <Label text="Bilan &amp; tendances" styleClass="quick-card-sub"/>
+                        </VBox>
+
+                        <VBox styleClass="quick-card" onMouseClicked="#handleChatBotClick"
+                              alignment="CENTER" spacing="8">
+                            <Label text="🤖" styleClass="quick-card-icon"/>
+                            <Label text="Chatbot"           styleClass="quick-card-title"/>
+                            <Label text="Parler &amp; conseils" styleClass="quick-card-sub"/>
+                        </VBox>
+
+                        <VBox styleClass="quick-card" onMouseClicked="#handleTestClick"
+                              alignment="CENTER" spacing="8">
                             <Label text="🧠" styleClass="quick-card-icon"/>
-                            <Label text="Test Psy" styleClass="quick-card-title"/>
+                            <Label text="Test Psy"            styleClass="quick-card-title"/>
                             <Label text="Évaluation bien-être" styleClass="quick-card-sub"/>
                         </VBox>
-                        <VBox styleClass="quick-card" onMouseClicked="#handleProfilPsy" alignment="CENTER" spacing="8">
+
+                        <VBox styleClass="quick-card" onMouseClicked="#handleProfilPsyClick"
+                              alignment="CENTER" spacing="8">
                             <Label text="📊" styleClass="quick-card-icon"/>
-                            <Label text="Mon Profil Psy" styleClass="quick-card-title"/>
+                            <Label text="Mon Profil Psy"  styleClass="quick-card-title"/>
                             <Label text="Voir mes résultats" styleClass="quick-card-sub"/>
                         </VBox>
-                        <VBox styleClass="quick-card" onMouseClicked="#handleProfil" alignment="CENTER" spacing="8">
+
+                        <VBox styleClass="quick-card" onMouseClicked="#handleProfilClick"
+                              alignment="CENTER" spacing="8">
                             <Label text="👤" styleClass="quick-card-icon"/>
-                            <Label text="Mon Profil" styleClass="quick-card-title"/>
+                            <Label text="Mon Profil"       styleClass="quick-card-title"/>
                             <Label text="Mes informations" styleClass="quick-card-sub"/>
                         </VBox>
+
                     </FlowPane>
                 </VBox>
             </VBox>
         </ScrollPane>
     </center>
 </BorderPane>
-
