@@ -6,8 +6,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import tn.esprit.faceauth.FaceAuthService;
 import tn.esprit.session.SessionManager;
+import tn.esprit.shared.DialogHelper;
 import tn.esprit.shared.SceneManager;
+import tn.esprit.user.dao.ReactivationRequestDao;
+import tn.esprit.user.dao.UtilisateurDao;
 import tn.esprit.user.entity.Utilisateur;
+import tn.esprit.user.enums.UtilisateurRole;
+import tn.esprit.user.service.AccountStatusService;
+import tn.esprit.user.service.EmailService;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -31,8 +37,14 @@ public class ProfileController implements Initializable {
     @FXML private Button regenerateBackupCodesBtn;
     @FXML private Button enableFaceAuthBtn;
     @FXML private Button disableFaceAuthBtn;
+    @FXML private Button deactivateAccountBtn;
 
     private final FaceAuthService faceAuthService = new FaceAuthService();
+    private final AccountStatusService accountStatusService = new AccountStatusService(
+            new UtilisateurDao(),
+            new ReactivationRequestDao(),
+            new EmailService()
+    );
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -55,6 +67,9 @@ public class ProfileController implements Initializable {
         statutLabel.setText(user.getStatut() != null ? capitalize(user.getStatutKey()) : "-");
         createdAtLabel.setText(user.getCreatedAt() != null
                 ? user.getCreatedAt().toLocalDate().toString() : "-");
+        boolean canDeactivate = user.getRole() != UtilisateurRole.ADMIN;
+        deactivateAccountBtn.setVisible(canDeactivate);
+        deactivateAccountBtn.setManaged(canDeactivate);
         refreshSecuritySection(user);
     }
 
@@ -88,6 +103,40 @@ public class ProfileController implements Initializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    private void handleDeactivateAccount() {
+        Utilisateur user = SessionManager.getInstance().getCurrentUser();
+        if (user == null || user.getId() == null) {
+            return;
+        }
+        if (!DialogHelper.showConfirm(
+                "Desactiver mon compte",
+                "Votre compte sera desactive et vous serez deconnecte immediatement. Un code de reactivation a 6 chiffres vous sera envoye par email.",
+                "Desactiver",
+                "Annuler")) {
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                accountStatusService.deactivateAccount(user, "user");
+                SessionManager.getInstance().logout();
+                javafx.application.Platform.runLater(() -> {
+                    DialogHelper.showInfo("Compte desactive",
+                            "Votre compte a ete desactive. Verifiez votre email pour recuperer votre code de reactivation.");
+                    try {
+                        SceneManager.switchTo("login");
+                    } catch (Exception e) {
+                        DialogHelper.showError("Navigation", "Impossible de revenir a la connexion.");
+                    }
+                });
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() ->
+                        DialogHelper.showError("Desactivation", "Impossible de desactiver votre compte."));
+            }
+        }).start();
     }
 
     @FXML

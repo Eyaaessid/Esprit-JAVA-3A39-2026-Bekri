@@ -53,6 +53,15 @@ public class AdminDashboardController {
     }
 
     @FXML
+    private void handleReactivationRequests() {
+        try {
+            SceneManager.switchTo("admin-reactivation-requests");
+        } catch (IOException e) {
+            DialogHelper.showError("Navigation", e.getMessage());
+        }
+    }
+
+    @FXML
     private void handleProfil() {
         try {
             // Navigate to the unified profile screen (has 2FA + face auth for all roles)

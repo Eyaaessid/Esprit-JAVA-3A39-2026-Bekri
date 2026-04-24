@@ -26,6 +26,10 @@ public class AdminUserEditController implements Initializable {
     @FXML private Button cancelButton;
     @FXML private Label statusLabel;
     @FXML private Label titleLabel;
+    @FXML private Label subtitleLabel;
+    @FXML private Label avatarLabel;
+    @FXML private Label currentRoleBadge;
+    @FXML private Label currentStatusBadge;
     @FXML private Region roleIndicator;
     @FXML private Region statutIndicator;
 
@@ -64,7 +68,8 @@ public class AdminUserEditController implements Initializable {
                 return switch (statut) {
                     case ACTIF -> "Actif";
                     case INACTIF -> "Inactif";
-                    case BANNI -> "Banni";
+                    case BLOQUE -> "Bloqué";
+                    case SUPPRIME -> "Supprimé";
                 };
             }
 
@@ -73,7 +78,11 @@ public class AdminUserEditController implements Initializable {
                 return null;
             }
         });
-        statutComboBox.getItems().setAll(UtilisateurStatut.values());
+        statutComboBox.getItems().setAll(
+                UtilisateurStatut.ACTIF,
+                UtilisateurStatut.INACTIF,
+                UtilisateurStatut.BLOQUE
+        );
 
         String primaryStyle = "-fx-background-color: #1e3a5f; -fx-text-fill: white; -fx-background-radius: 8; " +
                 "-fx-padding: 10 24; -fx-font-weight: bold; -fx-cursor: hand; -fx-font-size: 13px;";
@@ -89,13 +98,27 @@ public class AdminUserEditController implements Initializable {
         if (user == null) {
             return;
         }
-        titleLabel.setText("Modifier : " + user.getFullName().trim());
+        titleLabel.setText(user.getFullName().trim());
+        subtitleLabel.setText(user.getEmail() != null ? user.getEmail() : "Utilisateur");
+        avatarLabel.setText(user.getInitials().isBlank() ? "U" : user.getInitials());
+        currentRoleBadge.setText(roleComboBox.getConverter().toString(user.getRole()));
+        currentStatusBadge.setText(statutComboBox.getConverter().toString(user.getStatut()));
         roleComboBox.setValue(user.getRole());
         statutComboBox.setValue(user.getStatut());
         updateRoleIndicator(user.getRole());
         updateStatutIndicator(user.getStatut());
         roleComboBox.valueProperty().addListener((obs, old, value) -> updateRoleIndicator(value));
         statutComboBox.valueProperty().addListener((obs, old, value) -> updateStatutIndicator(value));
+        applyRoleBadgeStyle(user.getRole());
+        applyStatusBadgeStyle(user.getStatut());
+        roleComboBox.valueProperty().addListener((obs, old, value) -> {
+            currentRoleBadge.setText(roleComboBox.getConverter().toString(value));
+            applyRoleBadgeStyle(value);
+        });
+        statutComboBox.valueProperty().addListener((obs, old, value) -> {
+            currentStatusBadge.setText(statutComboBox.getConverter().toString(value));
+            applyStatusBadgeStyle(value);
+        });
     }
 
     @FXML
@@ -145,9 +168,9 @@ public class AdminUserEditController implements Initializable {
     private void updateRoleIndicator(UtilisateurRole role) {
         if (role == null) return;
         String color = switch (role) {
-            case ADMIN -> "#8e44ad";
-            case COACH -> "#2980b9";
-            case USER -> "#27ae60";
+            case ADMIN -> "#d97706";
+            case COACH -> "#7c3aed";
+            case USER -> "#217693";
         };
         roleIndicator.setStyle("-fx-background-color: " + color + "; -fx-background-radius: 5; " +
                 "-fx-min-width: 10; -fx-min-height: 10; -fx-max-width: 10; -fx-max-height: 10;");
@@ -156,12 +179,40 @@ public class AdminUserEditController implements Initializable {
     private void updateStatutIndicator(UtilisateurStatut statut) {
         if (statut == null) return;
         String color = switch (statut) {
-            case ACTIF -> "#27ae60";
+            case ACTIF -> "#217693";
             case INACTIF -> "#e67e22";
-            case BANNI -> "#e74c3c";
+            case BLOQUE, SUPPRIME -> "#e74c3c";
         };
         statutIndicator.setStyle("-fx-background-color: " + color + "; -fx-background-radius: 5; " +
                 "-fx-min-width: 10; -fx-min-height: 10; -fx-max-width: 10; -fx-max-height: 10;");
+    }
+
+    private void applyRoleBadgeStyle(UtilisateurRole role) {
+        String style;
+        if (role == null) {
+            style = "-fx-background-color: #eef3f8; -fx-text-fill: #6c7c98;";
+        } else {
+            style = switch (role) {
+                case ADMIN -> "-fx-background-color: #fff1db; -fx-text-fill: #d97706;";
+                case COACH -> "-fx-background-color: #f1eafe; -fx-text-fill: #7c3aed;";
+                case USER -> "-fx-background-color: #e8f2fb; -fx-text-fill: #217693;";
+            };
+        }
+        currentRoleBadge.setStyle(style + "-fx-background-radius: 999; -fx-padding: 6 12; -fx-font-weight: bold;");
+    }
+
+    private void applyStatusBadgeStyle(UtilisateurStatut statut) {
+        String style;
+        if (statut == null) {
+            style = "-fx-background-color: #eef3f8; -fx-text-fill: #6c7c98;";
+        } else {
+            style = switch (statut) {
+                case ACTIF -> "-fx-background-color: #e8f2fb; -fx-text-fill: #217693;";
+                case INACTIF -> "-fx-background-color: #fff2e8; -fx-text-fill: #e67e22;";
+                case BLOQUE, SUPPRIME -> "-fx-background-color: #fdeaea; -fx-text-fill: #e74c3c;";
+            };
+        }
+        currentStatusBadge.setStyle(style + "-fx-background-radius: 999; -fx-padding: 6 12; -fx-font-weight: bold;");
     }
 
     private void showSuccess(String message) {

@@ -20,6 +20,7 @@ import tn.esprit.session.SessionManager;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.user.entity.Utilisateur;
 import tn.esprit.user.enums.UtilisateurRole;
+import tn.esprit.user.enums.UtilisateurStatut;
 
 import javax.imageio.ImageIO;
 import java.awt.Dimension;
@@ -313,6 +314,14 @@ public class FaceLoginController {
                 switch (result) {
                     case SUCCESS -> {
                         if (user == null) { showError("Erreur de session. Réessayez."); return; }
+                        if (user.getStatut() == UtilisateurStatut.BLOQUE || user.getStatut() == UtilisateurStatut.SUPPRIME) {
+                            showError("Votre compte a été suspendu définitivement. Veuillez contacter le support.");
+                            return;
+                        }
+                        if (user.getStatut() == UtilisateurStatut.INACTIF) {
+                            showError("Votre compte est inactif. Veuillez utiliser l'écran de connexion pour demander une réactivation.");
+                            return;
+                        }
                         stopWebcam();
                         SessionManager.getInstance().setCurrentUser(user);
                         try {

@@ -19,6 +19,7 @@
                 <Button text="🏠  Accueil" styleClass="sidebar-btn sidebar-btn-active"/>
                 <Button text="❓  Questions" styleClass="sidebar-btn" onAction="#handleQuestions"/>
                 <Button text="👥  Utilisateurs" styleClass="sidebar-btn" onAction="#handleUtilisateurs"/>
+                <Button text="📨  Réactivations" styleClass="sidebar-btn" onAction="#handleReactivationRequests"/>
                 <Button text="👤  Mon Profil" styleClass="sidebar-btn" onAction="#handleProfil"/>
             </VBox>
             <Region VBox.vgrow="ALWAYS"/>
@@ -54,6 +55,11 @@
                             <Label text="Utilisateurs" styleClass="quick-card-title"/>
                             <Label text="Gérer les comptes" styleClass="quick-card-sub"/>
                         </VBox>
+                        <VBox styleClass="quick-card" onMouseClicked="#handleReactivationRequests" alignment="CENTER" spacing="8">
+                            <Label text="📨" styleClass="quick-card-icon"/>
+                            <Label text="Réactivations" styleClass="quick-card-title"/>
+                            <Label text="Traiter les demandes" styleClass="quick-card-sub"/>
+                        </VBox>
                         <VBox styleClass="quick-card" onMouseClicked="#handleProfil" alignment="CENTER" spacing="8">
                             <Label text="👤" styleClass="quick-card-icon"/>
                             <Label text="Mon Profil" styleClass="quick-card-title"/>
@@ -65,4 +71,3 @@
         </ScrollPane>
     </center>
 </BorderPane>
-

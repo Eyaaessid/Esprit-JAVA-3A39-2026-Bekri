@@ -187,10 +187,8 @@ public class UtilisateurService {
         String rf = roleFilter == null ? null : roleFilter.trim().toLowerCase(Locale.ROOT);
         String sf = statutFilter == null ? null : statutFilter.trim().toLowerCase(Locale.ROOT);
 
-        return dao.findAll().stream()
-                .filter(u -> s.isEmpty() || matchesSearch(u, s))
+        return dao.findAllNonAdmin(s, sf == null || sf.isEmpty() ? null : sf.toUpperCase(Locale.ROOT)).stream()
                 .filter(u -> rf == null || rf.isEmpty() || u.getRoleKey().equalsIgnoreCase(rf))
-                .filter(u -> sf == null || sf.isEmpty() || matchesStatutFilter(u, sf))
                 .collect(Collectors.toList());
     }
 
@@ -203,14 +201,6 @@ public class UtilisateurService {
         String prenom = u.getPrenom() != null ? u.getPrenom().toLowerCase(Locale.ROOT) : "";
         String email = u.getEmail() != null ? u.getEmail().toLowerCase(Locale.ROOT) : "";
         return nom.contains(q) || prenom.contains(q) || email.contains(q);
-    }
-
-    private boolean matchesStatutFilter(Utilisateur u, String sf) {
-        String key = u.getStatutKey();
-        if ("supprime".equals(sf)) {
-            return "inactif".equals(key);
-        }
-        return key.equalsIgnoreCase(sf);
     }
 
     public Utilisateur createUtilisateurAdmin(String nom, String prenom, String email, String password,
@@ -291,8 +281,8 @@ public class UtilisateurService {
         return switch (api.trim().toLowerCase(Locale.ROOT)) {
             case "actif" -> UtilisateurStatut.ACTIF;
             case "inactif" -> UtilisateurStatut.INACTIF;
-            case "bloque" -> UtilisateurStatut.BANNI;
-            case "supprime" -> UtilisateurStatut.INACTIF;
+            case "bloque" -> UtilisateurStatut.BLOQUE;
+            case "supprime" -> UtilisateurStatut.SUPPRIME;
             default -> throw new IllegalArgumentException("Statut invalide");
         };
     }

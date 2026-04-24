@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.user.ui.ReactivationRequestsController"
+            prefWidth="1100" prefHeight="720" styleClass="page-bg">
+    <top>
+        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="top-bar">
+            <Button text="Retour" onAction="#handleBack" styleClass="btn-ghost"/>
+            <Label fx:id="headerLabel" text="Demandes de réactivation en attente (0)" styleClass="top-bar-title"/>
+        </HBox>
+    </top>
+    <center>
+        <StackPane style="-fx-padding: 24;">
+            <TableView fx:id="requestsTable">
+                <columns>
+                    <TableColumn fx:id="fullNameColumn" text="Nom complet" prefWidth="220"/>
+                    <TableColumn fx:id="emailColumn" text="Email" prefWidth="220"/>
+                    <TableColumn fx:id="reasonColumn" text="Motif" prefWidth="300"/>
+                    <TableColumn fx:id="requestedAtColumn" text="Demandé le" prefWidth="160"/>
+                    <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="180"/>
+                </columns>
+            </TableView>
+            <Label fx:id="emptyStateLabel" text="Aucune demande en attente"
+                   visible="false" managed="false"
+                   style="-fx-font-size: 18px; -fx-text-fill: #6c757d;"/>
+        </StackPane>
+    </center>
+</BorderPane>

@@ -3,7 +3,8 @@ package tn.esprit.user.enums;
 public enum UtilisateurStatut {
     ACTIF("actif"),
     INACTIF("inactif"),
-    BANNI("bloque");
+    BLOQUE("bloque"),
+    SUPPRIME("supprime");
 
     private final String value;
 
@@ -18,6 +19,9 @@ public enum UtilisateurStatut {
     public static UtilisateurStatut fromString(String value) {
         if (value == null) {
             throw new IllegalArgumentException("Unknown statut: null");
+        }
+        if ("banni".equalsIgnoreCase(value)) {
+            return BLOQUE;
         }
         for (UtilisateurStatut s : values()) {
             if (s.name().equalsIgnoreCase(value) || s.getValue().equalsIgnoreCase(value)) {

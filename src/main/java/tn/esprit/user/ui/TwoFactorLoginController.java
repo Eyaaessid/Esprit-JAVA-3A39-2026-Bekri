@@ -11,6 +11,7 @@ import tn.esprit.session.SessionManager;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.user.dao.TwoFactorDAO;
 import tn.esprit.user.entity.Utilisateur;
+import tn.esprit.user.enums.UtilisateurStatut;
 import tn.esprit.user.service.TwoFactorService;
 import tn.esprit.user.service.UtilisateurService;
 
@@ -125,6 +126,14 @@ public class TwoFactorLoginController {
 
     private void completeLogin() {
         try {
+            if (user.getStatut() == UtilisateurStatut.BLOQUE || user.getStatut() == UtilisateurStatut.SUPPRIME) {
+                showStatus("Votre compte a été suspendu définitivement. Veuillez contacter le support.", true);
+                return;
+            }
+            if (user.getStatut() == UtilisateurStatut.INACTIF) {
+                showStatus("Votre compte est inactif. Veuillez repasser par l'écran de connexion pour demander une réactivation.", true);
+                return;
+            }
             SessionManager.getInstance().setCurrentUser(user);
             System.out.println("Logged in as: " + user.getClass().getSimpleName());
             System.out.println("isAdmin: " + SessionManager.getInstance().isAdmin());

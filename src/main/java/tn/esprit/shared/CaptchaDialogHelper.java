@@ -1,18 +1,24 @@
 package tn.esprit.shared;
 
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.TextAlignment;
+import javafx.scene.paint.Color;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import tn.esprit.utils.CaptchaService;
 
-import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class CaptchaDialogHelper {
 
@@ -21,58 +27,55 @@ public final class CaptchaDialogHelper {
 
     public static boolean showCaptchaDialog(CaptchaService captchaService) {
         CaptchaService.CaptchaChallenge challenge = captchaService.generate();
+        AtomicBoolean verified = new AtomicBoolean(false);
 
-        Dialog<String> dialog = new Dialog<>();
-        dialog.setTitle("Verification de securite");
-        dialog.setHeaderText(null);
+        Stage stage = new Stage();
+        stage.initStyle(StageStyle.TRANSPARENT);
+        if (SceneManager.getPrimaryStage() != null) {
+            stage.initOwner(SceneManager.getPrimaryStage());
+        }
+        stage.initModality(Modality.APPLICATION_MODAL);
 
-        VBox content = new VBox(16);
-        content.setStyle("-fx-padding: 24 32 8 32; -fx-background-color: white;");
-        content.setAlignment(Pos.CENTER);
+        Label titleLabel = new Label("Verification de securite");
+        titleLabel.getStyleClass().add("dialog-title");
 
-        Label icon = new Label("?");
-        icon.setStyle("-fx-font-size: 36px; -fx-text-fill: #1e3a5f;");
+        Label iconLabel = new Label("?");
+        iconLabel.getStyleClass().add("dialog-icon");
 
-        Label title = new Label("Verification requise");
-        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1e3a5f;");
+        HBox header = new HBox(10, iconLabel, titleLabel);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.getStyleClass().addAll("dialog-header-base", "dialog-header-confirm");
+        header.setPadding(new Insets(14, 18, 14, 18));
 
-        Label question = new Label(challenge.question());
-        question.setStyle("-fx-font-size: 13px; -fx-text-fill: #555;");
-        question.setMaxWidth(280);
-        question.setWrapText(true);
-        question.setTextAlignment(TextAlignment.CENTER);
+        Label helperLabel = new Label("Confirmez que vous etes bien une personne en repondant a cette question.");
+        helperLabel.setWrapText(true);
+        helperLabel.setStyle("-fx-text-fill: #667892; -fx-font-size: 12px;");
+
+        Label questionLabel = new Label(challenge.question());
+        questionLabel.setWrapText(true);
+        questionLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #22324b;");
 
         TextField answerField = new TextField();
-        answerField.setPromptText("Votre reponse...");
-        answerField.setStyle("-fx-background-color: #f4f6f9; -fx-background-radius: 8; " +
-                "-fx-border-color: #3498db; -fx-border-radius: 8; -fx-border-width: 1.5; " +
-                "-fx-padding: 10 14; -fx-font-size: 14px;");
-        answerField.setMaxWidth(200);
+        answerField.setPromptText("Votre reponse");
+        answerField.getStyleClass().add("text-field");
         answerField.setTextFormatter(new TextFormatter<>(change ->
                 change.getControlNewText().matches("\\d*") ? change : null));
 
-        Label errorLabel = new Label("");
-        errorLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 11px;");
+        Label errorLabel = new Label();
+        errorLabel.setWrapText(true);
+        errorLabel.setStyle("-fx-text-fill: #dc3545; -fx-font-size: 12px;");
 
-        content.getChildren().addAll(icon, title, question, answerField, errorLabel);
-        dialog.getDialogPane().setContent(content);
-        dialog.getDialogPane().setStyle("-fx-background-color: white; -fx-background-radius: 12;");
+        VBox content = new VBox(12, helperLabel, questionLabel, answerField, errorLabel);
+        content.setPadding(new Insets(18));
 
-        ButtonType verifyType = new ButtonType("Verifier", ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelType = new ButtonType("Annuler", ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(verifyType, cancelType);
+        Button cancelButton = new Button("Annuler");
+        cancelButton.getStyleClass().addAll("btn-secondary", "dialog-footer-btn");
+        cancelButton.setOnAction(event -> stage.close());
 
-        Button verifyBtn = (Button) dialog.getDialogPane().lookupButton(verifyType);
-        String primaryStyle = "-fx-background-color: #1e3a5f; -fx-text-fill: white; " +
-                "-fx-background-radius: 8; -fx-padding: 8 24; -fx-font-weight: bold;";
-        verifyBtn.setStyle(primaryStyle);
-        wirePrimaryHover(verifyBtn, primaryStyle);
-
-        Button cancelBtn = (Button) dialog.getDialogPane().lookupButton(cancelType);
-        cancelBtn.setStyle("-fx-background-color: #ecf0f1; -fx-text-fill: #555; " +
-                "-fx-background-radius: 8; -fx-padding: 8 24;");
-
-        verifyBtn.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+        Button verifyButton = new Button("Verifier");
+        verifyButton.getStyleClass().addAll("btn-primary", "dialog-footer-btn");
+        verifyButton.setDefaultButton(true);
+        verifyButton.setOnAction(event -> {
             String input = answerField.getText() == null ? "" : answerField.getText().trim();
             try {
                 int answer = Integer.parseInt(input);
@@ -80,22 +83,37 @@ public final class CaptchaDialogHelper {
                     errorLabel.setText("Reponse incorrecte. Reessayez.");
                     answerField.clear();
                     answerField.requestFocus();
-                    event.consume();
+                    return;
                 }
+                verified.set(true);
+                stage.close();
             } catch (NumberFormatException e) {
                 errorLabel.setText("Veuillez entrer un nombre.");
-                event.consume();
             }
         });
 
-        dialog.setResultConverter(btn -> btn == verifyType ? "ok" : null);
-        Optional<String> result = dialog.showAndWait();
-        return result.isPresent();
-    }
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox actions = new HBox(10, spacer, cancelButton, verifyButton);
+        actions.setPadding(new Insets(0, 18, 18, 18));
+        actions.setAlignment(Pos.CENTER_RIGHT);
 
-    private static void wirePrimaryHover(Button button, String baseStyle) {
-        String hoverStyle = baseStyle.replace("#1e3a5f", "#2c5282");
-        button.setOnMouseEntered(e -> button.setStyle(hoverStyle));
-        button.setOnMouseExited(e -> button.setStyle(baseStyle));
+        VBox root = new VBox(header, content, actions);
+        root.getStyleClass().add("dialog-root");
+        root.setMaxWidth(440);
+
+        StackPane wrapper = new StackPane(root);
+        wrapper.setPadding(new Insets(12));
+
+        Scene scene = new Scene(wrapper);
+        scene.setFill(Color.TRANSPARENT);
+        var css = CaptchaDialogHelper.class.getResource("/css/app.css");
+        if (css != null) {
+            scene.getStylesheets().add(css.toExternalForm());
+        }
+
+        stage.setScene(scene);
+        stage.showAndWait();
+        return verified.get();
     }
 }

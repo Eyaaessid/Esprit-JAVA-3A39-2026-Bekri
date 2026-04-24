@@ -11,7 +11,6 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -113,22 +112,22 @@ public class ProfilPsychologiqueController {
         Integer sg = p.getScoreGlobal();
         int score = sg != null ? sg : 0;
         scoreLabel.setText("Score : " + score + " / 100");
-        profilTypeLabel.setText(p.getProfilType() != null ? p.getProfilType() : "—");
+        profilTypeLabel.setText(p.getProfilType() != null ? p.getProfilType() : "-");
         feedbackLabel.setText(p.getAiFeedback() != null ? p.getAiFeedback() : "");
         if (p.getDateEvaluation() != null) {
             dateLabel.setText(p.getDateEvaluation().format(DATE_FMT));
         } else {
-            dateLabel.setText("—");
+            dateLabel.setText("-");
         }
         applyBadge(score);
 
         applyHeaderGradient(p.getProfilType());
-        drawScoreArc(p.getScoreGlobal() != null ? p.getScoreGlobal() : 0);
+        drawScoreArc(score);
         splitFeedbackIntoCards(p.getAiFeedback());
         animateCards();
         if (p.getDateEvaluation() != null) {
-            dateLabel.setText("📅 Évaluation du " +
-                    p.getDateEvaluation().format(DateTimeFormatter.ofPattern("dd/MM/yyyy 'à' HH:mm")));
+            dateLabel.setText("Evaluation du " +
+                    p.getDateEvaluation().format(DateTimeFormatter.ofPattern("dd/MM/yyyy 'a' HH:mm")));
         }
 
         loadRecommendations(p);
@@ -171,11 +170,11 @@ public class ProfilPsychologiqueController {
             }
             for (WellbeingRecommendation rec : recommendations) {
                 String circleColor = switch (rec.getType()) {
-                    case "humeur" -> "#fef3c7";
-                    case "sommeil" -> "#ede9fe";
+                    case "humeur" -> "#e8f2fb";
+                    case "sommeil" -> "#e7f5f2";
                     case "activite" -> "#dcfce7";
-                    case "nutrition" -> "#fce7f3";
-                    case "hydratation" -> "#e0f2fe";
+                    case "nutrition" -> "#eef6fb";
+                    case "hydratation" -> "#dff4fb";
                     default -> "#f1f5f9";
                 };
                 StackPane iconCircle = new StackPane();
@@ -240,7 +239,7 @@ public class ProfilPsychologiqueController {
         }
 
         actionButton.setDisable(true);
-        actionButton.setText("Génération…");
+        actionButton.setText("Generation...");
         if (regenerateInsightBtn != null && regenerateInsightBtn != actionButton) {
             regenerateInsightBtn.setDisable(true);
         }
@@ -284,7 +283,7 @@ public class ProfilPsychologiqueController {
     private void restoreRegenerateButton() {
         if (repasserBtn != null) {
             repasserBtn.setDisable(false);
-            repasserBtn.setText("Régénérer l'analyse ✨");
+            repasserBtn.setText("Regenerer l'analyse ✨");
         }
         if (regenerateInsightBtn != null) {
             regenerateInsightBtn.setDisable(false);
@@ -295,17 +294,17 @@ public class ProfilPsychologiqueController {
         String text;
         String bg;
         if (scoreGlobal <= 25) {
-            text = "Équilibre très bon";
-            bg = "#22c55e";
+            text = "Equilibre tres bon";
+            bg = "#399185";
         } else if (scoreGlobal <= 50) {
-            text = "Équilibre modéré";
-            bg = "#3b82f6";
+            text = "Equilibre modere";
+            bg = "#217693";
         } else if (scoreGlobal <= 75) {
-            text = "Vulnérabilité moyenne";
-            bg = "#f97316";
+            text = "Vulnerabilite moyenne";
+            bg = "#4f9db4";
         } else {
-            text = "Risque élevé";
-            bg = "#ef4444";
+            text = "Risque eleve";
+            bg = "#2563eb";
         }
         badgeLabel.setText(text);
         badgeLabel.setStyle("-fx-background-color: " + bg + "; -fx-text-fill: white; -fx-padding: 8 16; "
@@ -314,18 +313,18 @@ public class ProfilPsychologiqueController {
 
     private void applyHeaderGradient(String profilType) {
         String gradient = switch (profilType) {
-            case "Profil résilient" -> "linear-gradient(to bottom right, #16a34a, #4ade80)";
+            case "Profil resilient" -> "linear-gradient(to bottom right, #217693, #399185)";
             case "Profil stable" -> "linear-gradient(to bottom right, #2563eb, #60a5fa)";
-            case "Profil à risque élevé" -> "linear-gradient(to bottom right, #dc2626, #f87171)";
-            default -> "linear-gradient(to bottom right, #ea580c, #fb923c)";
+            case "Profil a risque eleve" -> "linear-gradient(to bottom right, #1e40af, #3b82f6)";
+            default -> "linear-gradient(to bottom right, #217693, #5a85e6)";
         };
         headerCard.setStyle("-fx-background-color: " + gradient + "; -fx-padding: 40px 30px 30px 30px;");
 
         String badgeColor = switch (profilType) {
-            case "Profil résilient" -> "#dcfce7; -fx-text-fill: #16a34a;";
+            case "Profil resilient" -> "#e7f5f2; -fx-text-fill: #217693;";
             case "Profil stable" -> "#dbeafe; -fx-text-fill: #2563eb;";
-            case "Profil à risque élevé" -> "#fee2e2; -fx-text-fill: #dc2626;";
-            default -> "#ffedd5; -fx-text-fill: #ea580c;";
+            case "Profil a risque eleve" -> "#dbeafe; -fx-text-fill: #1e40af;";
+            default -> "#eef6fb; -fx-text-fill: #217693;";
         };
         badgeLabel.setStyle("-fx-background-color: " + badgeColor +
                 " -fx-background-radius: 20px; -fx-padding: 4px 16px;" +
@@ -341,7 +340,7 @@ public class ProfilPsychologiqueController {
 
         Circle bg = new Circle(cx, cy, r);
         bg.setFill(null);
-        bg.setStroke(Color.web("#e5e7eb"));
+        bg.setStroke(Color.web("#d7e5f2"));
         bg.setStrokeWidth(10);
 
         Arc arc = new Arc(cx, cy, r, r, 90, -(score / 100.0 * 360));
@@ -375,8 +374,8 @@ public class ProfilPsychologiqueController {
         String p3 = "";
 
         String upper = feedback.toUpperCase();
-        int i1 = findSection(upper, "RÉSUMÉ", "RESUME", "EMOTIONAL", "ÉMOTIONNEL");
-        int i2 = findSection(upper, "INTERPRÉTATION", "INTERPRETATION");
+        int i1 = findSection(upper, "RESUME", "EMOTIONAL", "EMOTIONNEL");
+        int i2 = findSection(upper, "INTERPRETATION");
         int i3 = findSection(upper, "CONSEILS", "POSTURE");
 
         if (i1 >= 0 && i2 > i1 && i3 > i2) {
@@ -410,7 +409,7 @@ public class ProfilPsychologiqueController {
 
     private String cleanSectionTitle(String text) {
         return text.replaceFirst(
-                "(?i)^(RÉSUMÉ ÉMOTIONNEL|INTERPRÉTATION|CONSEILS DE POSTURE MENTALE)\\s*:?\\s*", ""
+                "(?i)^(RESUME EMOTIONNEL|INTERPRETATION|CONSEILS DE POSTURE MENTALE)\\s*:?\\s*", ""
         ).trim();
     }
 

@@ -19,11 +19,11 @@
             alignment="CENTER" spacing="18"
             style="-fx-padding: 80px;">
         <Label text="🧘" style="-fx-font-size: 52px;"/>
-        <Label text="Aucune évaluation trouvée"
+        <Label text="Aucune evaluation trouvee"
                style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #6b7280;"/>
         <Button fx:id="passerTestBtn" text="Passer le test →"
                 onAction="#handlePasserTest"
-                style="-fx-background-color: #f97316; -fx-text-fill: white;
+                style="-fx-background-color: #217693; -fx-text-fill: white;
                        -fx-font-weight: bold; -fx-background-radius: 10px;
                        -fx-padding: 10px 28px; -fx-cursor: hand;"/>
       </VBox>
@@ -54,19 +54,19 @@
         </VBox>
 
         <VBox spacing="14" style="-fx-padding: 24px 28px 0px 28px;">
-          <Label text="📋  Analyse personnalisée"
+          <Label text="📋  Analyse personnalisee"
                  style="-fx-font-size: 16px; -fx-font-weight: bold;
                         -fx-text-fill: #1f2937;"/>
 
           <VBox fx:id="card1" spacing="8"
                 styleClass="analysis-card"
-                style="-fx-border-color: #f97316; -fx-border-width: 0 0 0 4px;
-                       -fx-background-color: #fff7ed;">
+                style="-fx-border-color: #217693; -fx-border-width: 0 0 0 4px;
+                       -fx-background-color: #eef6fb;">
             <HBox spacing="8" alignment="CENTER_LEFT">
               <Label text="🧠" style="-fx-font-size: 18px;"/>
-              <Label text="Résumé émotionnel"
+              <Label text="Resume emotionnel"
                      styleClass="card-title"
-                     style="-fx-text-fill: #f97316;"/>
+                     style="-fx-text-fill: #217693;"/>
             </HBox>
             <Label fx:id="feedbackPart1" styleClass="card-body"
                    wrapText="true"/>
@@ -78,7 +78,7 @@
                        -fx-background-color: #eff6ff;">
             <HBox spacing="8" alignment="CENTER_LEFT">
               <Label text="🔍" style="-fx-font-size: 18px;"/>
-              <Label text="Interprétation"
+              <Label text="Interpretation"
                      styleClass="card-title"
                      style="-fx-text-fill: #3b82f6;"/>
             </HBox>
@@ -88,13 +88,13 @@
 
           <VBox fx:id="card3" spacing="8"
                 styleClass="analysis-card"
-                style="-fx-border-color: #10b981; -fx-border-width: 0 0 0 4px;
-                       -fx-background-color: #f0fdf4;">
+                style="-fx-border-color: #399185; -fx-border-width: 0 0 0 4px;
+                       -fx-background-color: #effaf6;">
             <HBox spacing="8" alignment="CENTER_LEFT">
               <Label text="🌿" style="-fx-font-size: 18px;"/>
               <Label text="Conseils de posture mentale"
                      styleClass="card-title"
-                     style="-fx-text-fill: #10b981;"/>
+                     style="-fx-text-fill: #399185;"/>
             </HBox>
             <Label fx:id="feedbackPart3" styleClass="card-body"
                    wrapText="true"/>
@@ -104,15 +104,15 @@
         </VBox>
 
         <HBox alignment="CENTER" style="-fx-padding: 20px 0 0 0;">
-          <Button fx:id="repasserBtn" text="Régénérer l'analyse ✨"
+          <Button fx:id="repasserBtn" text="Regenerer l'analyse ✨"
                   styleClass="regen-btn"
                   onAction="#handleRegenerateInsight"/>
         </HBox>
 
         <VBox style="-fx-padding: 28px 28px 0 28px;" spacing="12">
           <HBox spacing="8" alignment="CENTER_LEFT">
-            <Label text="●" style="-fx-text-fill: #10b981; -fx-font-size: 18px;"/>
-            <Label text="Objectifs bien-être recommandés"
+            <Label text="●" style="-fx-text-fill: #217693; -fx-font-size: 18px;"/>
+            <Label text="Objectifs bien-etre recommandes"
                    styleClass="section-header"/>
           </HBox>
           <VBox fx:id="recommendationsBox" spacing="10"/>
