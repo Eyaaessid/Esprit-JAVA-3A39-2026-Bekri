@@ -1,5 +1,6 @@
 package tn.esprit.profil.ui;
 
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -10,6 +11,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import tn.esprit.profil.service.GroqAiService;
 import tn.esprit.profil.service.ProfilPsychologiqueService;
 import tn.esprit.session.SessionManager;
@@ -242,6 +244,12 @@ public class TestController {
             ProfilPsychologiqueService service = new ProfilPsychologiqueService();
             service.submitProfil(userId, scoreGlobal, profilType, finalFeedback);
             SceneManager.switchTo("profil-psychologique");
+            Platform.runLater(() -> {
+                Stage stage = (Stage) nextBtn.getScene().getWindow();
+                stage.setWidth(880);
+                stage.setHeight(700);
+                stage.centerOnScreen();
+            });
         } catch (IOException e) {
             DialogHelper.showError("Navigation", e.getMessage());
             nextBtn.setText("Terminer ✓");

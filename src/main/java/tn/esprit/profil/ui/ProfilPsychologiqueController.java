@@ -1,6 +1,7 @@
 package tn.esprit.profil.ui;
 
 import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -18,6 +19,7 @@ import javafx.scene.shape.Arc;
 import javafx.scene.shape.ArcType;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeLineCap;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 import tn.esprit.profil.entity.ProfilPsychologique;
 import tn.esprit.profil.service.GroqAiService;
@@ -130,6 +132,16 @@ public class ProfilPsychologiqueController {
         }
 
         loadRecommendations(p);
+        Platform.runLater(() -> {
+            if (resultBox.getScene() == null || resultBox.getScene().getWindow() == null) {
+                return;
+            }
+            Stage stage = (Stage) resultBox.getScene().getWindow();
+            stage.setMaximized(false);
+            stage.setWidth(880);
+            stage.setHeight(700);
+            stage.centerOnScreen();
+        });
     }
 
     private void loadRecommendations(ProfilPsychologique p) {
