@@ -112,9 +112,9 @@ public class FaceRegisterController {
 
                     engine.executeScript(
                             "window.console={" +
-                                    "log:function(m){if(window.javaBridge)window.javaBridge.onError('LOG: '+m);}," +
-                                    "error:function(m){if(window.javaBridge)window.javaBridge.onError('ERR: '+m);}," +
-                                    "warn:function(m){if(window.javaBridge)window.javaBridge.onError('WARN: '+m);}" +
+                                    "log:function(){}, " +
+                                    "error:function(){}, " +
+                                    "warn:function(){}" +
                                     "};"
                     );
 

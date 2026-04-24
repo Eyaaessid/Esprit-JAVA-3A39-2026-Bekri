@@ -24,13 +24,10 @@ public class JSBridge {
         this.onError = onError;
     }
 
-    // Called by JS poller when faceapi is available
     public void onFaceApiReady() {
-        System.out.println("[FaceAuth] onFaceApiReady called from JS ✓");
         Platform.runLater(onFaceApiReady);
     }
 
-    // Called by JS — must be public, non-static
     public void onModelsLoaded() {
         Platform.runLater(onModelsLoaded);
     }
@@ -44,4 +41,3 @@ public class JSBridge {
         Platform.runLater(() -> onError.accept(message));
     }
 }
-

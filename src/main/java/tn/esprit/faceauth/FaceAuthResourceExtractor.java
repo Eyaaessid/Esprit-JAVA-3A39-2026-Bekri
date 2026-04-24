@@ -52,7 +52,6 @@ public class FaceAuthResourceExtractor {
             }
         }
 
-        System.out.println("[FaceAuth] Resources extracted to: " + tempDir);
         return tempDir;
     }
 
@@ -64,4 +63,3 @@ public class FaceAuthResourceExtractor {
         return dir.resolve("face_capture.html").toUri().toString();
     }
 }
-

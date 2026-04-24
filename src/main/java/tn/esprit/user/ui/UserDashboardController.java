@@ -1,9 +1,7 @@
 package tn.esprit.user.ui;
 
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.stage.Stage;
 import tn.esprit.session.SessionManager;
 import tn.esprit.shared.DialogHelper;
 import tn.esprit.shared.SceneManager;
@@ -70,12 +68,7 @@ public class UserDashboardController {
     private void handleProfilPsy() {
         try {
             SceneManager.switchTo("profil-psychologique");
-            Platform.runLater(() -> {
-                Stage stage = (Stage) roleSubtitleLabel.getScene().getWindow();
-                stage.setWidth(880);
-                stage.setHeight(700);
-                stage.centerOnScreen();
-            });
+            SceneManager.resizePrimaryStage(880, 700);
         } catch (IOException e) {
             DialogHelper.showError("Navigation", e.getMessage());
         }

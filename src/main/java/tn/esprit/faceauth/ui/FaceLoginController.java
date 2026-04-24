@@ -12,8 +12,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
-import tn.esprit.faceauth.FaceAuthService;
 import tn.esprit.faceauth.FaceAuthResourceExtractor;
+import tn.esprit.faceauth.FaceAuthService;
 import tn.esprit.faceauth.JSBridge;
 import tn.esprit.faceauth.ModelLoader;
 import tn.esprit.session.SessionManager;
@@ -33,25 +33,21 @@ import java.util.Base64;
 
 public class FaceLoginController {
 
-    @FXML private TextField  emailField;
-    @FXML private Label      statusLabel;
-    @FXML private ImageView  cameraView;
-    @FXML private Button     captureBtn;
-    @FXML private Button     loginBtn;
-    @FXML private WebView    webView;
+    @FXML private TextField emailField;
+    @FXML private Label statusLabel;
+    @FXML private ImageView cameraView;
+    @FXML private Button captureBtn;
+    @FXML private Button loginBtn;
+    @FXML private WebView webView;
 
-    private Webcam   webcam;
-    private volatile boolean       webcamRunning = false;
-    // FIX: cache every good frame so handleCapture() never gets null
-    private volatile BufferedImage lastFrame     = null;
+    private Webcam webcam;
+    private volatile boolean webcamRunning = false;
+    private volatile BufferedImage lastFrame = null;
 
-    private Thread   webcamThread;
-
-    private double[]        capturedDescriptor = null;
-    private JSBridge        jsBridge;           // MUST be a field – GC protection
+    private Thread webcamThread;
+    private double[] capturedDescriptor = null;
+    private JSBridge jsBridge;
     private final FaceAuthService faceAuthService = new FaceAuthService();
-
-    // ---------------------------------------------------------------- init
 
     @FXML
     public void initialize() {
@@ -59,40 +55,38 @@ public class FaceLoginController {
         startWebcam();
 
         Platform.runLater(() -> {
-            if (cameraView.getScene() != null && cameraView.getScene().getWindow() != null)
+            if (cameraView.getScene() != null && cameraView.getScene().getWindow() != null) {
                 cameraView.getScene().getWindow().setOnCloseRequest(e -> stopWebcam());
+            }
         });
     }
-
-    // --------------------------------------------------------------- WebView
 
     private void loadWebView() {
         WebEngine engine = webView.getEngine();
 
         jsBridge = new JSBridge(
-                () -> {   // onFaceApiReady
-                    System.out.println("[FaceAuth] faceapi ready – loading models...");
+                () -> {
                     try {
                         engine.executeScript(ModelLoader.buildLoadModelsScript());
-                        statusLabel.setText("Chargement des modèles...");
+                        statusLabel.setText("Chargement des modeles...");
                         statusLabel.setStyle("-fx-text-fill: #1971c2;");
                     } catch (Exception e) {
                         statusLabel.setText("Erreur init: " + e.getMessage());
                         statusLabel.setStyle("-fx-text-fill: #c92a2a;");
                     }
                 },
-                () -> {   // onModelsLoaded
+                () -> {
                     captureBtn.setDisable(false);
-                    statusLabel.setText("Prêt — regardez la caméra et cliquez Capturer.");
+                    statusLabel.setText("Pret - regardez la camera et cliquez Capturer.");
                     statusLabel.setStyle("-fx-text-fill: #2d6a4f;");
                 },
-                descriptor -> {   // onDescriptorReady
+                descriptor -> {
                     capturedDescriptor = descriptor;
                     loginBtn.setDisable(false);
-                    statusLabel.setText("Visage capturé ! Cliquez Se connecter.");
+                    statusLabel.setText("Visage capture ! Cliquez Se connecter.");
                     statusLabel.setStyle("-fx-text-fill: #2d6a4f;");
                 },
-                error -> {   // onError — re-enable capture so user can retry
+                error -> {
                     captureBtn.setDisable(false);
                     statusLabel.setText("Erreur: " + error);
                     statusLabel.setStyle("-fx-text-fill: #c92a2a;");
@@ -100,37 +94,35 @@ public class FaceLoginController {
         );
 
         engine.getLoadWorker().stateProperty().addListener((obs, old, newState) -> {
-            if (newState != Worker.State.SUCCEEDED) return;
+            if (newState != Worker.State.SUCCEEDED) {
+                return;
+            }
             Platform.runLater(() -> {
                 try {
-                    // 1 – bridge
                     JSObject win = (JSObject) engine.executeScript("window");
                     win.setMember("javaBridge", jsBridge);
 
-                    // 2 – redirect console to Java stdout
                     engine.executeScript(
                             "window.console={" +
-                                    "log:function(m){if(window.javaBridge)window.javaBridge.onError('LOG: '+m);}," +
-                                    "error:function(m){if(window.javaBridge)window.javaBridge.onError('ERR: '+m);}," +
-                                    "warn:function(m){if(window.javaBridge)window.javaBridge.onError('WARN: '+m);}" +
+                                    "log:function(){}, " +
+                                    "error:function(){}, " +
+                                    "warn:function(){}" +
                                     "};"
                     );
 
-                    // 3 – fetch override before face-api loads
                     engine.executeScript(ModelLoader.buildFetchOverrideScript());
 
-                    // 4 – inject face-api.min.js
                     java.nio.file.Path tmpDir = FaceAuthResourceExtractor.extractToTemp();
                     String uri = tmpDir.resolve("face-api.min.js").toUri().toString();
-                    if (uri.startsWith("file:/") && !uri.startsWith("file:///"))
+                    if (uri.startsWith("file:/") && !uri.startsWith("file:///")) {
                         uri = "file:///" + uri.substring(6);
+                    }
                     engine.executeScript(
                             "var __s=document.createElement('script');" +
                                     "__s.src=" + toJsString(uri) + ";" +
                                     "document.head.appendChild(__s);"
                     );
 
-                    // 5 – poll until faceapi defined
                     engine.executeScript(
                             "var __wfa=setInterval(function(){" +
                                     "  if(typeof faceapi!=='undefined'){" +
@@ -154,15 +146,13 @@ public class FaceLoginController {
         }
     }
 
-    // --------------------------------------------------------------- Webcam
-
     private void startWebcam() {
         webcamThread = new Thread(() -> {
             try {
                 webcam = Webcam.getDefault();
                 if (webcam == null) {
                     Platform.runLater(() -> {
-                        statusLabel.setText("Aucune webcam détectée.");
+                        statusLabel.setText("Aucune webcam detectee.");
                         statusLabel.setStyle("-fx-text-fill: #c92a2a;");
                     });
                     return;
@@ -171,25 +161,24 @@ public class FaceLoginController {
                 webcam.setViewSize(new Dimension(640, 480));
                 webcam.open();
 
-                // FIX: webcam4j needs several frames to warm up after open().
-                System.out.println("[FaceAuth] warming up webcam...");
                 BufferedImage firstFrame = null;
                 for (int i = 0; i < 50 && firstFrame == null; i++) {
                     firstFrame = webcam.getImage();
-                    if (firstFrame == null) Thread.sleep(100);
+                    if (firstFrame == null) {
+                        Thread.sleep(100);
+                    }
                 }
 
                 if (firstFrame == null) {
                     Platform.runLater(() -> {
-                        statusLabel.setText("Webcam ouverte mais aucune image reçue.");
+                        statusLabel.setText("Webcam ouverte mais aucune image recue.");
                         statusLabel.setStyle("-fx-text-fill: #c92a2a;");
                     });
                     return;
                 }
 
-                lastFrame     = firstFrame;
+                lastFrame = firstFrame;
                 webcamRunning = true;
-                System.out.println("[FaceAuth] webcam ready ✓");
 
                 while (webcamRunning) {
                     BufferedImage frame = webcam.getImage();
@@ -217,12 +206,10 @@ public class FaceLoginController {
         webcamThread.start();
     }
 
-    // --------------------------------------------------------------- Capture
-
     @FXML
     private void handleCapture() {
         if (!webcamRunning || lastFrame == null) {
-            statusLabel.setText("Webcam pas encore prête — patientez un instant.");
+            statusLabel.setText("Webcam pas encore prete - patientez un instant.");
             statusLabel.setStyle("-fx-text-fill: #c92a2a;");
             return;
         }
@@ -231,12 +218,10 @@ public class FaceLoginController {
         statusLabel.setText("Analyse du visage en cours...");
         statusLabel.setStyle("-fx-text-fill: #1971c2;");
 
-        // Deep-copy on FX thread — webcam loop keeps writing lastFrame freely
-        final BufferedImage snapshot = deepCopy(lastFrame);
+        BufferedImage snapshot = deepCopy(lastFrame);
 
         new Thread(() -> {
             try {
-                // FIX: TYPE_INT_RGB avoids the JPEG encoding bug with TYPE_3BYTE_BGR
                 BufferedImage resized = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
                 Graphics2D g2d = resized.createGraphics();
                 g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
@@ -244,18 +229,13 @@ public class FaceLoginController {
                 g2d.drawImage(snapshot, 0, 0, 320, 240, null);
                 g2d.dispose();
 
-                System.out.println("[FaceAuth] capture type=" + resized.getType()
-                        + " " + resized.getWidth() + "x" + resized.getHeight());
-
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 boolean wrote = ImageIO.write(resized, "jpg", baos);
-                System.out.println("[FaceAuth] JPEG wrote=" + wrote + " bytes=" + baos.size());
 
                 String dataUrl;
                 if (!wrote || baos.size() < 2000) {
                     baos.reset();
                     ImageIO.write(resized, "png", baos);
-                    System.out.println("[FaceAuth] PNG fallback bytes=" + baos.size());
                     dataUrl = "data:image/png;base64,"
                             + Base64.getEncoder().encodeToString(baos.toByteArray());
                 } else {
@@ -291,18 +271,22 @@ public class FaceLoginController {
         });
     }
 
-    // --------------------------------------------------------------- Login
-
     @FXML
     private void handleLogin() {
         String email = emailField.getText() == null ? "" : emailField.getText().trim();
-        if (email.isEmpty()) { showError("Veuillez entrer votre email."); return; }
+        if (email.isEmpty()) {
+            showError("Veuillez entrer votre email.");
+            return;
+        }
 
         double[] desc = capturedDescriptor;
-        if (desc == null) { showError("Aucun visage capturé."); return; }
+        if (desc == null) {
+            showError("Aucun visage capture.");
+            return;
+        }
 
         loginBtn.setDisable(true);
-        statusLabel.setText("Vérification...");
+        statusLabel.setText("Verification...");
         statusLabel.setStyle("-fx-text-fill: #666;");
 
         new Thread(() -> {
@@ -313,13 +297,16 @@ public class FaceLoginController {
                 loginBtn.setDisable(false);
                 switch (result) {
                     case SUCCESS -> {
-                        if (user == null) { showError("Erreur de session. Réessayez."); return; }
+                        if (user == null) {
+                            showError("Erreur de session. Reessayez.");
+                            return;
+                        }
                         if (user.getStatut() == UtilisateurStatut.BLOQUE || user.getStatut() == UtilisateurStatut.SUPPRIME) {
-                            showError("Votre compte a été suspendu définitivement. Veuillez contacter le support.");
+                            showError("Votre compte a ete suspendu definitivement. Veuillez contacter le support.");
                             return;
                         }
                         if (user.getStatut() == UtilisateurStatut.INACTIF) {
-                            showError("Votre compte est inactif. Veuillez utiliser l'écran de connexion pour demander une réactivation.");
+                            showError("Votre compte est inactif. Veuillez utiliser l'ecran de connexion pour demander une reactivation.");
                             return;
                         }
                         stopWebcam();
@@ -328,47 +315,58 @@ public class FaceLoginController {
                             SceneManager.switchTo(
                                     user.getRole() == UtilisateurRole.ADMIN
                                             ? "admin-dashboard" : "user-dashboard");
-                        } catch (Exception e) { showError("Erreur de navigation."); }
+                        } catch (Exception e) {
+                            showError("Erreur de navigation.");
+                        }
                     }
                     case FACE_MISMATCH -> {
                         capturedDescriptor = null;
                         loginBtn.setDisable(true);
                         captureBtn.setDisable(false);
-                        showError("Visage non reconnu. Réessayez.");
+                        showError("Visage non reconnu. Reessayez.");
                     }
                     case LOCKED_OUT -> {
                         int mins = user != null
                                 ? faceAuthService.getRemainingLockoutMinutes(user.getId()) : 15;
-                        showError("Compte verrouillé. Réessayez dans " + mins + " min.");
+                        showError("Compte verrouille. Reessayez dans " + mins + " min.");
                     }
                     case FACE_NOT_ENABLED ->
-                            showError("La reconnaissance faciale n'est pas activée pour ce compte.");
+                            showError("La reconnaissance faciale n'est pas activee pour ce compte.");
                     case EMAIL_NOT_VERIFIED ->
-                            showError("Veuillez vérifier votre email avant de vous connecter.");
+                            showError("Veuillez verifier votre email avant de vous connecter.");
                     case ACCOUNT_NOT_ACTIVE ->
                             showError("Ce compte n'est pas actif.");
                     case USER_NOT_FOUND ->
-                            showError("Aucun compte trouvé pour cet email.");
+                            showError("Aucun compte trouve pour cet email.");
                 }
             });
         }, "face-login-thread").start();
     }
 
-    // --------------------------------------------------------------- Back / stop
-
     @FXML
     private void handleBack() {
         stopWebcam();
-        try { SceneManager.switchTo("login"); } catch (Exception ignored) {}
+        try {
+            SceneManager.switchTo("login");
+        } catch (Exception ignored) {
+        }
     }
 
     public void stopWebcam() {
         webcamRunning = false;
-        if (webcamThread != null) try { webcamThread.interrupt(); } catch (Exception ignored) {}
-        if (webcam != null && webcam.isOpen()) try { webcam.close(); } catch (Exception ignored) {}
+        if (webcamThread != null) {
+            try {
+                webcamThread.interrupt();
+            } catch (Exception ignored) {
+            }
+        }
+        if (webcam != null && webcam.isOpen()) {
+            try {
+                webcam.close();
+            } catch (Exception ignored) {
+            }
+        }
     }
-
-    // --------------------------------------------------------------- Helpers
 
     private static BufferedImage deepCopy(BufferedImage src) {
         BufferedImage copy = new BufferedImage(
@@ -385,17 +383,19 @@ public class FaceLoginController {
     }
 
     private static String toJsString(String s) {
-        if (s == null) return "null";
+        if (s == null) {
+            return "null";
+        }
         StringBuilder sb = new StringBuilder(s.length() + 2).append('\'');
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             switch (c) {
                 case '\\' -> sb.append("\\\\");
                 case '\'' -> sb.append("\\'");
-                case '\n'  -> sb.append("\\n");
-                case '\r'  -> sb.append("\\r");
-                case '\t'  -> sb.append("\\t");
-                default    -> sb.append(c);
+                case '\n' -> sb.append("\\n");
+                case '\r' -> sb.append("\\r");
+                case '\t' -> sb.append("\\t");
+                default -> sb.append(c);
             }
         }
         return sb.append('\'').toString();
