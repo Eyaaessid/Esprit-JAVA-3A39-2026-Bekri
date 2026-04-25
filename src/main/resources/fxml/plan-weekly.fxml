@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.plan.ui.WeeklyPlanController"
+            prefWidth="1200" prefHeight="720"
+            styleClass="plan-root page-bg">
+    <stylesheets>
+        <URL value="@../css/bekri.css"/>
+    </stylesheets>
+
+    <!-- ══ SIDEBAR ══════════════════════════════════════════════════ -->
+    <left>
+        <VBox styleClass="sidebar">
+            <VBox styleClass="sidebar-logo-box" spacing="2">
+                <Label text="bekri"                    styleClass="sidebar-logo"/>
+                <Label text="Bien-être &amp; Objectifs" styleClass="sidebar-logo-sub"/>
+            </VBox>
+
+            <VBox styleClass="sidebar-nav-box" spacing="0">
+                <Label text="MENU" styleClass="sidebar-section-label"/>
+
+                <Button text="🏠  Accueil"             styleClass="sidebar-btn" onAction="#handleAccueil"/>
+                <Button text="🎯  Mes Objectifs"       styleClass="sidebar-btn" onAction="#handleObjectifs"/>
+                <Button text="✅  Daily Check-in"      styleClass="sidebar-btn" onAction="#handleDailyCheckIn"/>
+                <Button text="📅  Plan de la semaine"  styleClass="sidebar-btn,sidebar-btn-active" onAction="#handleWeekPlan"/>
+                <Button text="📈  Weekly Insights"     styleClass="sidebar-btn" onAction="#handleWeeklyInsights"/>
+                <Button text="🤖  Chatbot"             styleClass="sidebar-btn" onAction="#handleChatBot"/>
+                <Button text="🧠  Test Psychologique"  styleClass="sidebar-btn" onAction="#handleTest"/>
+                <Button text="📊  Mon Profil Psy"      styleClass="sidebar-btn" onAction="#handleProfilPsy"/>
+                <Button text="👤  Mon Profil"          styleClass="sidebar-btn" onAction="#handleProfil"/>
+            </VBox>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <VBox styleClass="sidebar-divider">
+                <Button text="⎋  Déconnexion" styleClass="sidebar-logout" onAction="#handleLogout"/>
+            </VBox>
+        </VBox>
+    </left>
+
+    <!-- ══ MAIN CONTENT ═════════════════════════════════════════════ -->
+    <center>
+        <VBox>
+            <!-- Page header bar -->
+            <HBox styleClass="plan-topbar top-bar" alignment="CENTER_LEFT" spacing="12">
+                <Label text="Plan hebdomadaire" styleClass="plan-topbar-title page-title top-bar-title"/>
+            </HBox>
+
+            <StackPane styleClass="plan-page" VBox.vgrow="ALWAYS">
+                <ScrollPane fx:id="rootScroll" fitToWidth="true" styleClass="plan-scroll" maxWidth="Infinity" maxHeight="Infinity">
+                    <content>
+                        <VBox alignment="TOP_CENTER">
+                            <VBox fx:id="contentVBox" spacing="14" styleClass="plan-container content-vbox" maxWidth="Infinity" fillWidth="true">
+                                <padding><Insets top="18" right="18" bottom="26" left="18"/></padding>
+
+                                <!-- Banner -->
+                                <VBox styleClass="plan-banner" spacing="8" maxWidth="Infinity">
+                                    <Label text="Votre plan personnalisé sur 7 jours" styleClass="plan-banner-title" wrapText="true" maxWidth="Infinity"/>
+                                    <Label text="Remplissez le formulaire et laissez l'IA générer un plan repas + sport cohérent avec votre objectif."
+                                           wrapText="true" styleClass="plan-banner-sub" maxWidth="Infinity"/>
+                                </VBox>
+
+                                <!-- Form -->
+                                <VBox styleClass="plan-card section-card" spacing="14" maxWidth="Infinity" fillWidth="true">
+                                    <HBox spacing="10" alignment="CENTER_LEFT">
+                                        <Label text="📝" styleClass="plan-section-emoji"/>
+                                        <Label text="Informations" styleClass="plan-section-title"/>
+                                    </HBox>
+                                    <Separator styleClass="plan-sep"/>
+
+                                    <GridPane hgap="14" vgap="12">
+                                        <columnConstraints>
+                                            <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+                                            <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+                                        </columnConstraints>
+                                        <Label text="Poids (kg)" styleClass="plan-field-label input-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="poidsField" promptText="ex: 72" styleClass="plan-field text-field"
+                                                   GridPane.rowIndex="1" GridPane.columnIndex="0" maxWidth="Infinity"/>
+
+                                        <Label text="Taille (cm)" styleClass="plan-field-label input-label" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                        <TextField fx:id="tailleField" promptText="ex: 175" styleClass="plan-field text-field"
+                                                   GridPane.rowIndex="1" GridPane.columnIndex="1" maxWidth="Infinity"/>
+
+                                        <Label text="Âge" styleClass="plan-field-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="ageField" promptText="ex: 29" styleClass="plan-field"
+                                                   GridPane.rowIndex="3" GridPane.columnIndex="0" maxWidth="Infinity"/>
+
+                                        <Label text="Sexe" styleClass="plan-field-label" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                                        <ComboBox fx:id="sexeCombo" styleClass="plan-field"
+                                                  GridPane.rowIndex="3" GridPane.columnIndex="1" maxWidth="Infinity"/>
+
+                                        <Label text="Objectif" styleClass="plan-field-label" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                                        <ComboBox fx:id="objectifCombo" styleClass="plan-field"
+                                                  GridPane.rowIndex="5" GridPane.columnIndex="0" maxWidth="Infinity"/>
+
+                                        <Label text="Exercice" styleClass="plan-field-label" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                                        <ComboBox fx:id="exerciceCombo" styleClass="plan-field"
+                                                  GridPane.rowIndex="5" GridPane.columnIndex="1" maxWidth="Infinity"/>
+                                    </GridPane>
+
+                                    <Label text="Restrictions (optionnel)" styleClass="plan-field-label"/>
+                                    <TextArea fx:id="restrictionsArea" promptText="ex: sans lactose, végétarien, allergie arachides..."
+                                              prefRowCount="3" styleClass="plan-area" maxWidth="Infinity"/>
+
+                                    <HBox spacing="12" alignment="CENTER_LEFT">
+                                        <Button fx:id="generateBtn" text="Générer avec l'IA" onAction="#handleGenerate"
+                                                styleClass="plan-btn plan-btn-primary"/>
+                                        <Button fx:id="exportPdfBtn" text="Exporter PDF" onAction="#handleExportPdf"
+                                                visible="false" managed="false"
+                                                styleClass="plan-btn plan-btn-danger"/>
+                                    </HBox>
+                                </VBox>
+
+                                <!-- Results -->
+                                <VBox fx:id="resultsBox" spacing="14" visible="false" managed="false" maxWidth="Infinity" fillWidth="true">
+
+                                    <!-- Stats row -->
+                                    <HBox spacing="12" alignment="CENTER" maxWidth="Infinity" fillHeight="true">
+                                        <HBox styleClass="plan-stat-card stat-card" spacing="12" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                                            <VBox styleClass="plan-stat-icon plan-stat-icon-imc" alignment="CENTER">
+                                                <Label text="⚖️" styleClass="plan-stat-emoji"/>
+                                            </VBox>
+                                            <VBox spacing="2" alignment="CENTER_LEFT">
+                                                <Label fx:id="imcValueLabel" text="—" styleClass="plan-stat-value"/>
+                                                <Label text="IMC" styleClass="plan-stat-label"/>
+                                            </VBox>
+                                        </HBox>
+
+                                        <HBox styleClass="plan-stat-card stat-card" spacing="12" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                                            <VBox styleClass="plan-stat-icon plan-stat-icon-cal" alignment="CENTER">
+                                                <Label text="🔥" styleClass="plan-stat-emoji"/>
+                                            </VBox>
+                                            <VBox spacing="2" alignment="CENTER_LEFT">
+                                                <Label fx:id="caloriesValueLabel" text="—" styleClass="plan-stat-value"/>
+                                                <Label text="Calories / jour" styleClass="plan-stat-label"/>
+                                            </VBox>
+                                        </HBox>
+
+                                        <HBox styleClass="plan-stat-card stat-card" spacing="12" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                                            <VBox styleClass="plan-stat-icon plan-stat-icon-hyd" alignment="CENTER">
+                                                <Label text="💧" styleClass="plan-stat-emoji"/>
+                                            </VBox>
+                                            <VBox spacing="2" alignment="CENTER_LEFT">
+                                                <Label fx:id="hydratationValueLabel" text="—" styleClass="plan-stat-value"/>
+                                                <Label text="Hydratation" styleClass="plan-stat-label"/>
+                                            </VBox>
+                                        </HBox>
+
+                                        <HBox styleClass="plan-stat-card stat-card" spacing="12" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                                            <VBox styleClass="plan-stat-icon plan-stat-icon-sleep" alignment="CENTER">
+                                                <Label text="🌙" styleClass="plan-stat-emoji"/>
+                                            </VBox>
+                                            <VBox spacing="2" alignment="CENTER_LEFT">
+                                                <Label fx:id="sommeilValueLabel" text="—" styleClass="plan-stat-value"/>
+                                                <Label text="Sommeil" styleClass="plan-stat-label"/>
+                                            </VBox>
+                                        </HBox>
+                                    </HBox>
+
+                                    <!-- Resume -->
+                                    <VBox styleClass="plan-card section-card" spacing="12" maxWidth="Infinity" fillWidth="true">
+                                        <HBox spacing="10" alignment="CENTER_LEFT">
+                                            <Label text="📌" styleClass="plan-section-emoji"/>
+                                            <Label text="Résumé" styleClass="plan-section-title"/>
+                                        </HBox>
+                                        <Separator styleClass="plan-sep"/>
+                                        <Label fx:id="resumeLabel" text="—" wrapText="true" styleClass="plan-body-text" maxWidth="Infinity"/>
+                                    </VBox>
+
+                                    <!-- Conseils -->
+                                    <VBox styleClass="plan-card section-card" spacing="12" maxWidth="Infinity" fillWidth="true">
+                                        <HBox spacing="10" alignment="CENTER_LEFT">
+                                            <Label text="✅" styleClass="plan-section-emoji"/>
+                                            <Label text="Conseils généraux" styleClass="plan-section-title"/>
+                                        </HBox>
+                                        <Separator styleClass="plan-sep"/>
+                                        <VBox fx:id="conseilsBox" spacing="0" maxWidth="Infinity" fillWidth="true"/>
+                                    </VBox>
+
+                                    <!-- Meals -->
+                                    <VBox styleClass="plan-card section-card" spacing="12" maxWidth="Infinity" fillWidth="true">
+                                        <HBox spacing="10" alignment="CENTER_LEFT">
+                                            <Label text="🍽️" styleClass="plan-section-emoji"/>
+                                            <Label text="Plan repas — 7 jours" styleClass="plan-section-title"/>
+                                        </HBox>
+                                        <Separator styleClass="plan-sep"/>
+                                        <TableView fx:id="mealTable" styleClass="meal-table" maxWidth="Infinity">
+                                            <columns>
+                                                <TableColumn fx:id="jourCol" text="Jour"/>
+                                                <TableColumn fx:id="petitDejCol" text="🍳 Petit-déjeuner"/>
+                                                <TableColumn fx:id="dejeunerCol" text="🍊 Déjeuner"/>
+                                                <TableColumn fx:id="dinerCol" text="🌙 Dîner"/>
+                                                <TableColumn fx:id="collationCol" text="🍎 Collation"/>
+                                            </columns>
+                                        </TableView>
+                                    </VBox>
+
+                                    <!-- Exercises cards -->
+                                    <VBox styleClass="plan-card section-card" spacing="12" maxWidth="Infinity" fillWidth="true">
+                                        <HBox spacing="10" alignment="CENTER_LEFT">
+                                            <Label text="🏃" styleClass="plan-section-emoji"/>
+                                            <Label text="Plan exercices — 7 jours" styleClass="plan-section-title"/>
+                                        </HBox>
+                                        <Separator styleClass="plan-sep"/>
+                                        <ScrollPane fitToHeight="true" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER"
+                                                    styleClass="plan-ex-scroll" fitToWidth="true" maxWidth="Infinity">
+                                            <content>
+                                                <HBox fx:id="exerciseCardsBox" spacing="10" styleClass="plan-ex-row exercise-hbox" fillHeight="true" maxWidth="Infinity"/>
+                                            </content>
+                                        </ScrollPane>
+                                    </VBox>
+
+                                    <!-- Hydration + Sleep panels -->
+                                    <HBox spacing="12" maxWidth="Infinity" styleClass="tips-hbox">
+                                        <VBox fx:id="hydratationPanel" styleClass="plan-panel plan-panel-hyd" spacing="10" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                                            <Label text="💧 Hydratation" styleClass="plan-panel-title plan-panel-title-hyd"/>
+                                            <Label fx:id="hydratationGoalLabel" text="Objectif : — par jour" styleClass="plan-panel-subtitle plan-panel-title-hyd"/>
+                                            <VBox fx:id="hydratationTipsBox" spacing="8" maxWidth="Infinity" fillWidth="true"/>
+                                        </VBox>
+                                        <VBox fx:id="sleepPanel" styleClass="plan-panel plan-panel-sleep" spacing="10" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                                            <Label text="🌙 Sommeil" styleClass="plan-panel-title plan-panel-title-sleep"/>
+                                            <Label fx:id="sleepGoalLabel" text="Objectif : — par nuit" styleClass="plan-panel-subtitle plan-panel-title-sleep"/>
+                                            <VBox fx:id="sommeilTipsBox" spacing="8" maxWidth="Infinity" fillWidth="true"/>
+                                        </VBox>
+                                    </HBox>
+
+                                </VBox>
+                            </VBox>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+
+                <!-- Loading overlay -->
+                <StackPane fx:id="loadingOverlay" visible="false" managed="false" styleClass="plan-overlay">
+                    <VBox alignment="CENTER" spacing="12" styleClass="plan-overlay-card">
+                        <ProgressIndicator prefWidth="54" prefHeight="54"/>
+                        <Label fx:id="loadingLabel" text="L'IA génère votre plan..." styleClass="plan-overlay-text"/>
+                    </VBox>
+                </StackPane>
+            </StackPane>
+        </VBox>
+    </center>
+</BorderPane>
