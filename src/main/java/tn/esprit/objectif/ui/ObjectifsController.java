@@ -8,6 +8,7 @@ import tn.esprit.objectif.service.ObjectifBienEtreService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -283,7 +284,7 @@ public class ObjectifsController {
     private void openForm(ObjectifBienEtreDto existing) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/objectif-form.fxml"));
-            VBox root = loader.load();
+            Parent root = loader.load();
             ObjectifFormController ctrl = loader.getController();
             if (existing != null) ctrl.setObjectif(existing);
 
