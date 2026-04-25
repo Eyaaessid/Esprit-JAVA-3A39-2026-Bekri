@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -6,7 +7,11 @@
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="tn.esprit.user.ui.LoginController"
-            prefWidth="960" prefHeight="640">
+            prefWidth="960" prefHeight="640"
+            styleClass="page-bg">
+    <stylesheets>
+        <URL value="@../css/bekri.css"/>
+    </stylesheets>
     <center>
         <HBox fillHeight="true">
             <VBox alignment="CENTER" spacing="24" styleClass="auth-left-panel" minWidth="400">

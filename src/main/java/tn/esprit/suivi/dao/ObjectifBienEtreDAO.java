@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ObjectifBienEtreDAO {
-    private final Connection cnx = MyDataBase.getInstance().getCnx();
+    private Connection getCnx() {
+        return MyDataBase.getInstance().getCnx();
+    }
 
     public List<String> findActiveTypesByUser(int userId) {
         String sql = """
@@ -33,6 +35,7 @@ public class ObjectifBienEtreDAO {
     }
 
     private List<String> executeTypeQuery(String sql, int userId) {
+        Connection cnx = getCnx();
         List<String> types = new ArrayList<>();
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setInt(1, userId);

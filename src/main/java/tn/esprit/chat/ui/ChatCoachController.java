@@ -1,14 +1,21 @@
 package tn.esprit.chat.ui;
 
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import tn.esprit.chat.service.ChatProviders;
+import tn.esprit.session.SessionManager;
 import tn.esprit.shared.DialogHelper;
 import tn.esprit.shared.SceneManager;
 
@@ -139,35 +146,48 @@ Comment vous sentez-vous aujourd’hui ? (stress, sommeil, humeur, énergie, act
 """.trim());
     }
 
-    @FXML
-    private void handleBack() {
-        try {
-            SceneManager.switchTo("user-dashboard");
-        } catch (IOException e) {
-            DialogHelper.showError("Navigation", e.getMessage());
-        }
+    // ═══════════════════════════════════════════════════════════════
+    //  SIDEBAR NAVIGATION
+    // ═══════════════════════════════════════════════════════════════
+
+    @FXML private void handleAccueil(ActionEvent e)        { loadView(stageFrom(e), "/fxml/user-dashboard.fxml"); }
+    @FXML private void handleObjectifs(ActionEvent e)      { loadView(stageFrom(e), "/fxml/objectifs.fxml"); }
+    @FXML private void handleDailyCheckIn(ActionEvent e)   { loadView(stageFrom(e), "/fxml/suivi_today.fxml"); }
+    @FXML private void handleWeekPlan(ActionEvent e)       { loadView(stageFrom(e), "/fxml/plan-weekly.fxml"); }
+    @FXML private void handleWeeklyInsights(ActionEvent e) { loadView(stageFrom(e), "/fxml/weekly-insight.fxml"); }
+    @FXML private void handleChatBot(ActionEvent e)        { loadView(stageFrom(e), "/fxml/chat-coach.fxml"); }
+    @FXML private void handleTest(ActionEvent e)           { loadView(stageFrom(e), "/fxml/test.fxml"); }
+    @FXML private void handleProfilPsy(ActionEvent e)      { loadView(stageFrom(e), "/fxml/profil-psychologique.fxml"); }
+    @FXML private void handleProfil(ActionEvent e)         { loadView(stageFrom(e), "/fxml/profile.fxml"); }
+    @FXML private void handleLogout(ActionEvent e) {
+        SessionManager.getInstance().logout();
+        loadView(stageFrom(e), "/fxml/login.fxml");
     }
 
     @FXML
-    private void handleGoCheckIn() {
-        try {
-            SceneManager.switchTo("suivi-today");
-        } catch (IOException e) {
-            DialogHelper.showError("Navigation", e.getMessage());
-        }
-    }
+    private void handleGoCheckIn(ActionEvent e) { loadView(stageFrom(e), "/fxml/suivi_today.fxml"); }
 
     @FXML
-    private void handleGoWeekly() {
-        try {
-            SceneManager.switchTo("weekly-insight");
-        } catch (IOException e) {
-            DialogHelper.showError("Navigation", e.getMessage());
-        }
-    }
+    private void handleGoWeekly(ActionEvent e)  { loadView(stageFrom(e), "/fxml/weekly-insight.fxml"); }
 
     @FXML
     private void handleReload() { }
+
+    private Stage stageFrom(ActionEvent e) {
+        return (Stage) ((Node) e.getSource()).getScene().getWindow();
+    }
+
+    private void loadView(Stage stage, String fxmlPath) {
+        try {
+            java.net.URL url = getClass().getResource(fxmlPath);
+            if (url == null) throw new IllegalArgumentException("FXML not found: " + fxmlPath);
+            Parent root = FXMLLoader.load(url);
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException ex) {
+            DialogHelper.showError("Navigation", ex.getMessage());
+        }
+    }
 
     private String buildSystemPrompt() {
         return """

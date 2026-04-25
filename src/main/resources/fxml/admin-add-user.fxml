@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="tn.esprit.user.ui.AdminAddUserController"
-      styleClass="dashboard-root"
+      styleClass="dashboard-root page-bg"
       prefWidth="900" prefHeight="700">
+    <stylesheets>
+        <URL value="@../css/bekri.css"/>
+    </stylesheets>
 
     <HBox styleClass="topnav" alignment="CENTER_LEFT" spacing="12">
         <padding><Insets top="14" right="28" bottom="14" left="28"/></padding>

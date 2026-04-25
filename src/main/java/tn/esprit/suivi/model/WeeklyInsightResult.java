@@ -2,7 +2,9 @@ package tn.esprit.suivi.model;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WeeklyInsightResult {
 
@@ -13,6 +15,9 @@ public class WeeklyInsightResult {
     private LocalDate worstDay;
     private Double bestScore;
     private Double worstScore;
+
+    // ── NEW: per-day humeur averages for the line chart ──────────────────
+    private Map<LocalDate, Double> dailyHumeurScores = new HashMap<>();
 
     public int getTotalSubmittedDays() {
         return totalSubmittedDays;
@@ -60,5 +65,14 @@ public class WeeklyInsightResult {
 
     public void setWorstScore(Double worstScore) {
         this.worstScore = worstScore;
+    }
+
+    // ── NEW getter/setter ────────────────────────────────────────────────
+    public Map<LocalDate, Double> getDailyHumeurScores() {
+        return dailyHumeurScores;
+    }
+
+    public void setDailyHumeurScores(Map<LocalDate, Double> dailyHumeurScores) {
+        this.dailyHumeurScores = dailyHumeurScores;
     }
 }

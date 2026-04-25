@@ -23,12 +23,15 @@ import java.util.Map;
 import java.util.Optional;
 
 public class UtilisateurDao {
-    private final Connection cnx = MyDataBase.getInstance().getCnx();
     private final TwoFactorDAO twoFactorDAO = new TwoFactorDAO();
+
+    private Connection getCnx() {
+        return MyDataBase.getInstance().getCnx();
+    }
 
     public Optional<Utilisateur> findByEmail(String email) {
         String sql = "SELECT * FROM utilisateur WHERE email = ?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -45,7 +48,7 @@ public class UtilisateurDao {
 
     public Optional<Utilisateur> findById(Integer id) {
         String sql = "SELECT * FROM utilisateur WHERE id = ?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -62,7 +65,7 @@ public class UtilisateurDao {
 
     public List<Utilisateur> findAll() {
         String sql = "SELECT * FROM utilisateur ORDER BY id DESC";
-        try (PreparedStatement ps = cnx.prepareStatement(sql);
+        try (PreparedStatement ps = getCnx().prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             List<Utilisateur> list = new ArrayList<>();
             while (rs.next()) {
@@ -82,7 +85,7 @@ public class UtilisateurDao {
                 String sql = "INSERT INTO utilisateur "
                         + "(nom, prenom, email, mot_de_passe, role, statut, avatar, telephone, date_naissance, created_at) "
                         + "VALUES (?,?,?,?,?,?,?,?,?,NOW())";
-                try (PreparedStatement ps = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                try (PreparedStatement ps = getCnx().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                     ps.setString(1, u.getNom());
                     ps.setString(2, u.getPrenom());
                     ps.setString(3, u.getEmail());
@@ -108,7 +111,7 @@ public class UtilisateurDao {
 
             String sql = "UPDATE utilisateur SET nom=?, prenom=?, email=?, mot_de_passe=?, role=?, "
                     + "statut=?, avatar=?, telephone=?, date_naissance=?, updated_at=NOW() WHERE id=?";
-            try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
                 ps.setString(1, u.getNom());
                 ps.setString(2, u.getPrenom());
                 ps.setString(3, u.getEmail());
@@ -133,7 +136,7 @@ public class UtilisateurDao {
 
     public boolean existsByEmail(String email) {
         String sql = "SELECT COUNT(*) FROM utilisateur WHERE email = ?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -251,7 +254,7 @@ public class UtilisateurDao {
 
     public void updateRoleAndStatus(int userId, UtilisateurRole role, UtilisateurStatut statut) {
         String sql = "UPDATE utilisateur SET role = ?, statut = ? WHERE id = ?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setString(1, role != null ? role.name() : null);
             ps.setString(2, statut != null ? statut.name() : null);
             ps.setInt(3, userId);
@@ -292,7 +295,7 @@ public class UtilisateurDao {
     // Reset password
     public void saveResetToken(int userId, String token, LocalDateTime expiresAt) {
         String sql = "UPDATE utilisateur SET reset_token=?, reset_token_expires_at=?, updated_at=NOW() WHERE id=?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setString(1, token);
             ps.setTimestamp(2, expiresAt != null ? Timestamp.valueOf(expiresAt) : null);
             ps.setInt(3, userId);
@@ -304,7 +307,7 @@ public class UtilisateurDao {
 
     public Utilisateur findByResetToken(String token) {
         String sql = "SELECT * FROM utilisateur WHERE reset_token=? LIMIT 1";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setString(1, token);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -321,7 +324,7 @@ public class UtilisateurDao {
 
     public void clearResetToken(int userId) {
         String sql = "UPDATE utilisateur SET reset_token=NULL, reset_token_expires_at=NULL, updated_at=NOW() WHERE id=?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -331,7 +334,7 @@ public class UtilisateurDao {
 
     public void updatePassword(int userId, String hashedPassword) {
         String sql = "UPDATE utilisateur SET mot_de_passe=?, updated_at=NOW() WHERE id=?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setString(1, hashedPassword);
             ps.setInt(2, userId);
             ps.executeUpdate();
@@ -343,7 +346,7 @@ public class UtilisateurDao {
     // Email verification (reuses reset_token column while is_verified=0)
     public void saveVerificationToken(int userId, String token, LocalDateTime expiresAt) {
         String sql = "UPDATE utilisateur SET reset_token=?, reset_token_expires_at=?, updated_at=NOW() WHERE id=?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setString(1, token);
             ps.setTimestamp(2, expiresAt != null ? Timestamp.valueOf(expiresAt) : null);
             ps.setInt(3, userId);
@@ -355,7 +358,7 @@ public class UtilisateurDao {
 
     public Utilisateur findByVerificationToken(String token) {
         String sql = "SELECT * FROM utilisateur WHERE reset_token=? AND is_verified=0 LIMIT 1";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setString(1, token);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -372,7 +375,7 @@ public class UtilisateurDao {
 
     public void setVerified(int userId) {
         String sql = "UPDATE utilisateur SET is_verified=1, reset_token=NULL, reset_token_expires_at=NULL, updated_at=NOW() WHERE id=?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -382,7 +385,7 @@ public class UtilisateurDao {
 
     public void updateLastLogin(int userId) {
         String sql = "UPDATE utilisateur SET last_login_at=NOW() WHERE id=?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -400,7 +403,7 @@ public class UtilisateurDao {
     }
 
     private int countBySql(String sql) {
-        try (PreparedStatement ps = cnx.prepareStatement(sql);
+        try (PreparedStatement ps = getCnx().prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
@@ -413,7 +416,7 @@ public class UtilisateurDao {
 
     public void deleteById(int userId) {
         String sql = "DELETE FROM utilisateur WHERE id = ?";
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
             ps.setInt(1, userId);
             int affected = ps.executeUpdate();
             if (affected == 0) {

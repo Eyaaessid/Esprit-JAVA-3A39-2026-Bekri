@@ -12,9 +12,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class QuestionEvaluationDAO {
-    private final Connection cnx = MyDataBase.getInstance().getCnx();
+    private Connection getCnx() {
+        return MyDataBase.getInstance().getCnx();
+    }
 
     public List<QuestionEvaluation> findAll() {
+        Connection cnx = getCnx();
         String sql = """
                 SELECT id, texte, category, type_reponse, option1, option2, option3, min_value, max_value
                 FROM question_evaluation
@@ -33,6 +36,7 @@ public class QuestionEvaluationDAO {
     }
 
     public List<QuestionEvaluation> findByCategories(List<String> categories) {
+        Connection cnx = getCnx();
         if (categories == null || categories.isEmpty()) {
             return List.of();
         }

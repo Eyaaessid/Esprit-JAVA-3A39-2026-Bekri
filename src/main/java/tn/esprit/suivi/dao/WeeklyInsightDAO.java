@@ -13,16 +13,11 @@ import java.time.LocalDate;
 import java.util.*;
 
 public class WeeklyInsightDAO {
+    private Connection getCnx() {
+        return MyDataBase.getInstance().getCnx();
+    }
 
-    /**
-     * IMPORTANT:
-     * Update table/column names to match your database schema if different.
-     *
-     * This query must return:
-     * - day_date: DATE
-     * - category: VARCHAR
-     * - valeur: VARCHAR (the stored answer)
-     */
+
     private static final String SQL_WEEK_ANSWERS =
             """
             SELECT
@@ -42,8 +37,8 @@ public class WeeklyInsightDAO {
         Map<String, List<Double>> categoryScores = new LinkedHashMap<>();
         Map<LocalDate, List<Double>> dailyScores = new LinkedHashMap<>();
 
-        try (Connection cnx = MyDataBase.getInstance().getCnx();
-             PreparedStatement ps = cnx.prepareStatement(SQL_WEEK_ANSWERS)) {
+        Connection cnx = getCnx();
+        try (PreparedStatement ps = cnx.prepareStatement(SQL_WEEK_ANSWERS)) {
 
             ps.setInt(1, userId);
             ps.setDate(2, java.sql.Date.valueOf(start));
@@ -133,12 +128,7 @@ public class WeeklyInsightDAO {
         return v.isBlank() ? "autre" : v;
     }
 
-    /**
-     * Java version of your Symfony convertResponseToScore(), but made robust:
-     * - remove accents (é -> e)
-     * - normalize dashes (–, — -> -)
-     * - collapse spaces
-     */
+    
     public static double convertResponseToScore(String valeur) {
         if (valeur == null) return 0.0;
 

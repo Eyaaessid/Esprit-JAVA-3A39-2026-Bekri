@@ -9,6 +9,7 @@
             fx:controller="tn.esprit.user.ui.AdminUserEditController"
             prefWidth="700" prefHeight="460" styleClass="page-bg">
     <stylesheets>
+        <URL value="@../css/bekri.css"/>
         <URL value="@/css/admin-edit.css"/>
     </stylesheets>
     <top>

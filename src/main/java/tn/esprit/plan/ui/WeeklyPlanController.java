@@ -4,11 +4,13 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -28,6 +30,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import tn.esprit.plan.model.WeeklyPlan;
 import tn.esprit.plan.service.WeeklyPlanPdfExporter;
 import tn.esprit.plan.service.WeeklyPlanService;
@@ -166,10 +169,35 @@ public class WeeklyPlanController implements Initializable {
         });
     }
 
-    @FXML
-    private void handleBack(ActionEvent e) {
+    // ═══════════════════════════════════════════════════════════════
+    //  SIDEBAR NAVIGATION
+    // ═══════════════════════════════════════════════════════════════
+
+    @FXML private void handleAccueil(ActionEvent e)        { loadView(stageFrom(e), "/fxml/user-dashboard.fxml"); }
+    @FXML private void handleObjectifs(ActionEvent e)      { loadView(stageFrom(e), "/fxml/objectifs.fxml"); }
+    @FXML private void handleDailyCheckIn(ActionEvent e)   { loadView(stageFrom(e), "/fxml/suivi_today.fxml"); }
+    @FXML private void handleWeekPlan(ActionEvent e)       { loadView(stageFrom(e), "/fxml/plan-weekly.fxml"); }
+    @FXML private void handleWeeklyInsights(ActionEvent e) { loadView(stageFrom(e), "/fxml/weekly-insight.fxml"); }
+    @FXML private void handleChatBot(ActionEvent e)        { loadView(stageFrom(e), "/fxml/chat-coach.fxml"); }
+    @FXML private void handleTest(ActionEvent e)           { loadView(stageFrom(e), "/fxml/test.fxml"); }
+    @FXML private void handleProfilPsy(ActionEvent e)      { loadView(stageFrom(e), "/fxml/profil-psychologique.fxml"); }
+    @FXML private void handleProfil(ActionEvent e)         { loadView(stageFrom(e), "/fxml/profile.fxml"); }
+    @FXML private void handleLogout(ActionEvent e) {
+        SessionManager.getInstance().logout();
+        loadView(stageFrom(e), "/fxml/login.fxml");
+    }
+
+    private Stage stageFrom(ActionEvent e) {
+        return (Stage) ((Node) e.getSource()).getScene().getWindow();
+    }
+
+    private void loadView(Stage stage, String fxmlPath) {
         try {
-            SceneManager.switchTo("user-dashboard");
+            java.net.URL url = getClass().getResource(fxmlPath);
+            if (url == null) throw new IllegalArgumentException("FXML not found: " + fxmlPath);
+            Parent root = FXMLLoader.load(url);
+            stage.setScene(new Scene(root));
+            stage.show();
         } catch (IOException ex) {
             DialogHelper.showError("Navigation", ex.getMessage());
         }
@@ -630,4 +658,3 @@ public class WeeklyPlanController implements Initializable {
         return s == null ? "" : s.trim();
     }
 }
-

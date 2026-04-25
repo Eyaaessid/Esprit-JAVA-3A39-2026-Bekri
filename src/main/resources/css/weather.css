@@ -1,0 +1,37 @@
+.weather-card-root {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: #e2e8f0;
+}
+
+.weather-title { -fx-font-size: 18px; -fx-font-weight: 700; -fx-text-fill: #0f172a; }
+.weather-subtitle { -fx-font-size: 13px; -fx-text-fill: #475569; }
+
+.weather-badge {
+    -fx-padding: 6 12 6 12;
+    -fx-background-radius: 20;
+    -fx-font-weight: 700;
+}
+.weather-default { -fx-background-color: #e2e8f0; -fx-text-fill: #334155; }
+.weather-hot { -fx-background-color: #fee2e2; -fx-text-fill: #991b1b; }
+.weather-warm { -fx-background-color: #ffedd5; -fx-text-fill: #9a3412; }
+.weather-mild { -fx-background-color: #dcfce7; -fx-text-fill: #166534; }
+.weather-cold { -fx-background-color: #dbeafe; -fx-text-fill: #1e3a8a; }
+
+.weather-stat-box {
+    -fx-padding: 10;
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 10;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 10;
+    -fx-min-width: 130;
+}
+.weather-stat-label { -fx-font-size: 12px; -fx-text-fill: #64748b; }
+.weather-stat-value { -fx-font-size: 22px; -fx-font-weight: 800; -fx-text-fill: #0f172a; }
+
+.weather-tips-title { -fx-font-size: 14px; -fx-font-weight: 700; -fx-text-fill: #0f172a; }
+.weather-tip-label { -fx-font-size: 13px; -fx-text-fill: #1e293b; }
+
+.weather-status-label { -fx-font-size: 12px; -fx-text-fill: #334155; }
+.weather-status-error { -fx-text-fill: #b91c1c; }

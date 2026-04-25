@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.chart.BarChart?>
 <?import javafx.scene.chart.CategoryAxis?>
@@ -10,7 +11,6 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
@@ -20,177 +20,329 @@
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="tn.esprit.suivi.ui.WeeklyInsightController"
             prefWidth="1200" prefHeight="720"
-            styleClass="sym-root">
+            styleClass="page-bg">
+    <stylesheets>
+        <URL value="@../css/bekri.css"/>
+        <URL value="@../css/weather.css"/>
+        <URL value="@../css/weekly-insight.css"/>
+    </stylesheets>
 
-    <!-- Sidebar -->
+    <!-- ══ SIDEBAR ══════════════════════════════════════════════════ -->
     <left>
-        <VBox prefWidth="300" styleClass="sym-sidebar">
-            <!-- teal header -->
-            <HBox styleClass="sym-sidebar-header" alignment="CENTER_LEFT" spacing="14">
-                <Label text="B" styleClass="sym-avatar"/>
-                <Label text="bekri" styleClass="sym-brand"/>
-            </HBox>
+        <VBox styleClass="sidebar">
+            <VBox styleClass="sidebar-logo-box" spacing="2">
+                <Label text="bekri" styleClass="sidebar-logo"/>
+                <Label text="Bien-être &amp; Objectifs" styleClass="sidebar-logo-sub"/>
+            </VBox>
 
-            <VBox styleClass="sym-nav" spacing="6">
-                <Button text="Accueil" styleClass="sym-nav-item" onAction="#handleBack"/>
-                <Button text="Mon profil" styleClass="sym-nav-item" onAction="#handleBack"/>
-                <Button text="Mes objectifs" styleClass="sym-nav-item" onAction="#handleBack"/>
-                <Button text="Mes suivis" styleClass="sym-nav-item" onAction="#handleCheckIn"/>
-                <Button text="Tests mentaux" styleClass="sym-nav-item" onAction="#handleBack"/>
-                <Button text="Posts" styleClass="sym-nav-item" onAction="#handleBack"/>
-                <Button text="Événements" styleClass="sym-nav-item" onAction="#handleBack"/>
+            <VBox styleClass="sidebar-nav-box" spacing="0">
+                <Label text="MENU" styleClass="sidebar-section-label"/>
+                <Button text="🏠  Accueil"             styleClass="sidebar-btn" onAction="#handleAccueil"/>
+                <Button text="🎯  Mes Objectifs"       styleClass="sidebar-btn" onAction="#handleObjectifs"/>
+                <Button text="✅  Daily Check-in"      styleClass="sidebar-btn" onAction="#handleDailyCheckIn"/>
+                <Button text="📅  Plan de la semaine"  styleClass="sidebar-btn" onAction="#handleWeekPlan"/>
+                <Button text="📈  Weekly Insights"     styleClass="sidebar-btn" onAction="#handleWeeklyInsights"/>
+                <Button text="🤖  Chatbot"             styleClass="sidebar-btn" onAction="#handleChatBot"/>
+                <Button text="🧠  Test Psychologique"  styleClass="sidebar-btn" onAction="#handleTest"/>
+                <Button text="📊  Mon Profil Psy"      styleClass="sidebar-btn" onAction="#handleProfilPsy"/>
+                <Button text="👤  Mon Profil"          styleClass="sidebar-btn" onAction="#handleProfil"/>
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
 
-            <HBox styleClass="sym-sidebar-footer" alignment="CENTER_LEFT">
-                <Label text="Déconnexion" styleClass="sym-logout"/>
-            </HBox>
+            <VBox styleClass="sidebar-divider">
+                <Button text="⎋  Déconnexion" styleClass="sidebar-logout" onAction="#handleLogout"/>
+            </VBox>
         </VBox>
     </left>
 
-    <!-- Main -->
+    <!-- ══ MAIN CONTENT ═════════════════════════════════════════════ -->
     <center>
-        <BorderPane styleClass="sym-main">
+        <VBox>
 
-            <!-- Topbar -->
-            <top>
-                <HBox styleClass="sym-topbar" alignment="CENTER_LEFT">
-                    <Label text="Résumé des 7 derniers jours" styleClass="sym-topbar-title"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label fx:id="periodLabel" text="Période" styleClass="sym-topbar-period"/>
-                </HBox>
-            </top>
+            <!-- ── Top bar ──────────────────────────────────────────── -->
+            <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="12">
+                <Label text="Insights hebdomadaires" styleClass="top-bar-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="periodLabel" text="Période" styleClass="sym-topbar-period page-subtitle"/>
+                <Button text="📄  Télécharger PDF" onAction="#handleExportPdf"
+                        style="-fx-background-color: linear-gradient(to right,#14b8a6,#0d9488);
+                               -fx-text-fill: white; -fx-background-radius: 10;
+                               -fx-padding: 9 18 9 18; -fx-font-size: 13px;
+                               -fx-font-weight: 700; -fx-cursor: hand;
+                               -fx-border-color: transparent;"/>
+            </HBox>
 
-            <!-- Content -->
-            <center>
-                <ScrollPane fx:id="rootScroll" fitToWidth="true" styleClass="sym-scroll">
-                    <content>
-                        <VBox spacing="26" styleClass="sym-content">
-                            <padding><Insets top="22" right="26" bottom="28" left="26"/></padding>
+            <ScrollPane fx:id="rootScroll" fitToWidth="true" styleClass="sym-scroll" VBox.vgrow="ALWAYS">
+                <content>
+                    <VBox spacing="20" styleClass="sym-content">
+                        <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
 
-                            <!-- Empty state -->
-                            <VBox fx:id="emptyStateBox" visible="false" managed="false" spacing="10" styleClass="sym-empty">
-                                <Label text="Aucune donnée disponible" styleClass="sym-empty-title"/>
-                                <Label text="Vous n'avez pas encore rempli de check-in cette semaine. Commencez dès aujourd'hui !"
-                                       wrapText="true" styleClass="sym-empty-text"/>
-                                <Button text="Faire mon check-in aujourd'hui" onAction="#handleCheckIn" styleClass="sym-btn sym-btn-teal"/>
-                            </VBox>
-
-                            <!-- All content -->
-                            <VBox fx:id="contentSections" spacing="26">
-
-                                <!-- Stat cards -->
-                                <HBox spacing="18" alignment="CENTER">
-                                    <VBox styleClass="sym-stat-card" spacing="10" HBox.hgrow="ALWAYS">
-                                        <Label text="Jours complétés" styleClass="sym-stat-label"/>
-                                        <Label fx:id="daysFilledLabel" text="0 / 7" styleClass="sym-stat-value sym-stat-value-teal"/>
-                                    </VBox>
-
-                                    <VBox styleClass="sym-stat-card" spacing="10" HBox.hgrow="ALWAYS">
-                                        <Label text="Meilleur jour" styleClass="sym-stat-label"/>
-                                        <Label fx:id="bestDayLabel" text="—" styleClass="sym-stat-value sym-stat-value-green"/>
-                                    </VBox>
-
-                                    <VBox styleClass="sym-stat-card" spacing="10" HBox.hgrow="ALWAYS">
-                                        <Label text="Jour le plus difficile" styleClass="sym-stat-label"/>
-                                        <Label fx:id="worstDayLabel" text="—" styleClass="sym-stat-value sym-stat-value-red"/>
-                                    </VBox>
-
-                                    <VBox styleClass="sym-stat-card" spacing="10" HBox.hgrow="ALWAYS">
-                                        <Label text="Score moyen global" styleClass="sym-stat-label"/>
-                                        <Label fx:id="globalAvgLabel" text="0.0" styleClass="sym-stat-value sym-stat-value-teal"/>
-                                    </VBox>
-                                </HBox>
-
-                                <!-- Recommendations panel -->
-                                <VBox styleClass="sym-reco-panel" spacing="18">
-                                    <HBox spacing="12" alignment="CENTER_LEFT">
-                                        <Label text="💡" styleClass="sym-reco-icon"/>
-                                        <Label text="Recommandations personnalisées" styleClass="sym-reco-title"/>
-                                    </HBox>
-
-                                    <!-- Keep using existing HBox fx:id so controller can populate -->
-                                    <HBox fx:id="recommendationBox" spacing="18"/>
-                                </VBox>
-
-                                <!-- Charts row (like screenshot) -->
-                                <HBox spacing="22">
-                                    <VBox styleClass="sym-card" spacing="12" HBox.hgrow="ALWAYS">
-                                        <Label text="Progression globale" styleClass="sym-card-title"/>
-                                        <StackPane styleClass="sym-donut-wrap">
-                                            <PieChart fx:id="globalPieChart" legendVisible="false" labelsVisible="false" styleClass="sym-donut"/>
-                                            <Label fx:id="donutCenterLabel" text="0/7" styleClass="sym-donut-center"/>
-                                        </StackPane>
-                                    </VBox>
-
-                                    <VBox styleClass="sym-card" spacing="12" HBox.hgrow="ALWAYS">
-                                        <Label text="Scores par catégorie" styleClass="sym-card-title"/>
-                                        <BarChart fx:id="categoryBarChart" animated="false">
-                                            <xAxis><CategoryAxis/></xAxis>
-                                            <yAxis><NumberAxis lowerBound="0" upperBound="100" autoRanging="false"/></yAxis>
-                                        </BarChart>
-                                    </VBox>
-                                </HBox>
-
-                                <!-- Mood chart full width -->
-                                <VBox styleClass="sym-card" spacing="12">
-                                    <Label text="Évolution de l'humeur" styleClass="sym-card-title"/>
-                                    <LineChart fx:id="humeurLineChart" createSymbols="true" animated="false">
-                                        <xAxis><CategoryAxis/></xAxis>
-                                        <yAxis><NumberAxis lowerBound="0" upperBound="100" autoRanging="false"/></yAxis>
-                                    </LineChart>
-                                </VBox>
-
-                                <!-- Trends & highlights -->
-                                <HBox spacing="22">
-                                    <VBox styleClass="sym-card" spacing="12" HBox.hgrow="ALWAYS">
-                                        <Label text="Tendances observées" styleClass="sym-card-title"/>
-                                        <VBox spacing="10">
-                                            <!-- minimal placeholder; you can expand later -->
-                                            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="sym-trend-row">
-                                                <Label text="Humeur" styleClass="sym-trend-label"/>
-                                                <Region HBox.hgrow="ALWAYS"/>
-                                                <Label text="En déclin" styleClass="sym-trend-badge sym-trend-down"/>
-                                            </HBox>
-                                        </VBox>
-                                    </VBox>
-
-                                    <VBox styleClass="sym-card" spacing="12" HBox.hgrow="ALWAYS">
-                                        <Label text="Points forts et à améliorer" styleClass="sym-card-title"/>
-                                        <VBox spacing="12">
-                                            <VBox styleClass="sym-highlight sym-highlight-green" spacing="8">
-                                                <Label text="Meilleur jour" styleClass="sym-highlight-title sym-highlight-title-green"/>
-                                                <Label fx:id="bestHighlightLabel" text="—" wrapText="true" styleClass="sym-highlight-text"/>
-                                            </VBox>
-
-                                            <VBox styleClass="sym-highlight sym-highlight-red" spacing="8">
-                                                <Label text="Jour le plus difficile" styleClass="sym-highlight-title sym-highlight-title-red"/>
-                                                <Label fx:id="worstHighlightLabel" text="—" wrapText="true" styleClass="sym-highlight-text"/>
-                                            </VBox>
-                                        </VBox>
-                                    </VBox>
-                                </HBox>
-
-                                <!-- Encouragement -->
-                                <VBox styleClass="sym-encourage" spacing="18">
-                                    <Label text="Continuez sur cette lancée !" styleClass="sym-encourage-title"/>
-                                    <Label fx:id="encouragementLabel"
-                                           text="Message"
-                                           wrapText="true"
-                                           styleClass="sym-encourage-text"/>
-                                    <Button text="Faire mon check-in aujourd'hui" onAction="#handleCheckIn" styleClass="sym-btn sym-btn-teal-wide"/>
-                                    <HBox spacing="12" alignment="CENTER">
-                                        <Button text="Télécharger PDF" onAction="#handleExportPdf" styleClass="sym-btn sym-btn-outline"/>
-                                        <Button text="Retour" onAction="#handleBack" styleClass="sym-btn sym-btn-ghost"/>
-                                    </HBox>
-                                </VBox>
-
-                            </VBox>
+                        <!-- ── Empty state ────────────────────────────────── -->
+                        <VBox fx:id="emptyStateBox" visible="false" managed="false"
+                              spacing="16" styleClass="sym-empty" alignment="CENTER">
+                            <Label text="📊  Aucune donnée disponible" styleClass="sym-empty-title"/>
+                            <Label text="Vous n'avez pas encore rempli de check-in cette semaine. Commencez dès aujourd'hui !"
+                                   wrapText="true" styleClass="sym-empty-text" maxWidth="480"/>
+                            <Button text="✅  Faire mon check-in" onAction="#handleCheckIn"
+                                    style="-fx-background-color: linear-gradient(to right,#14b8a6,#0d9488);
+                                           -fx-text-fill: white; -fx-background-radius: 12;
+                                           -fx-padding: 12 24 12 24; -fx-font-size:14px;
+                                           -fx-font-weight:700; -fx-cursor:hand;
+                                           -fx-border-color:transparent;"/>
                         </VBox>
-                    </content>
-                </ScrollPane>
-            </center>
-        </BorderPane>
+
+                        <!-- ── All data content ───────────────────────────── -->
+                        <VBox fx:id="contentSections" spacing="20">
+
+                            <!-- ── ROW 1: Stat cards ─────────────────────── -->
+                            <HBox spacing="14">
+                                <!-- Jours complétés -->
+                                <VBox spacing="6" HBox.hgrow="ALWAYS"
+                                      style="-fx-background-color:#0a1628;
+                                             -fx-background-radius:16;
+                                             -fx-padding:20;
+                                             -fx-border-color:rgba(20,184,166,0.35);
+                                             -fx-border-radius:16;
+                                             -fx-border-width:1;">
+                                    <Label text="JOURS COMPLÉTÉS"
+                                           style="-fx-text-fill:#475569;-fx-font-size:10px;-fx-font-weight:700;"/>
+                                    <Label fx:id="daysFilledLabel" text="0 / 7"
+                                           style="-fx-font-size:28px;-fx-font-weight:800;-fx-text-fill:#14b8a6;"/>
+                                    <Label text="Cette semaine"
+                                           style="-fx-text-fill:#334155;-fx-font-size:12px;"/>
+                                    <Label text="✓ En bonne voie"
+                                           style="-fx-background-color:rgba(20,184,166,0.12);
+                                                  -fx-text-fill:#14b8a6;
+                                                  -fx-background-radius:20;
+                                                  -fx-padding:3 10 3 10;
+                                                  -fx-font-size:11px;-fx-font-weight:600;"/>
+                                </VBox>
+
+                                <!-- Meilleur jour -->
+                                <VBox spacing="6" HBox.hgrow="ALWAYS"
+                                      style="-fx-background-color:#0a1628;
+                                             -fx-background-radius:16;
+                                             -fx-padding:20;
+                                             -fx-border-color:rgba(245,158,11,0.35);
+                                             -fx-border-radius:16;
+                                             -fx-border-width:1;">
+                                    <Label text="MEILLEUR JOUR"
+                                           style="-fx-text-fill:#475569;-fx-font-size:10px;-fx-font-weight:700;"/>
+                                    <Label fx:id="bestDayLabel" text="—"
+                                           style="-fx-font-size:22px;-fx-font-weight:800;-fx-text-fill:#f59e0b;"/>
+                                    <Label fx:id="bestHighlightLabel" text="—"
+                                           style="-fx-text-fill:#334155;-fx-font-size:12px;"/>
+                                    <Label text="↑ Top journée"
+                                           style="-fx-background-color:rgba(245,158,11,0.12);
+                                                  -fx-text-fill:#f59e0b;
+                                                  -fx-background-radius:20;
+                                                  -fx-padding:3 10 3 10;
+                                                  -fx-font-size:11px;-fx-font-weight:600;"/>
+                                </VBox>
+
+                                <!-- Jour difficile -->
+                                <VBox spacing="6" HBox.hgrow="ALWAYS"
+                                      style="-fx-background-color:#0a1628;
+                                             -fx-background-radius:16;
+                                             -fx-padding:20;
+                                             -fx-border-color:rgba(239,68,68,0.35);
+                                             -fx-border-radius:16;
+                                             -fx-border-width:1;">
+                                    <Label text="JOUR DIFFICILE"
+                                           style="-fx-text-fill:#475569;-fx-font-size:10px;-fx-font-weight:700;"/>
+                                    <Label fx:id="worstDayLabel" text="—"
+                                           style="-fx-font-size:22px;-fx-font-weight:800;-fx-text-fill:#ef4444;"/>
+                                    <Label fx:id="worstHighlightLabel" text="—"
+                                           style="-fx-text-fill:#334155;-fx-font-size:12px;"/>
+                                    <Label text="↓ À surveiller"
+                                           style="-fx-background-color:rgba(239,68,68,0.12);
+                                                  -fx-text-fill:#ef4444;
+                                                  -fx-background-radius:20;
+                                                  -fx-padding:3 10 3 10;
+                                                  -fx-font-size:11px;-fx-font-weight:600;"/>
+                                </VBox>
+
+                                <!-- Score global -->
+                                <VBox spacing="6" HBox.hgrow="ALWAYS"
+                                      style="-fx-background-color:#0a1628;
+                                             -fx-background-radius:16;
+                                             -fx-padding:20;
+                                             -fx-border-color:rgba(99,102,241,0.35);
+                                             -fx-border-radius:16;
+                                             -fx-border-width:1;">
+                                    <Label text="SCORE MOYEN GLOBAL"
+                                           style="-fx-text-fill:#475569;-fx-font-size:10px;-fx-font-weight:700;"/>
+                                    <Label fx:id="globalAvgLabel" text="—"
+                                           style="-fx-font-size:28px;-fx-font-weight:800;-fx-text-fill:#818cf8;"/>
+                                    <Label text="Toutes catégories"
+                                           style="-fx-text-fill:#334155;-fx-font-size:12px;"/>
+                                    <Label text="⚡ En progression"
+                                           style="-fx-background-color:rgba(99,102,241,0.12);
+                                                  -fx-text-fill:#818cf8;
+                                                  -fx-background-radius:20;
+                                                  -fx-padding:3 10 3 10;
+                                                  -fx-font-size:11px;-fx-font-weight:600;"/>
+                                </VBox>
+                            </HBox>
+
+                            <!-- ── ROW 2: Encouragement strip ────────────── -->
+                            <HBox styleClass="sym-encourage" spacing="12" alignment="CENTER_LEFT">
+                                <Label text="💪" style="-fx-font-size:20px;"/>
+                                <Label fx:id="encouragementLabel"
+                                       text="Vous progressez doucement — chaque jour compte."
+                                       styleClass="sym-encourage-title"
+                                       wrapText="true" HBox.hgrow="ALWAYS"/>
+                            </HBox>
+
+                            <!-- ── ROW 3: AI Recommendations panel ───────── -->
+                            <VBox styleClass="sym-reco-panel" spacing="16">
+                                <HBox spacing="10" alignment="CENTER_LEFT">
+                                    <Label text="✨" style="-fx-font-size:18px;"/>
+                                    <Label text="Recommandations IA personnalisées"
+                                           styleClass="sym-reco-title section-header"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="aiStatusLabel"
+                                           text="Chargement IA..."
+                                           styleClass="ai-status-label"/>
+                                    <Label text="Basées sur vos données"
+                                           styleClass="sym-reco-subtitle"/>
+                                </HBox>
+                                <HBox fx:id="recommendationBox" spacing="14"/>
+                            </VBox>
+
+                            <!-- ── ROW 4: Donut + Bar charts ─────────────── -->
+                            <HBox spacing="16">
+
+                                <!-- Donut -->
+                                <VBox styleClass="sym-card" spacing="10" HBox.hgrow="ALWAYS">
+                                    <Label text="SCORE MOYEN TOUTES CATÉGORIES"
+                                           styleClass="sym-card-title card-title"/>
+                                    <StackPane styleClass="sym-donut-wrap">
+                                        <PieChart fx:id="globalPieChart"
+                                                  legendVisible="false" labelsVisible="false"
+                                                  styleClass="sym-donut" prefHeight="210"/>
+                                        <VBox alignment="CENTER" spacing="2">
+                                            <Label fx:id="donutCenterLabel" text="0%"
+                                                   styleClass="sym-donut-center"/>
+                                            <Label text="global"
+                                                   style="-fx-text-fill:#475569;-fx-font-size:11px;"/>
+                                        </VBox>
+                                    </StackPane>
+                                </VBox>
+
+                                <!-- Bar chart -->
+                                <VBox styleClass="sym-card" spacing="10" HBox.hgrow="ALWAYS">
+                                    <Label text="SCORES PAR CATÉGORIE (0–100%)"
+                                           styleClass="sym-card-title card-title"/>
+                                    <BarChart fx:id="categoryBarChart" animated="false"
+                                              legendVisible="false" prefHeight="230"
+                                              style="-fx-background-color:transparent;">
+                                        <xAxis><CategoryAxis
+                                                style="-fx-tick-label-fill:#64748b;-fx-font-size:11px;"/></xAxis>
+                                        <yAxis>
+                                            <NumberAxis lowerBound="0" upperBound="100"
+                                                        autoRanging="false" tickUnit="25"
+                                                        style="-fx-tick-label-fill:#64748b;-fx-font-size:11px;"/>
+                                        </yAxis>
+                                    </BarChart>
+                                </VBox>
+                            </HBox>
+
+                            <!-- ── ROW 5: Humeur line chart (full width) ─── -->
+                            <VBox styleClass="sym-card" spacing="10">
+                                <HBox alignment="CENTER_LEFT" spacing="12">
+                                    <VBox spacing="2">
+                                        <Label text="ÉVOLUTION DE L'HUMEUR — 7 JOURS"
+                                               styleClass="sym-card-title card-title"/>
+                                        <Label text="Score humeur quotidien en %"
+                                               style="-fx-text-fill:#334155;-fx-font-size:12px;"/>
+                                    </VBox>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="humeurTrendBadge" text="↓ En déclin"
+                                           styleClass="sym-trend-badge sym-trend-down"/>
+                                </HBox>
+                                <LineChart fx:id="humeurLineChart" createSymbols="true"
+                                           animated="false" legendVisible="false" prefHeight="200"
+                                           style="-fx-background-color:transparent;">
+                                    <xAxis><CategoryAxis
+                                            style="-fx-tick-label-fill:#64748b;-fx-font-size:11px;"/></xAxis>
+                                    <yAxis>
+                                        <NumberAxis lowerBound="0" upperBound="100"
+                                                    autoRanging="false" tickUnit="33"
+                                                    style="-fx-tick-label-fill:#64748b;-fx-font-size:11px;"/>
+                                    </yAxis>
+                                </LineChart>
+                            </VBox>
+
+                            <!-- ── ROW 6: Trends + Highlights ────────────── -->
+                            <HBox spacing="16">
+
+                                <!-- Trends card -->
+                                <VBox styleClass="sym-card" spacing="14" HBox.hgrow="ALWAYS">
+                                    <Label text="TENDANCES OBSERVÉES"
+                                           styleClass="sym-card-title card-title"/>
+                                    <VBox spacing="8">
+                                        <HBox spacing="10" alignment="CENTER_LEFT"
+                                              styleClass="sym-trend-row">
+                                            <Label text="Humeur" styleClass="sym-trend-label"/>
+                                            <Region HBox.hgrow="ALWAYS"/>
+                                            <Label fx:id="humeurTrendBadgeAlt" text="↓ En déclin"
+                                                   styleClass="sym-trend-badge sym-trend-down"/>
+                                        </HBox>
+                                    </VBox>
+                                </VBox>
+
+                                <!-- Highlights card -->
+                                <VBox styleClass="sym-card" spacing="14" HBox.hgrow="ALWAYS">
+                                    <Label text="POINTS FORTS &amp; À AMÉLIORER"
+                                           styleClass="sym-card-title card-title"/>
+                                    <VBox spacing="10">
+                                        <VBox styleClass="sym-highlight sym-highlight-green" spacing="5">
+                                            <Label text="🏆 Meilleur jour"
+                                                   styleClass="sym-highlight-title sym-highlight-title-green"/>
+                                            <Label fx:id="bestHighlightLabel2" text="—"
+                                                   wrapText="true" styleClass="sym-highlight-text"/>
+                                        </VBox>
+                                        <VBox styleClass="sym-highlight sym-highlight-red" spacing="5">
+                                            <Label text="💪 Jour le plus difficile"
+                                                   styleClass="sym-highlight-title sym-highlight-title-red"/>
+                                            <Label fx:id="worstHighlightLabel2" text="—"
+                                                   wrapText="true" styleClass="sym-highlight-text"/>
+                                        </VBox>
+                                    </VBox>
+                                </VBox>
+                            </HBox>
+
+                            <!-- ── ROW 7: Bottom action banner ───────────── -->
+                            <HBox spacing="14" alignment="CENTER"
+                                  style="-fx-background-color:rgba(20,184,166,0.06);
+                                         -fx-background-radius:14;
+                                         -fx-padding:18 24;
+                                         -fx-border-color:rgba(20,184,166,0.15);
+                                         -fx-border-radius:14;
+                                         -fx-border-width:1;">
+                                <Button text="✅  Faire mon check-in aujourd'hui"
+                                        onAction="#handleCheckIn"
+                                        style="-fx-background-color:linear-gradient(to right,#14b8a6,#0d9488);
+                                               -fx-text-fill:white;-fx-background-radius:12;
+                                               -fx-padding:11 22;-fx-font-size:13px;
+                                               -fx-font-weight:700;-fx-cursor:hand;
+                                               -fx-border-color:transparent;"/>
+                                <Button text="📄  Télécharger mon PDF"
+                                        onAction="#handleExportPdf"
+                                        style="-fx-background-color:transparent;
+                                               -fx-text-fill:#14b8a6;
+                                               -fx-border-color:rgba(20,184,166,0.4);
+                                               -fx-border-radius:12;-fx-border-width:2;
+                                               -fx-padding:11 22;-fx-font-size:13px;
+                                               -fx-font-weight:700;-fx-cursor:hand;"/>
+                            </HBox>
+
+                        </VBox>
+                    </VBox>
+                </content>
+            </ScrollPane>
+        </VBox>
     </center>
 </BorderPane>

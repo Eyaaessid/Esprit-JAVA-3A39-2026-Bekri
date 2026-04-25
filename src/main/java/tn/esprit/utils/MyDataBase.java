@@ -1,9 +1,11 @@
 package tn.esprit.utils;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 
 public class MyDataBase {
     private static MyDataBase instance;
@@ -42,5 +44,30 @@ public class MyDataBase {
         return instance;
     }
 
-    public Connection getCnx() { return cnx; }
+    public synchronized Connection getCnx() {
+        try {
+            if (cnx == null || cnx.isClosed() || !cnx.isValid(2)) {
+                Properties props = new Properties();
+                try (InputStream is = MyDataBase.class.getResourceAsStream("/config.properties")) {
+                    if (is != null) props.load(is);
+                }
+                String url = firstNonBlank(props.getProperty("db.url"), URL);
+                String username = firstNonBlank(props.getProperty("db.username"), USERNAME);
+                String password = firstNonBlank(props.getProperty("db.password"), PASSWORD);
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                cnx = DriverManager.getConnection(url, username, password);
+                System.out.println("Connexion JDBC OK (reconnected)");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Impossible de se connecter à la base de données: " + e.getMessage(), e);
+        }
+        return cnx;
+    }
+
+    private static String firstNonBlank(String preferred, String fallback) {
+        if (preferred == null || preferred.isBlank()) {
+            return fallback;
+        }
+        return preferred.trim();
+    }
 }

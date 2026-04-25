@@ -20,12 +20,13 @@ public class ProfilPsychologiqueDao {
     }
 
     public ProfilPsychologique save(ProfilPsychologique p) {
+        Connection cnx = getCnx();
         try {
             if (p.getId() == null) {
                 String sql = "INSERT INTO profil_psychologique "
                         + "(utilisateur_id, score_global, profil_type, date_evaluation, ai_feedback) "
                         + "VALUES (?, ?, ?, NOW(), ?)";
-                try (PreparedStatement ps = getCnx().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                try (PreparedStatement ps = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                     ps.setInt(1, p.getUtilisateurId());
                     ps.setInt(2, p.getScoreGlobal());
                     ps.setString(3, p.getProfilType());
@@ -42,7 +43,7 @@ public class ProfilPsychologiqueDao {
                 String sql = "UPDATE profil_psychologique "
                         + "SET score_global=?, profil_type=?, date_evaluation=NOW(), ai_feedback=? "
                         + "WHERE id=?";
-                try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
+                try (PreparedStatement ps = cnx.prepareStatement(sql)) {
                     ps.setInt(1, p.getScoreGlobal());
                     ps.setString(2, p.getProfilType());
                     ps.setString(3, p.getAiFeedback());
@@ -64,8 +65,9 @@ public class ProfilPsychologiqueDao {
     }
 
     private Optional<ProfilPsychologique> findById(Integer id) {
+        Connection cnx = getCnx();
         String sql = "SELECT * FROM profil_psychologique WHERE id = ?";
-        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -79,9 +81,10 @@ public class ProfilPsychologiqueDao {
     }
 
     public Optional<ProfilPsychologique> findByUtilisateurId(Integer utilisateurId) {
+        Connection cnx = getCnx();
         String sql = "SELECT * FROM profil_psychologique WHERE utilisateur_id = ? "
                 + "ORDER BY date_evaluation DESC LIMIT 1";
-        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setInt(1, utilisateurId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -95,8 +98,9 @@ public class ProfilPsychologiqueDao {
     }
 
     public List<ProfilPsychologique> findAll() {
+        Connection cnx = getCnx();
         String sql = "SELECT * FROM profil_psychologique ORDER BY date_evaluation DESC";
-        try (PreparedStatement ps = getCnx().prepareStatement(sql);
+        try (PreparedStatement ps = cnx.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             List<ProfilPsychologique> list = new ArrayList<>();
             while (rs.next()) {

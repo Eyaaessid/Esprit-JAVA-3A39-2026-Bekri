@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
@@ -7,7 +8,11 @@
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="tn.esprit.faceauth.ui.FaceRegisterController"
-      spacing="16" style="-fx-padding: 24; -fx-background-color: #f8f9fa;">
+      spacing="16" style="-fx-padding: 24; -fx-background-color: #f8f9fa;"
+      styleClass="page-bg">
+  <stylesheets>
+    <URL value="@../css/bekri.css"/>
+  </stylesheets>
 
   <!-- Header -->
   <HBox alignment="CENTER_LEFT" spacing="16">

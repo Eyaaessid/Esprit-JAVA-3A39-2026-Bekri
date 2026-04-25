@@ -15,9 +15,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SuiviDAO {
-    private final Connection cnx = MyDataBase.getInstance().getCnx();
+    private Connection getCnx() {
+        return MyDataBase.getInstance().getCnx();
+    }
 
     public SuiviQuotidien findTodayByUser(int userId, LocalDate today) {
+        Connection cnx = getCnx();
         String sql = """
                 SELECT id, date, commentaire, utilisateur_id, soumis_at
                 FROM suivi_quotidien
@@ -47,6 +50,7 @@ public class SuiviDAO {
     }
 
     public boolean hasResponses(int suiviId) {
+        Connection cnx = getCnx();
         String sql = "SELECT COUNT(*) FROM reponse_suivi WHERE suivi_id = ?";
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setInt(1, suiviId);
@@ -63,6 +67,7 @@ public class SuiviDAO {
      * Uses SELECT ... FOR UPDATE to lock the (userId,date) row when it exists.
      */
     public int findOrCreateToday(int userId, LocalDate date) throws SQLException {
+        Connection cnx = getCnx();
         boolean previousAutoCommit = cnx.getAutoCommit();
         try {
             cnx.setAutoCommit(false);
@@ -103,6 +108,7 @@ public class SuiviDAO {
     }
 
     public void updateCommentaire(int suiviId, String commentaire) {
+        Connection cnx = getCnx();
         String sql = "UPDATE suivi_quotidien SET commentaire = ? WHERE id = ?";
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setString(1, commentaire);
@@ -114,6 +120,7 @@ public class SuiviDAO {
     }
 
     public void upsertResponse(int suiviId, int questionId, String valeur) {
+        Connection cnx = getCnx();
         try {
             upsertResponse(cnx, suiviId, questionId, valeur);
         } catch (SQLException e) {
@@ -148,6 +155,7 @@ public class SuiviDAO {
     }
 
     public Map<Integer, String> getAnswersBySuiviId(int suiviId) {
+        Connection cnx = getCnx();
         String sql = "SELECT question_id, valeur FROM reponse_suivi WHERE suivi_id = ?";
         Map<Integer, String> map = new LinkedHashMap<>();
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
@@ -164,6 +172,7 @@ public class SuiviDAO {
     }
 
     public boolean isSubmitted(int userId, LocalDate date) {
+        Connection cnx = getCnx();
         String sql = """
                 SELECT 1
                 FROM suivi_quotidien
@@ -182,6 +191,7 @@ public class SuiviDAO {
     }
 
     public void markSoumisAtNow(int suiviId) throws SQLException {
+        Connection cnx = getCnx();
         String sql = "UPDATE suivi_quotidien SET soumis_at = NOW() WHERE id = ?";
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setInt(1, suiviId);
@@ -190,6 +200,7 @@ public class SuiviDAO {
     }
 
     public void submitCheckInAtomic(int userId, LocalDate date, String commentaire, Map<Integer, String> answers) throws SQLException {
+        Connection cnx = getCnx();
         boolean previousAutoCommit = cnx.getAutoCommit();
         try {
             cnx.setAutoCommit(false);
