@@ -17,41 +17,47 @@ import javafx.stage.StageStyle;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * Boîtes de dialogue modales stylées (remplace {@link javafx.scene.control.Alert}).
- */
 public final class DialogHelper {
 
-    private static final double DIALOG_WIDTH = 420;
+    private static final double DIALOG_WIDTH = 430;
 
     private DialogHelper() {}
 
     public static void showSuccess(String title, String message) {
-        runDialog(() -> showDialog(title, message, "✅", "dialog-header-success", false));
+        runDialog(() -> showDialog(title, message, "OK", "dialog-header-success", false, "OK", "Annuler"));
     }
 
     public static void showError(String title, String message) {
-        runDialog(() -> showDialog(title, message, "❌", "dialog-header-error", false));
+        runDialog(() -> showDialog(title, message, "!", "dialog-header-error", false, "OK", "Annuler"));
     }
 
-    /**
-     * @return {@code true} si l'utilisateur confirme
-     */
+    public static void showInfo(String title, String message) {
+        runDialog(() -> showDialog(title, message, "i", "dialog-header-info", false, "OK", "Annuler"));
+    }
+
     public static boolean showConfirm(String title, String message) {
+        return showConfirm(title, message, "Confirmer", "Annuler");
+    }
+
+    public static boolean showConfirm(String title, String message, String confirmLabel, String cancelLabel) {
         if (Platform.isFxApplicationThread()) {
-            return showDialog(title, message, "⚠️", "dialog-header-confirm", true);
+            return showDialog(title, message, "?", "dialog-header-confirm", true, confirmLabel, cancelLabel);
         }
         AtomicBoolean result = new AtomicBoolean(false);
         CountDownLatchCompat latch = new CountDownLatchCompat();
         Platform.runLater(() -> {
             try {
-                result.set(showDialog(title, message, "⚠️", "dialog-header-confirm", true));
+                result.set(showDialog(title, message, "?", "dialog-header-confirm", true, confirmLabel, cancelLabel));
             } finally {
                 latch.countDown();
             }
         });
         latch.awaitQuietly();
         return result.get();
+    }
+
+    public static boolean showChoice(String title, String message, String primaryLabel, String secondaryLabel) {
+        return showConfirm(title, message, primaryLabel, secondaryLabel);
     }
 
     private static void runDialog(Runnable showOnFx) {
@@ -71,7 +77,7 @@ public final class DialogHelper {
     }
 
     private static boolean showDialog(String title, String message, String icon, String headerStyle,
-                                      boolean confirmMode) {
+                                      boolean confirmMode, String confirmLabel, String cancelLabel) {
         Stage stage = new Stage();
         stage.initStyle(StageStyle.TRANSPARENT);
 
@@ -91,61 +97,61 @@ public final class DialogHelper {
         header.getStyleClass().add(headerStyle);
         header.setPadding(new Insets(14, 18, 14, 18));
 
-        Label iconLbl = new Label(icon);
-        iconLbl.setStyle("-fx-font-size: 22px;");
+        Label iconLabel = new Label(icon);
+        iconLabel.getStyleClass().add("dialog-icon");
 
-        Label titleLbl = new Label(title);
-        titleLbl.getStyleClass().add("dialog-title");
-        titleLbl.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(titleLbl, Priority.ALWAYS);
+        Label titleLabel = new Label(title);
+        titleLabel.getStyleClass().add("dialog-title");
+        titleLabel.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(titleLabel, Priority.ALWAYS);
 
-        header.getChildren().addAll(iconLbl, titleLbl);
+        header.getChildren().addAll(iconLabel, titleLabel);
 
-        Label msgLbl = new Label(message);
-        msgLbl.setWrapText(true);
-        msgLbl.getStyleClass().add("dialog-message");
-        msgLbl.setMaxWidth(DIALOG_WIDTH - 36);
-        VBox.setMargin(msgLbl, new Insets(18, 18, 18, 18));
+        Label messageLabel = new Label(message);
+        messageLabel.setWrapText(true);
+        messageLabel.getStyleClass().add("dialog-message");
+        messageLabel.setMaxWidth(DIALOG_WIDTH - 36);
+        VBox.setMargin(messageLabel, new Insets(18, 18, 18, 18));
 
-        HBox btnRow = new HBox(12);
-        btnRow.setAlignment(Pos.CENTER_RIGHT);
-        btnRow.setPadding(new Insets(0, 18, 18, 18));
+        HBox buttonRow = new HBox(12);
+        buttonRow.setAlignment(Pos.CENTER_RIGHT);
+        buttonRow.setPadding(new Insets(0, 18, 18, 18));
 
         AtomicBoolean confirmed = new AtomicBoolean(false);
 
         if (confirmMode) {
-            Button cancelBtn = new Button("Annuler");
-            cancelBtn.getStyleClass().addAll("btn-secondary", "dialog-footer-btn");
-            cancelBtn.setCursor(Cursor.HAND);
-            cancelBtn.setOnAction(e -> {
+            Button cancelButton = new Button(cancelLabel);
+            cancelButton.getStyleClass().addAll("btn-secondary", "dialog-footer-btn");
+            cancelButton.setCursor(Cursor.HAND);
+            cancelButton.setOnAction(e -> {
                 confirmed.set(false);
                 stage.close();
             });
 
-            Button okBtn = new Button("Confirmer");
-            okBtn.getStyleClass().addAll("btn-primary", "dialog-footer-btn");
-            okBtn.setCursor(Cursor.HAND);
-            okBtn.setDefaultButton(true);
-            okBtn.setOnAction(e -> {
+            Button confirmButton = new Button(confirmLabel);
+            confirmButton.getStyleClass().addAll("btn-primary", "dialog-footer-btn");
+            confirmButton.setCursor(Cursor.HAND);
+            confirmButton.setDefaultButton(true);
+            confirmButton.setOnAction(e -> {
                 confirmed.set(true);
                 stage.close();
             });
 
-            btnRow.getChildren().addAll(cancelBtn, okBtn);
+            buttonRow.getChildren().addAll(cancelButton, confirmButton);
         } else {
-            Button okBtn = new Button("OK");
-            okBtn.getStyleClass().addAll("btn-primary", "dialog-footer-btn");
-            okBtn.setCursor(Cursor.HAND);
-            okBtn.setDefaultButton(true);
-            okBtn.setOnAction(e -> stage.close());
-            btnRow.getChildren().add(okBtn);
+            Button okButton = new Button(confirmLabel);
+            okButton.getStyleClass().addAll("btn-primary", "dialog-footer-btn");
+            okButton.setCursor(Cursor.HAND);
+            okButton.setDefaultButton(true);
+            okButton.setOnAction(e -> stage.close());
+            buttonRow.getChildren().add(okButton);
         }
 
-        root.getChildren().addAll(header, msgLbl, btnRow);
+        root.getChildren().addAll(header, messageLabel, buttonRow);
 
         Scene scene = new Scene(root);
         scene.setFill(Color.TRANSPARENT);
-        var css = DialogHelper.class.getResource("/css/bekri.css");
+        var css = DialogHelper.class.getResource("/css/app.css");
         if (css != null) {
             scene.getStylesheets().add(css.toExternalForm());
         }

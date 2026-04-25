@@ -29,6 +29,10 @@ public class Utilisateur {
     private LocalDateTime resetTokenExpiresAt;  // column: reset_token_expires_at
     private boolean isVerified;                 // column: is_verified
     private LocalDateTime lastLoginAt;          // column: last_login_at
+    private LocalDateTime deactivatedAt;        // column: deactivated_at
+    private String deactivatedBy;               // column: deactivated_by
+    private String reactivationToken;           // column: reactivation_token
+    private LocalDateTime reactivationTokenExpiresAt; // column: reactivation_token_expires_at
 
     // Face authentication (shared with Symfony / face-api.js)
     private String faceDescriptor;              // column: face_descriptor (JSON string)
@@ -111,6 +115,18 @@ public class Utilisateur {
     public LocalDateTime getLastLoginAt() { return lastLoginAt; }
     public void setLastLoginAt(LocalDateTime lastLoginAt) { this.lastLoginAt = lastLoginAt; }
 
+    public LocalDateTime getDeactivatedAt() { return deactivatedAt; }
+    public void setDeactivatedAt(LocalDateTime deactivatedAt) { this.deactivatedAt = deactivatedAt; }
+
+    public String getDeactivatedBy() { return deactivatedBy; }
+    public void setDeactivatedBy(String deactivatedBy) { this.deactivatedBy = deactivatedBy; }
+
+    public String getReactivationToken() { return reactivationToken; }
+    public void setReactivationToken(String reactivationToken) { this.reactivationToken = reactivationToken; }
+
+    public LocalDateTime getReactivationTokenExpiresAt() { return reactivationTokenExpiresAt; }
+    public void setReactivationTokenExpiresAt(LocalDateTime reactivationTokenExpiresAt) { this.reactivationTokenExpiresAt = reactivationTokenExpiresAt; }
+
     public String getFaceDescriptor() { return faceDescriptor; }
     public void setFaceDescriptor(String faceDescriptor) { this.faceDescriptor = faceDescriptor; }
 
@@ -158,7 +174,8 @@ public class Utilisateur {
         return switch (statut) {
             case ACTIF -> "actif";
             case INACTIF -> "inactif";
-            case BANNI -> "bloque";
+            case BLOQUE -> "bloque";
+            case SUPPRIME -> "supprime";
         };
     }
 
@@ -170,5 +187,18 @@ public class Utilisateur {
         String p = (prenom != null && !prenom.isEmpty()) ? String.valueOf(prenom.charAt(0)).toUpperCase() : "";
         String n = (nom != null && !nom.isEmpty()) ? String.valueOf(nom.charAt(0)).toUpperCase() : "";
         return p + n;
+    }
+
+    @Override
+    public String toString() {
+        return "Utilisateur{"
+                + "id=" + id
+                + ", nom='" + nom + '\''
+                + ", prenom='" + prenom + '\''
+                + ", email='" + email + '\''
+                + ", role=" + role
+                + ", statut=" + statut
+                + ", deactivatedBy='" + deactivatedBy + '\''
+                + '}';
     }
 }

@@ -20,6 +20,8 @@ import tn.esprit.session.SessionManager;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.user.entity.Utilisateur;
 import tn.esprit.user.enums.UtilisateurRole;
+import tn.esprit.user.enums.UtilisateurStatut;
+import tn.esprit.user.ui.InactiveAccountFlowHelper;
 
 import javax.imageio.ImageIO;
 import java.awt.Dimension;
@@ -313,6 +315,14 @@ public class FaceLoginController {
                 switch (result) {
                     case SUCCESS -> {
                         if (user == null) { showError("Erreur de session. Réessayez."); return; }
+                        if (user.getStatut() == UtilisateurStatut.BLOQUE || user.getStatut() == UtilisateurStatut.SUPPRIME) {
+                            showError("Votre compte a été suspendu définitivement. Veuillez contacter le support.");
+                            return;
+                        }
+                        if (user.getStatut() == UtilisateurStatut.INACTIF) {
+                            InactiveAccountFlowHelper.handleInactiveUser(user, this::stopWebcam, this::showError);
+                            return;
+                        }
                         stopWebcam();
                         SessionManager.getInstance().setCurrentUser(user);
                         try {
@@ -336,8 +346,17 @@ public class FaceLoginController {
                             showError("La reconnaissance faciale n'est pas activée pour ce compte.");
                     case EMAIL_NOT_VERIFIED ->
                             showError("Veuillez vérifier votre email avant de vous connecter.");
-                    case ACCOUNT_NOT_ACTIVE ->
+                    case ACCOUNT_NOT_ACTIVE -> {
+                        if (user != null && user.getStatut() == UtilisateurStatut.INACTIF) {
+                            InactiveAccountFlowHelper.handleInactiveUser(user, this::stopWebcam, this::showError);
+                        } else if (user != null
+                                && (user.getStatut() == UtilisateurStatut.BLOQUE
+                                || user.getStatut() == UtilisateurStatut.SUPPRIME)) {
+                            showError("Votre compte a ete suspendu definitivement. Veuillez contacter le support.");
+                        } else {
                             showError("Ce compte n'est pas actif.");
+                        }
+                    }
                     case USER_NOT_FOUND ->
                             showError("Aucun compte trouvé pour cet email.");
                 }

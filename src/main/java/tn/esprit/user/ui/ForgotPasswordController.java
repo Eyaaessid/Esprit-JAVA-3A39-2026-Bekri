@@ -57,25 +57,30 @@ public class ForgotPasswordController {
         new Thread(() -> {
             try {
                 utilisateurService.requestPasswordReset(email);
-            } catch (Exception ignored) {
-            }
-            Platform.runLater(() -> {
-                setBusy(false);
-                statusLabel.setText("Code envoyé ! Vérifiez votre boîte de réception.");
-                statusLabel.setStyle("-fx-text-fill: green;");
-                statusLabel.setVisible(true);
-                statusLabel.setManaged(true);
+                Platform.runLater(() -> {
+                    setBusy(false);
+                    statusLabel.setText("Code envoyé ! Vérifiez votre boîte Mailtrap.");
+                    statusLabel.setStyle("-fx-text-fill: green;");
+                    statusLabel.setVisible(true);
+                    statusLabel.setManaged(true);
 
-                new Thread(() -> {
-                    try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
-                    Platform.runLater(() -> {
-                        try {
-                            SceneManager.switchTo("reset-password");
-                        } catch (Exception ignored) {
-                        }
-                    });
-                }).start();
-            });
+                    new Thread(() -> {
+                        try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
+                        Platform.runLater(() -> {
+                            try {
+                                SceneManager.switchTo("reset-password");
+                            } catch (Exception ignored) {}
+                        });
+                    }).start();
+                });
+            } catch (Exception e) {
+                System.err.println("[ForgotPasswordController] ERROR: " + e.getMessage());
+                e.printStackTrace(System.err);
+                Platform.runLater(() -> {
+                    setBusy(false);
+                    showEmailError("Erreur lors de l'envoi du code: " + e.getMessage());
+                });
+            }
         }).start();
     }
 
@@ -104,4 +109,3 @@ public class ForgotPasswordController {
         emailError.setManaged(false);
     }
 }
-

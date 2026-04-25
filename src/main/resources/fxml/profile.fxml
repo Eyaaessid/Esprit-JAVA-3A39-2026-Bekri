@@ -129,6 +129,11 @@
                             <Button text="Modifier mon profil"
                                     styleClass="btn-primary"
                                     onAction="#goToEditProfile"/>
+                            <Button fx:id="deactivateAccountBtn"
+                                    text="Desactiver mon compte"
+                                    styleClass="btn-danger"
+                                    onAction="#handleDeactivateAccount"
+                                    visible="false" managed="false"/>
                         </HBox>
                     </VBox>
                 </VBox>

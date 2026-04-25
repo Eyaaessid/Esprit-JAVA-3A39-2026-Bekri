@@ -12,11 +12,13 @@ import javafx.scene.control.TextField;
 import javafx.util.Duration;
 import tn.esprit.session.SessionManager;
 import tn.esprit.shared.CaptchaDialogHelper;
+import tn.esprit.shared.DialogHelper;
 import tn.esprit.shared.FormFieldStyles;
 import tn.esprit.shared.FormValidators;
 import tn.esprit.shared.PasswordUiHelper;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.user.entity.Utilisateur;
+import tn.esprit.user.enums.UtilisateurStatut;
 import tn.esprit.user.service.UtilisateurService;
 import tn.esprit.utils.CaptchaService;
 
@@ -164,6 +166,17 @@ public class LoginController {
 
                 Platform.runLater(() -> {
                     try {
+                        if (isSuspended(user)) {
+                            DialogHelper.showError("Compte suspendu",
+                                    "Votre compte a ete suspendu definitivement. Veuillez contacter le support.");
+                            resetBtn();
+                            return;
+                        }
+                        if (user.getStatut() == UtilisateurStatut.INACTIF) {
+                            handleInactiveUser(user);
+                            resetBtn();
+                            return;
+                        }
                         if (user.isTwoFactorEnabled()) {
                             TwoFactorLoginController twoFactorController = SceneManager.switchToAndGetController("two-factor-login");
                             twoFactorController.setUser(user);
@@ -229,6 +242,11 @@ public class LoginController {
     }
 
     @FXML
+    private void handleOpenReactivationRequest() {
+        InactiveAccountFlowHelper.openSupportScreen(this::showError);
+    }
+
+    @FXML
     private void goToRegister() {
         try {
             SceneManager.switchTo("register");
@@ -238,14 +256,14 @@ public class LoginController {
     }
 
     private void showError(String message) {
-        errorLabel.setText("\u26a0 " + message);
+        errorLabel.setText("! " + message);
         errorLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 12px;");
         errorLabel.setVisible(true);
         errorLabel.setManaged(true);
     }
 
     private void showInfo(String message) {
-        errorLabel.setText("\u2139 " + message);
+        errorLabel.setText("i " + message);
         errorLabel.setStyle("-fx-text-fill: #2980b9; -fx-font-size: 12px;");
         errorLabel.setVisible(true);
         errorLabel.setManaged(true);
@@ -285,5 +303,14 @@ public class LoginController {
         } else {
             SceneManager.switchTo("user-dashboard");
         }
+    }
+
+    private boolean isSuspended(Utilisateur user) {
+        return user.getStatut() == UtilisateurStatut.BLOQUE
+                || user.getStatut() == UtilisateurStatut.SUPPRIME;
+    }
+
+    private void handleInactiveUser(Utilisateur user) {
+        InactiveAccountFlowHelper.handleInactiveUser(user, this::showError);
     }
 }

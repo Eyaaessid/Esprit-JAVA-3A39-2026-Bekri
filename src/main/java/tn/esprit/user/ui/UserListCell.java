@@ -1,7 +1,6 @@
 package tn.esprit.user.ui;
 
 import javafx.geometry.Pos;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -13,6 +12,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import tn.esprit.session.SessionManager;
+import tn.esprit.shared.DialogHelper;
 import tn.esprit.user.entity.Utilisateur;
 import tn.esprit.user.enums.UtilisateurRole;
 import tn.esprit.user.enums.UtilisateurStatut;
@@ -187,11 +187,7 @@ public class UserListCell extends ListCell<Utilisateur> {
     }
 
     private void showErrorDialog(String titleText, String message) {
-        Alert error = new Alert(Alert.AlertType.ERROR);
-        error.setTitle("Erreur");
-        error.setHeaderText(titleText);
-        error.setContentText(message);
-        error.showAndWait();
+        DialogHelper.showError(titleText, message);
     }
 
     private void wirePrimaryHover(Button button, String baseStyle) {
@@ -223,7 +219,7 @@ public class UserListCell extends ListCell<Utilisateur> {
         return switch (statut) {
             case ACTIF -> "#27ae60";
             case INACTIF -> "#e67e22";
-            case BANNI -> "#e74c3c";
+            case BLOQUE, SUPPRIME -> "#e74c3c";
         };
     }
 
@@ -232,7 +228,7 @@ public class UserListCell extends ListCell<Utilisateur> {
         return switch (statut) {
             case ACTIF -> "#eafaf1";
             case INACTIF -> "#fef9e7";
-            case BANNI -> "#fdedec";
+            case BLOQUE, SUPPRIME -> "#fdedec";
         };
     }
 }

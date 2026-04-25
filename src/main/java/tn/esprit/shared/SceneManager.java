@@ -36,11 +36,14 @@ public final class SceneManager {
         m.put("questions", "/fxml/questions.fxml");
         m.put("question-form", "/fxml/question-form.fxml");
         m.put("profile", "/fxml/profile.fxml");
+        m.put("account-settings", "/fxml/account_settings.fxml");
         m.put("edit-profile", "/fxml/edit-profile.fxml");
-        m.put("admin-users", "/fxml/admin-users.fxml");
+        m.put("admin-users", "/fxml/user_management.fxml");
         m.put("admin-add-user", "/fxml/admin-add-user.fxml");
         m.put("admin-user-detail", "/fxml/admin-user-detail.fxml");
         m.put("admin-edit-user", "/fxml/admin-edit-user.fxml");
+        m.put("reactivation-request", "/fxml/reactivation_request.fxml");
+        m.put("self-reactivation-code", "/fxml/self_reactivation_code.fxml");
         m.put("test", "/fxml/test.fxml");
         m.put("profil-psychologique", "/fxml/profil-psychologique.fxml");
         m.put("suivi-today", "/fxml/suivi_today.fxml");

@@ -29,7 +29,7 @@
     -fx-text-fill: #6b7280;
 }
 .add-btn {
-    -fx-background-color: #f97316;
+    -fx-background-color: #217693;
     -fx-text-fill: white;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
@@ -38,17 +38,17 @@
     -fx-cursor: hand;
 }
 .add-btn:hover {
-    -fx-background-color: #ea580c;
+    -fx-background-color: #1d6780;
 }
 .regen-btn {
-    -fx-background-color: linear-gradient(to right, #7c3aed, #a855f7);
+    -fx-background-color: linear-gradient(to right, #217693, #399185);
     -fx-text-fill: white;
     -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-background-radius: 10px;
     -fx-padding: 10px 24px;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(124,58,237,0.35), 14, 0, 0, 4);
+    -fx-effect: dropshadow(gaussian, rgba(33,118,147,0.28), 14, 0, 0, 4);
 }
 .badge-pill {
     -fx-background-radius: 20px;

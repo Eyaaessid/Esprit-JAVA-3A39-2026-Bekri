@@ -192,6 +192,28 @@ public class UtilisateurDao {
             u.setLastLoginAt(null);
         }
         try {
+            Timestamp deactivatedAt = rs.getTimestamp("deactivated_at");
+            u.setDeactivatedAt(deactivatedAt != null ? deactivatedAt.toLocalDateTime() : null);
+        } catch (SQLException ignored) {
+            u.setDeactivatedAt(null);
+        }
+        try {
+            u.setDeactivatedBy(rs.getString("deactivated_by"));
+        } catch (SQLException ignored) {
+            u.setDeactivatedBy(null);
+        }
+        try {
+            u.setReactivationToken(rs.getString("reactivation_token"));
+        } catch (SQLException ignored) {
+            u.setReactivationToken(null);
+        }
+        try {
+            Timestamp tokenExpiresAt = rs.getTimestamp("reactivation_token_expires_at");
+            u.setReactivationTokenExpiresAt(tokenExpiresAt != null ? tokenExpiresAt.toLocalDateTime() : null);
+        } catch (SQLException ignored) {
+            u.setReactivationTokenExpiresAt(null);
+        }
+        try {
             u.setFaceDescriptor(rs.getString("face_descriptor"));
         } catch (SQLException ignored) {
             u.setFaceDescriptor(null);
@@ -281,6 +303,10 @@ public class UtilisateurDao {
         dst.setResetTokenExpiresAt(src.getResetTokenExpiresAt());
         dst.setVerified(src.isVerified());
         dst.setLastLoginAt(src.getLastLoginAt());
+        dst.setDeactivatedAt(src.getDeactivatedAt());
+        dst.setDeactivatedBy(src.getDeactivatedBy());
+        dst.setReactivationToken(src.getReactivationToken());
+        dst.setReactivationTokenExpiresAt(src.getReactivationTokenExpiresAt());
         dst.setFaceDescriptor(src.getFaceDescriptor());
         dst.setFaceAuthEnabled(src.isFaceAuthEnabled());
         dst.setFaceRegisteredAt(src.getFaceRegisteredAt());
@@ -393,6 +419,61 @@ public class UtilisateurDao {
         }
     }
 
+    public void saveReactivationToken(int userId, String token, LocalDateTime expiresAt) {
+        String sql = """
+                UPDATE utilisateur
+                SET reactivation_token = ?, reactivation_token_expires_at = ?, updated_at = NOW()
+                WHERE id = ?
+                """;
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
+            ps.setString(1, token);
+            ps.setTimestamp(2, expiresAt != null ? Timestamp.valueOf(expiresAt) : null);
+            ps.setInt(3, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("[UtilisateurDao.saveReactivationToken] userId=" + userId + " " + e.getMessage());
+            throw new RuntimeException("Erreur lors de l'enregistrement du code de réactivation.", e);
+        }
+    }
+
+    public Optional<Utilisateur> findByEmailAndReactivationToken(String email, String token) {
+        String sql = """
+                SELECT * FROM utilisateur
+                WHERE email = ? AND reactivation_token = ?
+                LIMIT 1
+                """;
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.setString(2, token);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Utilisateur user = mapRow(rs);
+                    twoFactorDAO.loadTwoFactorFields(user);
+                    return Optional.of(user);
+                }
+                return Optional.empty();
+            }
+        } catch (SQLException e) {
+            System.err.println("[UtilisateurDao.findByEmailAndReactivationToken] email=" + email + " " + e.getMessage());
+            throw new RuntimeException("Erreur lors de la vérification du code de réactivation.", e);
+        }
+    }
+
+    public void clearReactivationToken(int userId) {
+        String sql = """
+                UPDATE utilisateur
+                SET reactivation_token = NULL, reactivation_token_expires_at = NULL, updated_at = NOW()
+                WHERE id = ?
+                """;
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("[UtilisateurDao.clearReactivationToken] userId=" + userId + " " + e.getMessage());
+            throw new RuntimeException("Erreur lors de la suppression du code de réactivation.", e);
+        }
+    }
+
     public Map<String, Integer> fetchRoleStats() {
         Map<String, Integer> stats = new LinkedHashMap<>();
         stats.put("total", countBySql("SELECT COALESCE(COUNT(*), 0) FROM utilisateur"));
@@ -424,6 +505,107 @@ public class UtilisateurDao {
             }
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la suppression (id=" + userId + ") : " + e.getMessage(), e);
+        }
+    }
+
+    public List<Utilisateur> findAllNonAdmin(String search, String statusFilter) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM utilisateur WHERE LOWER(role) <> 'admin'");
+        List<String> params = new ArrayList<>();
+
+        if (search != null && !search.isBlank()) {
+            sql.append(" AND (LOWER(nom) LIKE ? OR LOWER(prenom) LIKE ? OR LOWER(email) LIKE ?)");
+            String q = "%" + search.trim().toLowerCase() + "%";
+            params.add(q);
+            params.add(q);
+            params.add(q);
+        }
+        if (statusFilter != null && !statusFilter.isBlank()) {
+            sql.append(" AND statut = ?");
+            params.add(statusFilter.trim().toUpperCase());
+        }
+        sql.append(" ORDER BY id DESC");
+
+        try (PreparedStatement ps = getCnx().prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setString(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                List<Utilisateur> users = new ArrayList<>();
+                while (rs.next()) {
+                    Utilisateur user = mapRow(rs);
+                    twoFactorDAO.loadTwoFactorFields(user);
+                    users.add(user);
+                }
+                return users;
+            }
+        } catch (SQLException e) {
+            System.err.println("[UtilisateurDao.findAllNonAdmin] " + e.getMessage());
+            throw new RuntimeException("Erreur lors du chargement des utilisateurs.", e);
+        }
+    }
+
+    public void updateStatut(int userId, String statut, String deactivatedBy) {
+        String sql = """
+                UPDATE utilisateur
+                SET statut = ?,
+                    deactivated_at = CASE WHEN ? = 'ACTIF' THEN NULL ELSE NOW() END,
+                    deactivated_by = CASE WHEN ? = 'ACTIF' THEN NULL ELSE ? END,
+                    updated_at = NOW()
+                WHERE id = ?
+                """;
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
+            ps.setString(1, statut);
+            ps.setString(2, statut);
+            ps.setString(3, statut);
+            ps.setString(4, deactivatedBy);
+            ps.setInt(5, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("[UtilisateurDao.updateStatut] userId=" + userId + " " + e.getMessage());
+            throw new RuntimeException("Erreur lors de la mise à jour du statut.", e);
+        }
+    }
+
+    public void reactivate(int userId) {
+        String sql = """
+                UPDATE utilisateur
+                SET statut = 'ACTIF',
+                    deactivated_at = NULL,
+                    deactivated_by = NULL,
+                    updated_at = NOW()
+                WHERE id = ?
+                """;
+        try (PreparedStatement ps = getCnx().prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("[UtilisateurDao.reactivate] userId=" + userId + " " + e.getMessage());
+            throw new RuntimeException("Erreur lors de la réactivation du compte.", e);
+        }
+    }
+
+    public Map<String, Integer> countByStatut() {
+        String sql = """
+                SELECT statut, COUNT(*) AS total
+                FROM utilisateur
+                WHERE LOWER(role) <> 'admin'
+                GROUP BY statut
+                """;
+        Map<String, Integer> stats = new LinkedHashMap<>();
+        stats.put("ACTIF", 0);
+        stats.put("INACTIF", 0);
+        stats.put("BLOQUE", 0);
+        stats.put("SUPPRIME", 0);
+
+        try (PreparedStatement ps = getCnx().prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                stats.put(rs.getString("statut"), rs.getInt("total"));
+            }
+            return stats;
+        } catch (SQLException e) {
+            System.err.println("[UtilisateurDao.countByStatut] " + e.getMessage());
+            throw new RuntimeException("Erreur lors du chargement des statistiques de statut.", e);
         }
     }
 }

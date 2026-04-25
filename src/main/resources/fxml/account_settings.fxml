@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.user.ui.AccountSettingsController"
+            prefWidth="900" prefHeight="620" styleClass="page-bg">
+    <top>
+        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="top-bar">
+            <Button text="Retour" onAction="#handleBack" styleClass="btn-ghost"/>
+            <Label text="Parametres du compte" styleClass="top-bar-title"/>
+        </HBox>
+    </top>
+    <center>
+        <VBox spacing="18" maxWidth="720" style="-fx-padding: 28;">
+            <VBox spacing="12" styleClass="card">
+                <Label text="Statut du compte" styleClass="section-title"/>
+                <Label fx:id="statusBadgeLabel" text="-" />
+                <Label fx:id="messageLabel" text="" wrapText="true"/>
+
+                <Button fx:id="deactivateButton" text="Desactiver mon compte"
+                        onAction="#handleDeactivate" styleClass="btn-danger"
+                        visible="false" managed="false"/>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>
