@@ -193,7 +193,19 @@ public class UtilisateurService {
     }
 
     public void updateRoleAndStatus(Integer id, UtilisateurRole role, UtilisateurStatut statut) {
-        dao.updateRoleAndStatus(id, role, statut);
+        Utilisateur u = getUserById(id);
+        UtilisateurStatut oldStatut = u.getStatut();
+        UtilisateurStatut newStatut = statut != null ? statut : oldStatut;
+        UtilisateurRole targetRole = role != null ? role : u.getRole();
+
+        validateAdminStatusCombination(targetRole, newStatut);
+
+        if (role != null) {
+            u.setRole(role);
+        }
+        u.setStatut(oldStatut);
+        dao.save(u);
+        applyManagedStatusChange(u, oldStatut, newStatut);
     }
 
     public List<Utilisateur> findUtilisateursFiltered(String search, String roleFilter, String statutFilter) {
@@ -237,7 +249,9 @@ public class UtilisateurService {
 
         UtilisateurStatut oldStatut = u.getStatut();
         UtilisateurStatut newStatut = apiStatut != null ? parseStatut(apiStatut) : oldStatut;
-        boolean statusChanged = oldStatut != newStatut;
+        UtilisateurRole targetRole = apiRole != null ? parseRole(apiRole) : u.getRole();
+
+        validateAdminStatusCombination(targetRole, newStatut);
 
         // ✅ STEP 1: Save all non-status fields first (name, email, role, password, etc.)
         // Keep the OLD status so dao.save() doesn't overwrite deactivated_by
@@ -258,7 +272,7 @@ public class UtilisateurService {
 
         // ✅ STEP 2: If status changed, handle it via AccountStatusService
         // which uses updateStatut() SQL that correctly sets deactivated_by
-        if (statusChanged) {
+        if (oldStatut != newStatut) {
             if (newStatut == UtilisateurStatut.INACTIF && oldStatut != UtilisateurStatut.INACTIF) {
                 accountStatusService.deactivateAccount(u, "admin");
             } else if (newStatut == UtilisateurStatut.BLOQUE) {
@@ -273,6 +287,35 @@ public class UtilisateurService {
 
         // ✅ STEP 3: Return fresh user from DB
         return getUserById(id);
+    }
+
+    private void applyManagedStatusChange(Utilisateur user, UtilisateurStatut oldStatut, UtilisateurStatut newStatut) {
+        if (user == null || oldStatut == newStatut) {
+            return;
+        }
+        if (newStatut == UtilisateurStatut.INACTIF) {
+            accountStatusService.deactivateAccount(user, "admin");
+            return;
+        }
+        if (newStatut == UtilisateurStatut.BLOQUE) {
+            accountStatusService.blockAccount(user);
+            return;
+        }
+        if (newStatut == UtilisateurStatut.ACTIF) {
+            accountStatusService.reactivateAccount(user);
+            return;
+        }
+
+        dao.updateStatut(user.getId(), newStatut.name(), null);
+        user.setStatut(newStatut);
+        user.setDeactivatedBy(null);
+        user.setDeactivatedAt(null);
+    }
+
+    private void validateAdminStatusCombination(UtilisateurRole role, UtilisateurStatut statut) {
+        if (role == UtilisateurRole.ADMIN && statut != null && statut != UtilisateurStatut.ACTIF) {
+            throw new IllegalArgumentException("Impossible de desactiver ou bloquer un administrateur.");
+        }
     }
 
     public Utilisateur updateProfile(Integer userId, String nom, String prenom, String email,

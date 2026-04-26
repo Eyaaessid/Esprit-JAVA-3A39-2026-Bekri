@@ -20,10 +20,11 @@
             </VBox>
             <VBox styleClass="sidebar-nav-box" spacing="0">
                 <Label text="MENU" styleClass="sidebar-section-label"/>
-                <Button text="Accueil" styleClass="sidebar-btn sidebar-btn-active"/>
-                <Button text="Questions" styleClass="sidebar-btn" onAction="#handleQuestions"/>
-                <Button text="Utilisateurs" styleClass="sidebar-btn" onAction="#handleUtilisateurs"/>
-                <Button text="Mon Profil" styleClass="sidebar-btn" onAction="#handleProfil"/>
+                <Button text="Accueil"       styleClass="sidebar-btn sidebar-btn-active"/>
+                <Button text="Questions"      styleClass="sidebar-btn" onAction="#handleQuestions"/>
+                <Button text="Utilisateurs"   styleClass="sidebar-btn" onAction="#handleUtilisateurs"/>
+                <Button text="Reactivations"  styleClass="sidebar-btn" onAction="#handleReactivations"/>
+                <Button text="Mon Profil"     styleClass="sidebar-btn" onAction="#handleProfil"/>
             </VBox>
             <Region VBox.vgrow="ALWAYS"/>
             <VBox styleClass="sidebar-divider">
@@ -54,6 +55,10 @@
                         <VBox styleClass="quick-card" onMouseClicked="#handleUtilisateurs" alignment="CENTER" spacing="8">
                             <Label text="Utilisateurs" styleClass="quick-card-title"/>
                             <Label text="Gerer les comptes" styleClass="quick-card-sub"/>
+                        </VBox>
+                        <VBox styleClass="quick-card" onMouseClicked="#handleReactivations" alignment="CENTER" spacing="8">
+                            <Label text="Reactivations" styleClass="quick-card-title"/>
+                            <Label text="Demandes en attente" styleClass="quick-card-sub"/>
                         </VBox>
                         <VBox styleClass="quick-card" onMouseClicked="#handleProfil" alignment="CENTER" spacing="8">
                             <Label text="Mon Profil" styleClass="quick-card-title"/>
