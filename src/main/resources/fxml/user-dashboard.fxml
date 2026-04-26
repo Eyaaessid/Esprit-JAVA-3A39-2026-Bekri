@@ -4,7 +4,6 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
@@ -17,6 +16,7 @@
             prefWidth="1100" prefHeight="700" styleClass="page-bg">
 
     <stylesheets>
+        <URL value="@../css/app.css"/>
         <URL value="@../css/weather.css"/>
     </stylesheets>
 
@@ -24,23 +24,21 @@
     <left>
         <VBox styleClass="sidebar">
             <VBox styleClass="sidebar-logo-box" spacing="2">
-                <Label text="bekri"                    styleClass="sidebar-logo"/>
+                <Label text="bekri"                     styleClass="sidebar-logo"/>
                 <Label text="Bien-être &amp; Objectifs" styleClass="sidebar-logo-sub"/>
             </VBox>
 
             <VBox styleClass="sidebar-nav-box" spacing="0">
                 <Label text="MENU" styleClass="sidebar-section-label"/>
-
-                <!-- Accueil now has onAction -->
-                <Button text="🏠  Accueil"             styleClass="sidebar-btn" onAction="#handleAccueil"/>
-                <Button text="🎯  Mes Objectifs"       styleClass="sidebar-btn" onAction="#handleObjectifs"/>
-                <Button text="✅  Daily Check-in"      styleClass="sidebar-btn" onAction="#handleDailyCheckIn"/>
-                <Button text="📅  Plan de la semaine"  styleClass="sidebar-btn" onAction="#handleWeekPlan"/>
-                <Button text="📈  Weekly Insights"     styleClass="sidebar-btn" onAction="#handleWeeklyInsights"/>
-                <Button text="🤖  Chatbot"             styleClass="sidebar-btn" onAction="#handleChatBot"/>
-                <Button text="🧠  Test Psychologique"  styleClass="sidebar-btn" onAction="#handleTest"/>
-                <Button text="📊  Mon Profil Psy"      styleClass="sidebar-btn" onAction="#handleProfilPsy"/>
-                <Button text="👤  Mon Profil"          styleClass="sidebar-btn" onAction="#handleProfil"/>
+                <Button text="🏠  Accueil"             styleClass="sidebar-btn-active" onAction="#handleAccueil"/>
+                <Button text="🎯  Mes Objectifs"       styleClass="sidebar-btn"        onAction="#handleObjectifs"/>
+                <Button text="✅  Daily Check-in"      styleClass="sidebar-btn"        onAction="#handleDailyCheckIn"/>
+                <Button text="📅  Plan de la semaine"  styleClass="sidebar-btn"        onAction="#handleWeekPlan"/>
+                <Button text="📈  Weekly Insights"     styleClass="sidebar-btn"        onAction="#handleWeeklyInsights"/>
+                <Button text="🤖  Chatbot"             styleClass="sidebar-btn"        onAction="#handleChatBot"/>
+                <Button text="🧠  Test Psychologique"  styleClass="sidebar-btn"        onAction="#handleTest"/>
+                <Button text="📊  Mon Profil Psy"      styleClass="sidebar-btn"        onAction="#handleProfilPsy"/>
+                <Button text="👤  Mon Profil"          styleClass="sidebar-btn"        onAction="#handleProfil"/>
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
@@ -57,18 +55,19 @@
             <VBox spacing="24">
                 <padding><Insets top="32" right="36" bottom="32" left="36"/></padding>
 
-                <!-- Welcome card -->
+                <!-- ── Welcome card ──────────────────────────────────────── -->
                 <HBox styleClass="welcome-card" alignment="CENTER_LEFT" spacing="16">
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
-                        <Label fx:id="welcomeLabel"       text="Bonjour 👋"  styleClass="welcome-greeting"/>
-                        <Label fx:id="dateLabel"          text="Aujourd'hui" styleClass="welcome-date"/>
-                        <Label text="Prenez soin de vous aujourd'hui. Votre bien-être compte." styleClass="welcome-tagline"/>
-                        <Label fx:id="roleSubtitleLabel"  text=""            styleClass="welcome-date"/>
+                        <Label fx:id="welcomeLabel"      text="Bonjour 👋"   styleClass="welcome-greeting"/>
+                        <Label fx:id="dateLabel"         text="Aujourd'hui"  styleClass="welcome-date"/>
+                        <Label text="Prenez soin de vous aujourd'hui. Votre bien-être compte."
+                               styleClass="welcome-tagline"/>
+                        <Label fx:id="roleSubtitleLabel" text=""             styleClass="welcome-date"/>
                     </VBox>
                     <Label text="💙" style="-fx-font-size: 48px; -fx-text-fill: #FFFFFF; -fx-opacity: 0.6;"/>
                 </HBox>
 
-                <!-- Quick-access cards -->
+                <!-- ── Quick-access cards ────────────────────────────────── -->
                 <VBox spacing="16">
                     <Label text="Accès rapide" styleClass="section-title"/>
                     <FlowPane hgap="16" vgap="16">
@@ -76,7 +75,7 @@
                         <VBox styleClass="quick-card" onMouseClicked="#handleObjectifsClick"
                               alignment="CENTER" spacing="8">
                             <Label text="🎯" styleClass="quick-card-icon"/>
-                            <Label text="Mes Objectifs"    styleClass="quick-card-title"/>
+                            <Label text="Mes Objectifs"       styleClass="quick-card-title"/>
                             <Label text="Gérer vos objectifs" styleClass="quick-card-sub"/>
                         </VBox>
 
@@ -90,21 +89,21 @@
                         <VBox styleClass="quick-card" onMouseClicked="#handleWeekPlanClick"
                               alignment="CENTER" spacing="8">
                             <Label text="📅" styleClass="quick-card-icon"/>
-                            <Label text="Plan semaine"         styleClass="quick-card-title"/>
-                            <Label text="Organiser la semaine" styleClass="quick-card-sub"/>
+                            <Label text="Plan semaine"          styleClass="quick-card-title"/>
+                            <Label text="Organiser la semaine"  styleClass="quick-card-sub"/>
                         </VBox>
 
                         <VBox styleClass="quick-card" onMouseClicked="#handleWeeklyInsightsClick"
                               alignment="CENTER" spacing="8">
                             <Label text="📈" styleClass="quick-card-icon"/>
-                            <Label text="Weekly Insights"      styleClass="quick-card-title"/>
+                            <Label text="Weekly Insights"       styleClass="quick-card-title"/>
                             <Label text="Bilan &amp; tendances" styleClass="quick-card-sub"/>
                         </VBox>
 
                         <VBox styleClass="quick-card" onMouseClicked="#handleChatBotClick"
                               alignment="CENTER" spacing="8">
                             <Label text="🤖" styleClass="quick-card-icon"/>
-                            <Label text="Chatbot"              styleClass="quick-card-title"/>
+                            <Label text="Chatbot"               styleClass="quick-card-title"/>
                             <Label text="Parler &amp; conseils" styleClass="quick-card-sub"/>
                         </VBox>
 
@@ -125,69 +124,106 @@
                         <VBox styleClass="quick-card" onMouseClicked="#handleProfilClick"
                               alignment="CENTER" spacing="8">
                             <Label text="👤" styleClass="quick-card-icon"/>
-                            <Label text="Mon Profil"        styleClass="quick-card-title"/>
-                            <Label text="Mes informations"  styleClass="quick-card-sub"/>
+                            <Label text="Mon Profil"       styleClass="quick-card-title"/>
+                            <Label text="Mes informations" styleClass="quick-card-sub"/>
                         </VBox>
 
                     </FlowPane>
                 </VBox>
 
-                <!-- ══ WEATHER CARD ══════════════════════════════════ -->
-                <VBox fx:id="weatherCardBox" styleClass="weather-card-root" spacing="12">
-                    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                <!-- ══════════════════════════════════════════════════════════
+                     WEATHER CARD  (redesigned)
+                     fx:id="weatherCardBox" → controller applies condition class
+                     ══════════════════════════════════════════════════════════ -->
+                <VBox fx:id="weatherCardBox" styleClass="weather-card-root" spacing="0">
 
-                    <!-- Header: emoji + title/summary + badge -->
-                    <HBox alignment="CENTER_LEFT" spacing="12">
+                    <!-- ── Top header band: emoji + city/summary + badge ─── -->
+                    <HBox styleClass="weather-header-band" alignment="CENTER_LEFT" spacing="16">
+
+                        <!-- Big animated-feel emoji -->
                         <Label fx:id="lblWeatherEmoji"
-                               text="🌡️"
-                               style="-fx-font-size: 36px;"/>
-                        <VBox spacing="3">
+                               text="🌤️"
+                               styleClass="weather-emoji-big"/>
+
+                        <!-- City + summary text -->
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
                             <Label fx:id="lblWeatherTitle"
-                                   text="Météo à Tunis"
+                                   text="Météo"
                                    styleClass="weather-title"/>
                             <Label fx:id="lblWeatherSummary"
-                                   text="Chargement de la météo..."
-                                   styleClass="weather-subtitle"/>
+                                   text="Chargement en cours..."
+                                   styleClass="weather-subtitle"
+                                   wrapText="true"/>
                         </VBox>
-                        <Region HBox.hgrow="ALWAYS"/>
+
+                        <!-- Condition pill badge -->
                         <Label fx:id="lblWeatherBadge"
                                text=""
                                styleClass="weather-badge weather-default"/>
                     </HBox>
 
-                    <!-- Stats: temperature / humidity / wind -->
-                    <HBox spacing="16" alignment="CENTER_LEFT">
-                        <VBox styleClass="weather-stat-box" alignment="CENTER" spacing="4">
-                            <Label text="Température"  styleClass="weather-stat-label"/>
-                            <Label fx:id="lblTemp"     text="—" styleClass="weather-stat-value"/>
+                    <!-- ── Stat row: Temp / Humidity / Wind ──────────────── -->
+                    <HBox styleClass="weather-stats-row" spacing="14" alignment="CENTER_LEFT">
+                        <padding><Insets top="16" bottom="16"/></padding>
+
+                        <!-- Temperature -->
+                        <VBox styleClass="weather-stat-box weather-stat-temp"
+                              alignment="CENTER" spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="🌡️" styleClass="weather-stat-icon"/>
+                            <Label text="TEMPÉRATURE" styleClass="weather-stat-label"/>
+                            <Label fx:id="lblTemp" text="—" styleClass="weather-stat-value"/>
                         </VBox>
-                        <VBox styleClass="weather-stat-box" alignment="CENTER" spacing="4">
-                            <Label text="Humidité"     styleClass="weather-stat-label"/>
+
+                        <!-- Humidity -->
+                        <VBox styleClass="weather-stat-box weather-stat-hum"
+                              alignment="CENTER" spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="💧" styleClass="weather-stat-icon"/>
+                            <Label text="HUMIDITÉ" styleClass="weather-stat-label"/>
                             <Label fx:id="lblHumidity" text="—" styleClass="weather-stat-value"/>
                         </VBox>
-                        <VBox styleClass="weather-stat-box" alignment="CENTER" spacing="4">
-                            <Label text="Vent"         styleClass="weather-stat-label"/>
-                            <Label fx:id="lblWind"     text="—" styleClass="weather-stat-value"/>
+
+                        <!-- Wind -->
+                        <VBox styleClass="weather-stat-box weather-stat-wind"
+                              alignment="CENTER" spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="💨" styleClass="weather-stat-icon"/>
+                            <Label text="VENT" styleClass="weather-stat-label"/>
+                            <Label fx:id="lblWind" text="—" styleClass="weather-stat-value"/>
                         </VBox>
+
                     </HBox>
 
-                    <Separator/>
+                    <!-- ── Subtle divider ────────────────────────────────── -->
+                    <HBox styleClass="weather-divider">
+                        <Region prefHeight="1"/>
+                    </HBox>
 
-                    <Label text="💡 Conseils bien-être du jour"
-                           styleClass="weather-tips-title"/>
+                    <!-- ── Tips section ──────────────────────────────────── -->
+                    <VBox styleClass="weather-tips-section" spacing="10">
+                        <padding><Insets top="14"/></padding>
 
-                    <!-- Tips populated dynamically by controller -->
-                    <VBox fx:id="weatherTipsContainer" spacing="8"/>
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label text="💡" style="-fx-font-size: 15px;"/>
+                            <Label text="Conseils bien-être du jour"
+                                   styleClass="weather-tips-title"/>
+                        </HBox>
 
-                    <!-- Loading / error status -->
+                        <!-- Tips injected dynamically by controller as .weather-tip-row HBoxes -->
+                        <VBox fx:id="weatherTipsContainer" spacing="8"/>
+
+                    </VBox>
+
+                    <!-- ── Loading / error status ────────────────────────── -->
                     <Label fx:id="lblWeatherStatus"
                            text=""
                            styleClass="weather-status-label"
                            wrapText="true"
                            visible="false"
-                           managed="false"/>
+                           managed="false">
+                        <VBox.margin><Insets left="22" right="22" bottom="14"/></VBox.margin>
+                    </Label>
+
                 </VBox>
-                <!-- ══ END WEATHER CARD ═══════════════════════════════ -->
+                <!-- ══ END WEATHER CARD ════════════════════════════════════ -->
 
             </VBox>
         </ScrollPane>

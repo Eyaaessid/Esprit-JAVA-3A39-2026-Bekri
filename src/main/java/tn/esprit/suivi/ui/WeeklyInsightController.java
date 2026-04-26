@@ -21,6 +21,7 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
@@ -48,15 +49,17 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
 public class WeeklyInsightController implements Initializable {
 
-    private static final String GROQ_API_KEY = System.getenv("GROQ_API_KEY"); // set env var
-    private static final String GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+    private static final String GROQ_API_KEY = System.getenv("GROQ_API_KEY");
+    private static final String GROQ_URL     = "https://api.groq.com/openai/v1/chat/completions";
 
+    // ── FXML bindings ─────────────────────────────────────────────────────────
     @FXML private ScrollPane rootScroll;
 
     @FXML private Label periodLabel;
@@ -70,24 +73,26 @@ public class WeeklyInsightController implements Initializable {
     @FXML private Label worstHighlightLabel2;
     @FXML private Label encouragementLabel;
 
-    @FXML private VBox emptyStateBox;
-    @FXML private VBox contentSections;
+    @FXML private VBox  emptyStateBox;
+    @FXML private VBox  contentSections;
 
-    @FXML private PieChart globalPieChart;
-    @FXML private BarChart<String, Number> categoryBarChart;
-    @FXML private LineChart<String, Number> humeurLineChart;
+    @FXML private PieChart                globalPieChart;
+    @FXML private BarChart<String,Number> categoryBarChart;
+    @FXML private LineChart<String,Number> humeurLineChart;
 
-    @FXML private HBox recommendationBox;
+    @FXML private HBox  recommendationBox;
     @FXML private Label donutCenterLabel;
-    @FXML private Label humeurTrendBadge;
-    @FXML private Label aiStatusLabel; // optional: shows "Chargement IA..." while fetching
+    @FXML private Label humeurTrendBadge;       // in the line-chart card
+    @FXML private Label humeurTrendBadgeAlt;    // in the Tendances card  ← was missing
+    @FXML private Label aiStatusLabel;
 
+    // ── State ─────────────────────────────────────────────────────────────────
     private final WeeklyInsightDAO dao = new WeeklyInsightDAO();
-
     private WeeklyInsightResult lastResult;
     private LocalDate lastStart;
     private LocalDate lastEnd;
 
+    // ─────────────────────────────────────────────────────────────────────────
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         Utilisateur user = SessionManager.getInstance().getCurrentUser();
@@ -121,12 +126,12 @@ public class WeeklyInsightController implements Initializable {
         List<CategorySummary> summaries = (result == null) ? List.of() : result.getCategorySummaries();
         double globalAvg = computeGlobalAvg(summaries);
 
-        if (globalAvgLabel != null) globalAvgLabel.setText(globalAvg + "%");
+        if (globalAvgLabel  != null) globalAvgLabel.setText(globalAvg + "%");
         if (donutCenterLabel != null) donutCenterLabel.setText(globalAvg + "%");
 
         populateDonutChart(globalAvg);
         populateCategoryChart(summaries);
-        populateHumeurLineChart(result);
+        populateHumeurLineChart(result);   // ← now uses real daily humeur data
 
         DateTimeFormatter dayFmt = DateTimeFormatter.ofPattern("dd MMM");
 
@@ -151,12 +156,14 @@ public class WeeklyInsightController implements Initializable {
                     ? "Le " + result.getWorstDay().format(dayFmt) + " — votre score moyen était le plus bas."
                     : "Pas encore de données suffisantes.");
 
-        String trend = computeHumeurTrend(summaries);
+        // ── Trend: compare first half vs second half of the week ──────────────
+        String trend = computeHumeurTrend(result);
         updateTrendBadge(trend);
 
         if (encouragementLabel != null) {
             if (empty) {
-                encouragementLabel.setText("Vous n'avez pas encore rempli de check-in cette semaine. Commencez dès aujourd'hui !");
+                encouragementLabel.setText(
+                        "Vous n'avez pas encore rempli de check-in cette semaine. Commencez dès aujourd'hui !");
             } else if (globalAvg >= 66) {
                 encouragementLabel.setText("Vous êtes en bonne forme cette semaine — bravo ! 🎉");
             } else if (globalAvg >= 40) {
@@ -166,7 +173,7 @@ public class WeeklyInsightController implements Initializable {
             }
         }
 
-        // ── AI Recommendations (async so UI doesn't freeze) ─────────────
+        // ── AI Recommendations (async) ────────────────────────────────────────
         if (!empty && GROQ_API_KEY != null && !GROQ_API_KEY.isBlank()) {
             if (aiStatusLabel != null) aiStatusLabel.setText("✨ Chargement des recommandations IA...");
             loadAIRecommendationsAsync(summaries, globalAvg, trend, submittedDays);
@@ -175,14 +182,73 @@ public class WeeklyInsightController implements Initializable {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //  AI RECOMMENDATIONS via Groq (async)
-    // ═══════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════════════
+    //  LINE CHART — Humeur per day
+    // ═════════════════════════════════════════════════════════════════════════
 
-    private void loadAIRecommendationsAsync(List<CategorySummary> summaries, double globalAvg, String trend, int totalDays) {
+    private void populateHumeurLineChart(WeeklyInsightResult result) {
+        if (humeurLineChart == null) return;
+        humeurLineChart.getData().clear();
+        if (result == null) return;
+
+        Map<LocalDate, Double> dailyScores = result.getDailyHumeurScores();
+        if (dailyScores == null || dailyScores.isEmpty()) return;
+
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName("Humeur");
+
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd MMM");
+        dailyScores.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(e -> series.getData().add(
+                        new XYChart.Data<>(e.getKey().format(fmt), e.getValue())));
+
+        if (!series.getData().isEmpty()) humeurLineChart.getData().add(series);
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  TREND — compare first half vs second half of week
+    // ═════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Returns "Improving" if the second half of the week scores higher on
+     * average than the first half, "Declining" otherwise.
+     */
+    private String computeHumeurTrend(WeeklyInsightResult result) {
+        if (result == null) return "Declining";
+        Map<LocalDate, Double> scores = result.getDailyHumeurScores();
+        if (scores == null || scores.size() < 2) return "Declining";
+
+        List<Double> vals = new ArrayList<>(scores.values()); // already date-sorted
+        int mid   = vals.size() / 2;
+        double first = vals.subList(0, mid).stream().mapToDouble(Double::doubleValue).average().orElse(0);
+        double last  = vals.subList(mid, vals.size()).stream().mapToDouble(Double::doubleValue).average().orElse(0);
+        return last >= first ? "Improving" : "Declining";
+    }
+
+    private void updateTrendBadge(String trend) {
+        for (Label badge : new Label[]{humeurTrendBadge, humeurTrendBadgeAlt}) {
+            if (badge == null) continue;
+            if ("Improving".equals(trend)) {
+                badge.setText("↑ En amélioration");
+                badge.getStyleClass().removeAll("sym-trend-down");
+                badge.getStyleClass().add("sym-trend-up");
+            } else {
+                badge.setText("↓ En déclin");
+                badge.getStyleClass().removeAll("sym-trend-up");
+                badge.getStyleClass().add("sym-trend-down");
+            }
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  AI RECOMMENDATIONS via Groq (async)
+    // ═════════════════════════════════════════════════════════════════════════
+
+    private void loadAIRecommendationsAsync(List<CategorySummary> summaries,
+                                            double globalAvg, String trend, int totalDays) {
         Task<String> task = new Task<>() {
-            @Override
-            protected String call() throws Exception {
+            @Override protected String call() throws Exception {
                 return fetchGroqRecommendations(summaries, globalAvg, trend, totalDays);
             }
         };
@@ -205,56 +271,54 @@ public class WeeklyInsightController implements Initializable {
         t.start();
     }
 
-    private String fetchGroqRecommendations(List<CategorySummary> summaries, double globalAvg, String trend, int totalDays) throws Exception {
-        // Build data summary matching Symfony's prompt
+    private String fetchGroqRecommendations(List<CategorySummary> summaries,
+                                            double globalAvg, String trend, int totalDays) throws Exception {
         StringBuilder lines = new StringBuilder();
         lines.append("Données utilisateur sur les 7 derniers jours (scores en %) :\n");
         lines.append("- Jours complétés : ").append(totalDays).append("/7\n");
         lines.append("- Score moyen global : ").append(globalAvg).append("%\n");
         lines.append("- Tendance humeur : ").append(trend).append("\n");
-
         for (CategorySummary s : summaries) {
-            if (s.getAvgNumericScore() != null) {
-                lines.append("- ").append(s.getCategory()).append(" : ").append(s.getAvgNumericScore()).append("%\n");
-            }
+            if (s.getAvgNumericScore() != null)
+                lines.append("- ").append(s.getCategory())
+                        .append(" : ").append(s.getAvgNumericScore()).append("%\n");
         }
 
-        String dataSummary = lines.toString();
-
-        String prompt = dataSummary + "\n" +
-                "Génère exactement 3 recommandations personnalisées basées sur ces données, en JSON uniquement.\n" +
+        String prompt = lines +
+                "\nGénère exactement 3 recommandations d'objectifs personnalisées basées sur ces données, en JSON uniquement.\n" +
                 "Format attendu (tableau JSON, rien d'autre, pas de markdown) :\n" +
                 "[\n" +
                 "  {\n" +
-                "    \"title\": \"...\",\n" +
-                "    \"description\": \"...\",\n" +
+                "    \"title\": \"Titre court de l'objectif\",\n" +
+                "    \"description\": \"Description courte et bienveillante, max 2 phrases.\",\n" +
                 "    \"icon\": \"💡\",\n" +
                 "    \"score\": 52.7,\n" +
-                "    \"category\": \"...\",\n" +
-                "    \"suggestedObjectif\": \"...\"\n" +
+                "    \"category\": \"humeur\",\n" +
+                "    \"suggestedObjectif\": \"Phrase d'objectif SMART prête à ajouter\"\n" +
                 "  }\n" +
                 "]\n" +
                 "Règles :\n" +
                 "- Réponds UNIQUEMENT avec le JSON valide, sans texte avant ou après, sans backticks\n" +
-                "- Chaque description : concrète, bienveillante, max 2 phrases\n" +
-                "- Icônes emoji adaptées (ex: 🧘, 🏃, 💧, 🥗, 🌙, 🧠, 💪)\n" +
+                "- Chaque suggestedObjectif doit être une phrase d'objectif SMART concrète (ex: 'Dormir 8h par nuit pendant 5 jours cette semaine')\n" +
+                "- Icônes emoji adaptées (🧘 🏃 💧 🥗 🌙 🧠 💪)\n" +
                 "- Priorise les catégories avec les scores les plus bas\n" +
                 "- Rédige en français";
 
         JSONObject body = new JSONObject();
-        body.put("model", "llama-3.1-8b-instant");
+        body.put("model",       "llama-3.1-8b-instant");
         body.put("temperature", 0.5);
-        body.put("max_tokens", 700);
-        body.put("stream", false);
+        body.put("max_tokens",  800);
+        body.put("stream",      false);
 
         JSONArray messages = new JSONArray();
+
         JSONObject system = new JSONObject();
-        system.put("role", "system");
-        system.put("content", "Tu es un coach bien-être expert. Tu analyses des données de santé et génères des recommandations personnalisées. Tu réponds UNIQUEMENT en JSON valide, jamais en texte libre, jamais en markdown.");
+        system.put("role",    "system");
+        system.put("content", "Tu es un coach bien-être expert. Tu analyses des données de santé et génères des recommandations d'objectifs personnalisés. Tu réponds UNIQUEMENT en JSON valide, jamais en texte libre, jamais en markdown.");
         messages.put(system);
 
         JSONObject userMsg = new JSONObject();
-        userMsg.put("role", "user");
+        userMsg.put("role",    "user");
         userMsg.put("content", prompt);
         messages.put(userMsg);
 
@@ -262,18 +326,18 @@ public class WeeklyInsightController implements Initializable {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(GROQ_URL))
-                .header("Content-Type", "application/json")
+                .header("Content-Type",  "application/json")
                 .header("Authorization", "Bearer " + GROQ_API_KEY)
                 .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
                 .build();
 
-        HttpClient client = HttpClient.newHttpClient();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response =
+                HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) return null;
 
-        JSONObject resp = new JSONObject(response.body());
-        String content = resp.getJSONArray("choices")
+        String content = new JSONObject(response.body())
+                .getJSONArray("choices")
                 .getJSONObject(0)
                 .getJSONObject("message")
                 .getString("content");
@@ -290,12 +354,12 @@ public class WeeklyInsightController implements Initializable {
         try {
             JSONArray recs = new JSONArray(json);
             for (int i = 0; i < recs.length(); i++) {
-                JSONObject rec = recs.getJSONObject(i);
-                String title = rec.optString("title", "Recommandation");
-                String description = rec.optString("description", "");
-                String icon = rec.optString("icon", "💡");
-                String objectif = rec.optString("suggestedObjectif", "");
-                double score = rec.optDouble("score", -1);
+                JSONObject rec    = recs.getJSONObject(i);
+                String title      = rec.optString("title",            "Recommandation");
+                String description = rec.optString("description",     "");
+                String icon        = rec.optString("icon",            "💡");
+                String objectif    = rec.optString("suggestedObjectif", "");
+                double score       = rec.optDouble("score",           -1);
 
                 VBox card = buildAIRecommendationCard(icon, title, description, objectif, score);
                 recommendationBox.getChildren().add(card);
@@ -305,83 +369,117 @@ public class WeeklyInsightController implements Initializable {
         }
     }
 
-    private VBox buildAIRecommendationCard(String icon, String title, String description, String objectif, double score) {
+    /**
+     * Builds one AI recommendation card.
+     * The "Ajouter comme objectif" button navigates to /fxml/objectifs.fxml,
+     * passing the suggested objectif text via a static transfer field so the
+     * target controller can pre-fill the form.
+     */
+    private VBox buildAIRecommendationCard(String icon, String title,
+                                           String description, String objectif,
+                                           double score) {
         VBox card = new VBox(10);
         card.getStyleClass().add("ai-rec-card");
-        card.setStyle(
-                "-fx-background-color: linear-gradient(135deg, #1e293b, #0f172a);" +
-                        "-fx-background-radius: 16;" +
-                        "-fx-border-color: rgba(20,184,166,0.3);" +
-                        "-fx-border-radius: 16;" +
-                        "-fx-border-width: 1;" +
-                        "-fx-padding: 18;" +
-                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 12, 0, 0, 4);"
-        );
 
         Label iconLabel = new Label(icon);
-        iconLabel.setStyle("-fx-font-size: 28px;");
+        iconLabel.getStyleClass().add("ai-rec-icon");
 
         Label titleLabel = new Label(title);
-        titleLabel.setStyle("-fx-font-size: 15px; -fx-font-weight: 700; -fx-text-fill: #e2e8f0;");
+        titleLabel.getStyleClass().add("ai-rec-title");
         titleLabel.setWrapText(true);
 
         Label descLabel = new Label(description);
-        descLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #94a3b8; -fx-line-spacing: 2;");
+        descLabel.getStyleClass().add("ai-rec-desc");
         descLabel.setWrapText(true);
 
+        card.getChildren().addAll(iconLabel, titleLabel, descLabel);
+
         if (score >= 0) {
-            String scoreColor = score >= 66 ? "#14b8a6" : score >= 40 ? "#f59e0b" : "#ef4444";
+            String scoreClass = score >= 66 ? "ai-rec-score-good"
+                    : score >= 40 ? "ai-rec-score-warn"
+                      :               "ai-rec-score-bad";
             Label scoreLabel = new Label(String.format("Score actuel : %.1f%%", score));
-            scoreLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: " + scoreColor + "; -fx-font-weight: 600;");
-            card.getChildren().addAll(iconLabel, titleLabel, descLabel, scoreLabel);
-        } else {
-            card.getChildren().addAll(iconLabel, titleLabel, descLabel);
+            scoreLabel.getStyleClass().addAll("ai-rec-score", scoreClass);
+            card.getChildren().add(scoreLabel);
         }
 
-        if (!objectif.isBlank()) {
+        if (objectif != null && !objectif.isBlank()) {
             Label objLabel = new Label("🎯 " + objectif);
-            objLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #14b8a6; -fx-font-weight: 700; -fx-cursor: hand;");
+            objLabel.getStyleClass().add("ai-rec-objectif");
             objLabel.setWrapText(true);
             card.getChildren().add(objLabel);
+
+            // ── "Ajouter comme objectif" button ──────────────────────────────
+            Button addBtn = new Button("➕  Ajouter comme objectif");
+            addBtn.getStyleClass().add("ai-rec-add-btn");
+            final String objectifText = objectif;
+            addBtn.setOnAction(e -> {
+                // Pass the suggested text to the objectifs page via a static holder
+                ObjectifPreFill.setSuggestedTitle(objectifText);
+                Stage stage = (Stage) addBtn.getScene().getWindow();
+                loadView(stage, "/fxml/objectifs.fxml");
+            });
+            card.getChildren().add(addBtn);
         }
 
         return card;
     }
+
+    // ── Fallback when Groq is unavailable ────────────────────────────────────
 
     private void populateFallbackRecommendations(List<CategorySummary> summaries) {
         if (recommendationBox == null) return;
         recommendationBox.getChildren().clear();
         if (summaries == null || summaries.isEmpty()) return;
 
-        for (CategorySummary s : summaries) {
-            String category = (s.getCategory() == null || s.getCategory().isBlank()) ? "Autre" : s.getCategory();
-            String icon = getCategoryIcon(category);
-            String avg = s.getAvgNumericScore() == null ? "—" : s.getAvgNumericScore() + "%";
-            double score = s.getAvgNumericScore() == null ? -1 : s.getAvgNumericScore();
-            String desc = "Réponses : " + s.getCountAnswers() + "  |  Moyenne : " + avg;
-            String cap = category.substring(0, 1).toUpperCase() + category.substring(1);
+        // Show the 3 worst categories as simple cards
+        summaries.stream()
+                .filter(s -> s.getAvgNumericScore() != null)
+                .sorted((a, b) -> Double.compare(a.getAvgNumericScore(), b.getAvgNumericScore()))
+                .limit(3)
+                .forEach(s -> {
+                    String category = (s.getCategory() == null || s.getCategory().isBlank())
+                            ? "Autre" : s.getCategory();
+                    String icon = getCategoryIcon(category);
+                    double score = s.getAvgNumericScore();
+                    String cap = category.substring(0, 1).toUpperCase() + category.substring(1);
+                    String desc = score < 40
+                            ? "Cette catégorie nécessite votre attention. Fixez-vous un objectif concret !"
+                            : "Continuez vos efforts dans cette catégorie pour progresser.";
+                    String suggested = buildDefaultObjectif(category);
 
-            VBox card = buildAIRecommendationCard(icon, cap, desc, "Ajouter comme objectif", score);
-            recommendationBox.getChildren().add(card);
-        }
+                    VBox card = buildAIRecommendationCard(icon, cap, desc, suggested, score);
+                    recommendationBox.getChildren().add(card);
+                });
+    }
+
+    private String buildDefaultObjectif(String category) {
+        return switch (category.toLowerCase()) {
+            case "humeur"      -> "Pratiquer 10 min de cohérence cardiaque chaque matin cette semaine";
+            case "sommeil"     -> "Dormir 8h par nuit en éteignant les écrans 30 min avant de dormir";
+            case "nutrition"   -> "Manger au moins 3 portions de légumes par jour pendant 5 jours";
+            case "activite"    -> "Faire 30 min d'activité physique modérée au moins 4 fois cette semaine";
+            case "hydratation" -> "Boire 2 litres d'eau par jour pendant toute la semaine";
+            default            -> "Améliorer ma routine quotidienne dans cette catégorie";
+        };
     }
 
     private String getCategoryIcon(String category) {
         return switch (category.toLowerCase()) {
-            case "humeur" -> "😊";
-            case "sommeil" -> "🌙";
-            case "activite" -> "🏃";
-            case "nutrition" -> "🥗";
+            case "humeur"      -> "😊";
+            case "sommeil"     -> "🌙";
+            case "activite"    -> "🏃";
+            case "nutrition"   -> "🥗";
             case "hydratation" -> "💧";
-            case "stress" -> "🧠";
-            case "poids" -> "⚖️";
-            default -> "💡";
+            case "stress"      -> "🧠";
+            case "poids"       -> "⚖️";
+            default            -> "💡";
         };
     }
 
-    // ═══════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════════════
     //  CHART HELPERS
-    // ═══════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════════════
 
     private double computeGlobalAvg(List<CategorySummary> summaries) {
         if (summaries == null || summaries.isEmpty()) return 0.0;
@@ -397,66 +495,21 @@ public class WeeklyInsightController implements Initializable {
     private void populateDonutChart(double globalAvg) {
         if (globalPieChart == null) return;
         globalPieChart.getData().clear();
-        double filled = Math.max(0, Math.min(100, globalAvg));
+        double filled    = Math.max(0, Math.min(100, globalAvg));
         double remaining = 100 - filled;
-        PieChart.Data filledSlice = new PieChart.Data("Score", filled);
+        PieChart.Data filledSlice    = new PieChart.Data("Score",   filled);
         PieChart.Data remainingSlice = new PieChart.Data("Restant", remaining);
         globalPieChart.getData().addAll(filledSlice, remainingSlice);
         globalPieChart.getData().forEach(d -> {
-            if (d.getName().equals("Score")) {
-                String color = (globalAvg >= 66) ? "#14b8a6" : (globalAvg >= 40) ? "#f59e0b" : "#ef4444";
+            if ("Score".equals(d.getName())) {
+                String color = (globalAvg >= 66) ? "#3D6B7D"
+                        : (globalAvg >= 40) ? "#C99A51"
+                          :                     "#C56E5A";
                 d.getNode().setStyle("-fx-pie-color: " + color + ";");
             } else {
-                d.getNode().setStyle("-fx-pie-color: rgba(30,41,59,0.6);");
+                d.getNode().setStyle("-fx-pie-color: rgba(213,222,209,0.5);");
             }
         });
-    }
-
-    private String computeHumeurTrend(List<CategorySummary> summaries) {
-        if (summaries == null) return "Declining";
-        for (CategorySummary s : summaries) {
-            if ("humeur".equalsIgnoreCase(s.getCategory()) && s.getAvgNumericScore() != null) {
-                return s.getAvgNumericScore() >= 66 ? "Improving" : "Declining";
-            }
-        }
-        return "Declining";
-    }
-
-    private void updateTrendBadge(String trend) {
-        if (humeurTrendBadge == null) return;
-        if ("Improving".equals(trend)) {
-            humeurTrendBadge.setText("↑ En amélioration");
-            humeurTrendBadge.getStyleClass().removeAll("sym-trend-down");
-            humeurTrendBadge.getStyleClass().add("sym-trend-up");
-        } else {
-            humeurTrendBadge.setText("↓ En déclin");
-            humeurTrendBadge.getStyleClass().removeAll("sym-trend-up");
-            humeurTrendBadge.getStyleClass().add("sym-trend-down");
-        }
-    }
-
-    /**
-     * Populates humeur line chart from getDailyHumeurScores() — requires DAO to fill it.
-     */
-    private void populateHumeurLineChart(WeeklyInsightResult result) {
-        if (humeurLineChart == null) return;
-        humeurLineChart.getData().clear();
-        if (result == null) return;
-
-        Map<LocalDate, Double> dailyScores = result.getDailyHumeurScores();
-        if (dailyScores == null || dailyScores.isEmpty()) return;
-
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.setName("Humeur");
-
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd MMM");
-        dailyScores.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(entry -> series.getData().add(
-                        new XYChart.Data<>(entry.getKey().format(fmt), entry.getValue())
-                ));
-
-        if (!series.getData().isEmpty()) humeurLineChart.getData().add(series);
     }
 
     private void populateCategoryChart(List<CategorySummary> summaries) {
@@ -478,15 +531,15 @@ public class WeeklyInsightController implements Initializable {
             categoryBarChart.getData().add(series);
             for (XYChart.Data<String, Number> d : series.getData()) {
                 double val = d.getYValue().doubleValue();
-                String color = val >= 66 ? "#14b8a6" : val >= 40 ? "#f59e0b" : "#ef4444";
+                String color = val >= 66 ? "#3D6B7D" : val >= 40 ? "#C99A51" : "#C56E5A";
                 if (d.getNode() != null) d.getNode().setStyle("-fx-bar-fill: " + color + ";");
             }
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════════════
     //  NAVIGATION
-    // ═══════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════════════
 
     private void goToDashboard() {
         try {
@@ -499,8 +552,8 @@ public class WeeklyInsightController implements Initializable {
     }
 
     private void showEmptyState(boolean empty) {
-        if (emptyStateBox != null) { emptyStateBox.setVisible(empty); emptyStateBox.setManaged(empty); }
-        if (contentSections != null) { contentSections.setVisible(!empty); contentSections.setManaged(!empty); }
+        if (emptyStateBox    != null) { emptyStateBox.setVisible(empty);    emptyStateBox.setManaged(empty); }
+        if (contentSections  != null) { contentSections.setVisible(!empty); contentSections.setManaged(!empty); }
     }
 
     @FXML private void handleAccueil(ActionEvent e)        { loadView(stageFrom(e), "/fxml/user-dashboard.fxml"); }
@@ -512,8 +565,8 @@ public class WeeklyInsightController implements Initializable {
     @FXML private void handleTest(ActionEvent e)           { loadView(stageFrom(e), "/fxml/test.fxml"); }
     @FXML private void handleProfilPsy(ActionEvent e)      { loadView(stageFrom(e), "/fxml/profil-psychologique.fxml"); }
     @FXML private void handleProfil(ActionEvent e)         { loadView(stageFrom(e), "/fxml/profile.fxml"); }
-    @FXML private void handleLogout(ActionEvent e) { SessionManager.getInstance().logout(); loadView(stageFrom(e), "/fxml/login.fxml"); }
-    @FXML private void handleCheckIn(ActionEvent e) { loadView(stageFrom(e), "/fxml/suivi_today.fxml"); }
+    @FXML private void handleLogout(ActionEvent e)         { SessionManager.getInstance().logout(); loadView(stageFrom(e), "/fxml/login.fxml"); }
+    @FXML private void handleCheckIn(ActionEvent e)        { loadView(stageFrom(e), "/fxml/suivi_today.fxml"); }
 
     private Stage stageFrom(ActionEvent e) { return (Stage) ((Node) e.getSource()).getScene().getWindow(); }
 
@@ -526,9 +579,9 @@ public class WeeklyInsightController implements Initializable {
         } catch (IOException e) { DialogHelper.showError("Navigation", e.getMessage()); }
     }
 
-    // ═══════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════════════
     //  PDF EXPORT
-    // ═══════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════════════
 
     @FXML
     private void handleExportPdf() {
@@ -537,8 +590,7 @@ public class WeeklyInsightController implements Initializable {
         chooser.setTitle("Enregistrer le PDF");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF (*.pdf)", "*.pdf"));
         chooser.setInitialFileName("bekri-resume-" + LocalDate.now() + ".pdf");
-        Stage stage = SceneManager.getPrimaryStage();
-        File file = chooser.showSaveDialog(stage);
+        File file = chooser.showSaveDialog(SceneManager.getPrimaryStage());
         if (file == null) return;
         try {
             exportToPdf(file, lastResult, lastStart, lastEnd);
@@ -546,33 +598,40 @@ public class WeeklyInsightController implements Initializable {
         } catch (Exception e) { DialogHelper.showError("Export PDF", "Erreur export : " + e.getMessage()); }
     }
 
-    private void exportToPdf(File file, WeeklyInsightResult result, LocalDate start, LocalDate end) throws Exception {
+    private void exportToPdf(File file, WeeklyInsightResult result,
+                             LocalDate start, LocalDate end) throws Exception {
         Document document = new Document(PageSize.A4, 36, 36, 54, 36);
         PdfWriter.getInstance(document, new FileOutputStream(file));
         document.open();
+
         Font titleFont = new Font(Font.HELVETICA, 18, Font.BOLD);
-        Font hFont = new Font(Font.HELVETICA, 13, Font.BOLD);
-        Font normal = new Font(Font.HELVETICA, 11, Font.NORMAL);
+        Font hFont     = new Font(Font.HELVETICA, 13, Font.BOLD);
+        Font normal    = new Font(Font.HELVETICA, 11, Font.NORMAL);
+
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd MMM yyyy");
         document.add(new Paragraph("Bekri — Insights hebdomadaires", titleFont));
         document.add(new Paragraph("Période : " + start.format(fmt) + " → " + end.format(fmt), normal));
         document.add(new Paragraph(" ", normal));
+
         double globalAvg = computeGlobalAvg(result.getCategorySummaries());
         document.add(new Paragraph("Résumé", hFont));
         document.add(new Paragraph("- Jours complétés : " + result.getTotalSubmittedDays() + "/7", normal));
         document.add(new Paragraph("- Score moyen global : " + globalAvg + "%", normal));
-        document.add(new Paragraph("- Meilleur jour : " + safe(bestDayLabel != null ? bestDayLabel.getText() : "—")
-                + "   (" + safe(bestHighlightLabel != null ? bestHighlightLabel.getText() : "—") + ")", normal));
-        document.add(new Paragraph("- Jour difficile : " + safe(worstDayLabel != null ? worstDayLabel.getText() : "—")
+        document.add(new Paragraph("- Meilleur jour : " + safe(bestDayLabel    != null ? bestDayLabel.getText()    : "—")
+                + "   (" + safe(bestHighlightLabel  != null ? bestHighlightLabel.getText()  : "—") + ")", normal));
+        document.add(new Paragraph("- Jour difficile : " + safe(worstDayLabel  != null ? worstDayLabel.getText()  : "—")
                 + "   (" + safe(worstHighlightLabel != null ? worstHighlightLabel.getText() : "—") + ")", normal));
         document.add(new Paragraph(" ", normal));
+
         document.add(new Paragraph("Scores par catégorie", hFont));
         PdfPTable table = new PdfPTable(3);
         table.setWidthPercentage(100); table.setSpacingBefore(8); table.setWidths(new float[]{3f, 2f, 2f});
         table.addCell(headerCell("Catégorie")); table.addCell(headerCell("Réponses")); table.addCell(headerCell("Moyenne (%)"));
+
         List<CategorySummary> summaries = result.getCategorySummaries();
         if (summaries == null || summaries.isEmpty()) {
-            PdfPCell cell = new PdfPCell(new Phrase("Aucune donnée", normal)); cell.setColspan(3); cell.setPadding(8); table.addCell(cell);
+            PdfPCell cell = new PdfPCell(new Phrase("Aucune donnée", normal));
+            cell.setColspan(3); cell.setPadding(8); table.addCell(cell);
         } else {
             for (CategorySummary s : summaries) {
                 table.addCell(bodyCell(safe(s.getCategory())));
@@ -580,16 +639,21 @@ public class WeeklyInsightController implements Initializable {
                 table.addCell(bodyCell(s.getAvgNumericScore() == null ? "—" : s.getAvgNumericScore() + "%"));
             }
         }
-        document.add(table); document.close();
+        document.add(table);
+        document.close();
     }
 
     private PdfPCell headerCell(String text) {
         Font f = new Font(Font.HELVETICA, 11, Font.BOLD);
-        PdfPCell cell = new PdfPCell(new Phrase(text, f)); cell.setPadding(8); cell.setBackgroundColor(new Color(20, 184, 166)); return cell;
+        PdfPCell cell = new PdfPCell(new Phrase(text, f));
+        cell.setPadding(8); cell.setBackgroundColor(new Color(20, 184, 166)); return cell;
     }
+
     private PdfPCell bodyCell(String text) {
         Font f = new Font(Font.HELVETICA, 11, Font.NORMAL);
-        PdfPCell cell = new PdfPCell(new Phrase(text, f)); cell.setPadding(8); return cell;
+        PdfPCell cell = new PdfPCell(new Phrase(text, f));
+        cell.setPadding(8); return cell;
     }
+
     private String safe(String s) { return s == null ? "" : s; }
 }

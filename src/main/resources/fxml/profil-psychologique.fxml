@@ -14,8 +14,7 @@
     xmlns:fx="http://javafx.com/fxml"
     fx:controller="tn.esprit.profil.ui.ProfilPsychologiqueController">
   <stylesheets>
-    <URL value="@../css/profil-psychologique.css"/>
-    <URL value="@../css/bekri.css"/>
+    <URL value="@../css/app.css"/>
   </stylesheets>
   <content>
     <VBox spacing="0" maxWidth="Infinity" style="-fx-background-color: #f9fafb; -fx-padding: 0;">
