@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.user.ui.UserManagementController"
+            prefWidth="1120" prefHeight="700"
+            styleClass="page-bg users-page-bg">
+    <top>
+        <VBox spacing="0" styleClass="users-header-shell">
+            <HBox alignment="CENTER_LEFT" spacing="14" styleClass="users-top-row">
+                <VBox spacing="4">
+                    <Label text="Utilisateurs" styleClass="users-page-title"/>
+                    <Label fx:id="pageSubtitleLabel" text="0 utilisateurs au total" styleClass="users-page-subtitle"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Retour" onAction="#handleBack" styleClass="btn-ghost"/>
+            </HBox>
+            <Region styleClass="users-header-accent"/>
+        </VBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <VBox spacing="22" style="-fx-padding: 22 24 26 24;">
+                <HBox spacing="14">
+                    <HBox spacing="14" alignment="CENTER_LEFT" styleClass="users-stat-card" HBox.hgrow="ALWAYS">
+                        <StackPane styleClass="users-stat-icon total">
+                            <Label text="👥" styleClass="users-stat-icon-text"/>
+                        </StackPane>
+                        <VBox spacing="6">
+                            <Label text="TOTAL" styleClass="users-stat-title"/>
+                            <Label fx:id="totalUsersCountLabel" text="0" styleClass="users-stat-value"/>
+                        </VBox>
+                    </HBox>
+
+                    <HBox spacing="14" alignment="CENTER_LEFT" styleClass="users-stat-card" HBox.hgrow="ALWAYS">
+                        <StackPane styleClass="users-stat-icon member">
+                            <Label text="👤" styleClass="users-stat-icon-text"/>
+                        </StackPane>
+                        <VBox spacing="6">
+                            <Label text="MEMBRES" styleClass="users-stat-title"/>
+                            <Label fx:id="membresCountLabel" text="0" styleClass="users-stat-value"/>
+                        </VBox>
+                    </HBox>
+
+                    <HBox spacing="14" alignment="CENTER_LEFT" styleClass="users-stat-card" HBox.hgrow="ALWAYS">
+                        <StackPane styleClass="users-stat-icon coach">
+                            <Label text="🧑‍🏫" styleClass="users-stat-icon-text"/>
+                        </StackPane>
+                        <VBox spacing="6">
+                            <Label text="COACHS" styleClass="users-stat-title"/>
+                            <Label fx:id="coachsCountLabel" text="0" styleClass="users-stat-value"/>
+                        </VBox>
+                    </HBox>
+
+                    <HBox spacing="14" alignment="CENTER_LEFT" styleClass="users-stat-card" HBox.hgrow="ALWAYS">
+                        <StackPane styleClass="users-stat-icon admin">
+                            <Label text="🛡" styleClass="users-stat-icon-text"/>
+                        </StackPane>
+                        <VBox spacing="6">
+                            <Label text="ADMINS" styleClass="users-stat-title"/>
+                            <Label fx:id="adminsCountLabel" text="0" styleClass="users-stat-value"/>
+                        </VBox>
+                    </HBox>
+                </HBox>
+
+                <VBox spacing="0" styleClass="users-panel-card">
+                    <HBox alignment="CENTER_LEFT" styleClass="users-panel-header">
+                        <Label text="Rechercher &amp; filtrer" styleClass="users-panel-title"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="Reinitialiser" onAction="#handleResetFilters" styleClass="users-reset-btn"/>
+                    </HBox>
+
+                    <VBox spacing="14" styleClass="users-filter-body">
+                        <HBox spacing="14">
+                            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                                <Label text="RECHERCHE" styleClass="users-filter-label"/>
+                                <TextField fx:id="searchField" promptText="Nom, prenom ou email..." styleClass="users-search-field"/>
+                            </VBox>
+                            <VBox spacing="8" prefWidth="220">
+                                <Label text="ROLE" styleClass="users-filter-label"/>
+                                <ComboBox fx:id="roleFilterCombo" prefWidth="220"/>
+                            </VBox>
+                            <VBox spacing="8" prefWidth="210">
+                                <Label text="STATUT" styleClass="users-filter-label"/>
+                                <ComboBox fx:id="statusFilterCombo" prefWidth="210"/>
+                            </VBox>
+                            <VBox alignment="BOTTOM_CENTER">
+                                <Button text="Chercher" onAction="#handleSearch" styleClass="users-search-btn"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+                <VBox spacing="0" styleClass="users-panel-card">
+                    <HBox alignment="CENTER_LEFT" styleClass="users-panel-header">
+                        <Label text="Liste des utilisateurs" styleClass="users-panel-title"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="resultsCountLabel" text="0 resultats" styleClass="users-results-label"/>
+                    </HBox>
+
+                    <StackPane style="-fx-padding: 0;">
+                        <TableView fx:id="usersTable" styleClass="users-table" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="userColumn" text="UTILISATEUR" prefWidth="280"/>
+                                <TableColumn fx:id="emailColumn" text="EMAIL" prefWidth="215"/>
+                                <TableColumn fx:id="roleColumn" text="ROLE" prefWidth="125"/>
+                                <TableColumn fx:id="statusColumn" text="STATUT" prefWidth="130"/>
+                                <TableColumn fx:id="createdAtColumn" text="INSCRIT LE" prefWidth="120"/>
+                                <TableColumn fx:id="actionsColumn" text="ACTIONS" prefWidth="100"/>
+                            </columns>
+                        </TableView>
+
+                        <Label fx:id="emptyStateLabel"
+                               text="Aucun utilisateur trouve."
+                               visible="false" managed="false"
+                               styleClass="users-empty-state"/>
+                    </StackPane>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.user.ui.AdminDashboardController"
+            prefWidth="1100" prefHeight="700" styleClass="page-bg">
+    <stylesheets>
+        <URL value="@../css/bekri.css"/>
+    </stylesheets>
+
+    <left>
+        <VBox styleClass="sidebar">
+            <VBox styleClass="sidebar-logo-box" spacing="2">
+                <Label text="bekri" styleClass="sidebar-logo"/>
+                <Label text="Bien-etre &amp; Administration" styleClass="sidebar-logo-sub"/>
+            </VBox>
+            <VBox styleClass="sidebar-nav-box" spacing="0">
+                <Label text="MENU" styleClass="sidebar-section-label"/>
+                <Button text="Accueil" styleClass="sidebar-btn sidebar-btn-active"/>
+                <Button text="Questions" styleClass="sidebar-btn" onAction="#handleQuestions"/>
+                <Button text="Utilisateurs" styleClass="sidebar-btn" onAction="#handleUtilisateurs"/>
+                <Button text="Mon Profil" styleClass="sidebar-btn" onAction="#handleProfil"/>
+            </VBox>
+            <Region VBox.vgrow="ALWAYS"/>
+            <VBox styleClass="sidebar-divider">
+                <Button text="Deconnexion" styleClass="sidebar-logout" onAction="#handleLogout"/>
+            </VBox>
+        </VBox>
+    </left>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <VBox spacing="24">
+                <padding><Insets top="32" right="36" bottom="32" left="36"/></padding>
+
+                <HBox styleClass="welcome-card" alignment="CENTER_LEFT" spacing="16">
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label fx:id="welcomeLabel" text="Bonjour Admin" styleClass="welcome-greeting"/>
+                        <Label text="Gerez votre plateforme bien-etre" styleClass="welcome-tagline"/>
+                    </VBox>
+                </HBox>
+
+                <VBox spacing="16">
+                    <Label text="Acces rapide" styleClass="section-title"/>
+                    <FlowPane hgap="16" vgap="16">
+                        <VBox styleClass="quick-card" onMouseClicked="#handleQuestions" alignment="CENTER" spacing="8">
+                            <Label text="Questions" styleClass="quick-card-title"/>
+                            <Label text="Gerer les questions" styleClass="quick-card-sub"/>
+                        </VBox>
+                        <VBox styleClass="quick-card" onMouseClicked="#handleUtilisateurs" alignment="CENTER" spacing="8">
+                            <Label text="Utilisateurs" styleClass="quick-card-title"/>
+                            <Label text="Gerer les comptes" styleClass="quick-card-sub"/>
+                        </VBox>
+                        <VBox styleClass="quick-card" onMouseClicked="#handleProfil" alignment="CENTER" spacing="8">
+                            <Label text="Mon Profil" styleClass="quick-card-title"/>
+                            <Label text="Mes informations" styleClass="quick-card-sub"/>
+                        </VBox>
+                    </FlowPane>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.user.ui.ReactivationRequestController"
+            prefWidth="820" prefHeight="600">
+    <center>
+        <StackPane>
+            <VBox spacing="18" maxWidth="520" styleClass="auth-form-card">
+                <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                <Label text="Compte inactif" styleClass="auth-title"/>
+                <Label fx:id="messageLabel"
+                       text="Votre compte a ete desactive par un administrateur. Contactez support@bekri.tn pour le reactiver."
+                       wrapText="true"
+                       styleClass="auth-subtitle"/>
+                <Button text="Retour a la connexion"
+                        onAction="#handleBackToLogin"
+                        styleClass="btn-primary"/>
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>
