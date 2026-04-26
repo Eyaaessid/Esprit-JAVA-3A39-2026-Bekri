@@ -10,7 +10,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PostDao {
     private static final String BASE_SELECT = """
@@ -102,7 +106,7 @@ public class PostDao {
     public void update(Post post) throws SQLException {
         String sql = """
                 UPDATE post
-                SET titre = ?, contenu = ?, media_url = ?, categorie = ?, updated_at = NOW()
+                SET titre = ?, contenu = ?, media_url = ?, categorie = ?, emotion = ?, risk_level = ?, is_sensitive = ?, updated_at = NOW()
                 WHERE id = ?
                 """;
         try (Connection connection = DatabaseConnection.getConnection();
@@ -112,7 +116,10 @@ public class PostDao {
             statement.setString(2, post.getContenu());
             statement.setString(3, emptyToNull(post.getMediaUrl()));
             statement.setString(4, emptyToNull(post.getCategorie()));
-            statement.setInt(5, post.getId());
+            statement.setString(5, emptyToNull(post.getEmotion()));
+            statement.setString(6, post.getRiskLevel() == null ? "low" : post.getRiskLevel());
+            statement.setBoolean(7, post.isSensitive());
+            statement.setInt(8, post.getId());
             statement.executeUpdate();
         }
     }
@@ -130,6 +137,129 @@ public class PostDao {
         for (int index = 0; index < parameters.size(); index++) {
             statement.setObject(index + 1, parameters.get(index));
         }
+    }
+
+    public List<Post> findVisibleByIds(List<Integer> ids) throws SQLException {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+
+        String placeholders = ids.stream().map(id -> "?").collect(Collectors.joining(","));
+        String sql = BASE_SELECT + " AND p.id IN (" + placeholders + ")";
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            for (int i = 0; i < ids.size(); i++) {
+                statement.setInt(i + 1, ids.get(i));
+            }
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<Post> posts = new ArrayList<>();
+                while (resultSet.next()) {
+                    posts.add(mapPost(resultSet));
+                }
+                return posts;
+            }
+        }
+    }
+
+    public List<Integer> findPostIdsByAuthor(int userId) throws SQLException {
+        String sql = "SELECT id FROM post WHERE utilisateur_id = ? AND deleted_at IS NULL";
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, userId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<Integer> ids = new ArrayList<>();
+                while (resultSet.next()) {
+                    ids.add(resultSet.getInt("id"));
+                }
+                return ids;
+            }
+        }
+    }
+
+    public List<String> findDistinctCategoriesByAuthor(int userId) throws SQLException {
+        String sql = """
+                SELECT DISTINCT categorie
+                FROM post
+                WHERE utilisateur_id = ?
+                  AND deleted_at IS NULL
+                  AND categorie IS NOT NULL
+                  AND TRIM(categorie) <> ''
+                """;
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, userId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<String> categories = new ArrayList<>();
+                while (resultSet.next()) {
+                    categories.add(resultSet.getString("categorie"));
+                }
+                return categories;
+            }
+        }
+    }
+
+    public List<Post> findByCategories(List<String> categories, List<Integer> excludedPostIds, Integer excludeAuthorId, int limit) throws SQLException {
+        if (categories == null || categories.isEmpty() || limit <= 0) {
+            return List.of();
+        }
+
+        List<Post> all = findAllVisible(null, null);
+        Set<String> normalized = categories.stream()
+                .filter(value -> value != null && !value.isBlank())
+                .map(value -> value.toLowerCase(Locale.ROOT))
+                .collect(Collectors.toSet());
+
+        return all.stream()
+                .filter(post -> post.getCategorie() != null && normalized.contains(post.getCategorie().toLowerCase(Locale.ROOT)))
+                .filter(post -> excludedPostIds == null || !excludedPostIds.contains(post.getId()))
+                .filter(post -> excludeAuthorId == null || post.getUserId() != excludeAuthorId)
+                .sorted(Comparator.comparing(Post::getCommentsCount).reversed()
+                        .thenComparing(Post::getLikesCount, Comparator.reverseOrder())
+                        .thenComparing(Post::getCreatedAt, Comparator.reverseOrder()))
+                .limit(limit)
+                .toList();
+    }
+
+    public List<Post> findMostPopularRecent(int limit, List<Integer> excludedPostIds, Integer excludeAuthorId) throws SQLException {
+        if (limit <= 0) {
+            return List.of();
+        }
+
+        List<Post> all = findAllVisible(null, null);
+        return all.stream()
+                .filter(post -> excludedPostIds == null || !excludedPostIds.contains(post.getId()))
+                .filter(post -> excludeAuthorId == null || post.getUserId() != excludeAuthorId)
+                .sorted(Comparator.comparing(Post::getLikesCount).reversed()
+                        .thenComparing(Post::getCommentsCount, Comparator.reverseOrder())
+                        .thenComparing(Post::getCreatedAt, Comparator.reverseOrder()))
+                .limit(limit)
+                .toList();
+    }
+
+    public List<Post> findRelatedToPost(int excludedPostId, String category, Integer authorId, int limit) throws SQLException {
+        if (limit <= 0) {
+            return List.of();
+        }
+
+        List<Post> all = findAllVisible(null, null);
+        List<Post> filtered = all.stream()
+                .filter(post -> post.getId() != excludedPostId)
+                .filter(post -> {
+                    boolean sameCategory = category != null && !category.isBlank() && category.equalsIgnoreCase(post.getCategorie());
+                    boolean sameAuthor = authorId != null && authorId == post.getUserId();
+                    return sameCategory || sameAuthor;
+                })
+                .sorted(Comparator.comparing(Post::getCreatedAt, Comparator.reverseOrder()))
+                .limit(limit)
+                .toList();
+
+        if (!filtered.isEmpty()) {
+            return filtered;
+        }
+
+        return findMostPopularRecent(limit, List.of(excludedPostId), null);
     }
 
     private Post mapPost(ResultSet resultSet) throws SQLException {

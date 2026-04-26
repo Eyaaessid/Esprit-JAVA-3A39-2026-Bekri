@@ -51,6 +51,8 @@
                     <ComboBox fx:id="currentUserComboBox" prefWidth="260.0"/>
                 </VBox>
                 <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="likeButton" onAction="#handleToggleLike" styleClass="ghost-button" text="Like"/>
+                <Button fx:id="saveButton" onAction="#handleToggleSave" styleClass="ghost-button" text="Save"/>
                 <Button fx:id="editPostButton" disable="true" onAction="#handleEditPost" styleClass="ghost-button" text="Edit Post"/>
                 <Button fx:id="deletePostButton" disable="true" onAction="#handleDeletePost" styleClass="danger-button" text="Delete Post"/>
             </HBox>

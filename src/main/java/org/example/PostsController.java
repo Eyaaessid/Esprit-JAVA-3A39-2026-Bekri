@@ -8,6 +8,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -19,15 +20,19 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.example.community.model.Post;
 import org.example.community.model.PostFormData;
+import org.example.community.model.PostNotification;
+import org.example.community.model.RiskAnalysisResult;
 import org.example.community.model.UserSummary;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class PostsController {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -80,6 +85,41 @@ public class PostsController {
     }
 
     @FXML
+    private void handleOpenNotifications() {
+        UserSummary currentUser = appState.getCurrentUser();
+        if (currentUser == null) {
+            showError("Select an active user first.");
+            return;
+        }
+
+        try {
+            List<PostNotification> notifications = appState.getPostNotificationDao().findForRecipient(currentUser.id(), 40);
+            int unread = appState.getPostNotificationDao().countUnread(currentUser.id());
+            if (notifications.isEmpty()) {
+                showInfo("Notifications", "No notifications yet.");
+                return;
+            }
+
+            String body = notifications.stream()
+                    .map(n -> "- [" + (n.isRead() ? "read" : "unread") + "] " + n.getMessage())
+                    .collect(Collectors.joining("\n"));
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Notifications");
+            alert.setHeaderText("Unread: " + unread);
+            alert.setContentText(body);
+            alert.getDialogPane().setPrefWidth(780);
+            alert.showAndWait();
+
+            if (unread > 0) {
+                appState.getPostNotificationDao().markAllRead(currentUser.id());
+            }
+        } catch (SQLException exception) {
+            showError("Failed to load notifications: " + exception.getMessage());
+        }
+    }
+
+    @FXML
     private void handleCreatePost() {
         UserSummary currentUser = appState.getCurrentUser();
         if (currentUser == null) {
@@ -110,11 +150,19 @@ public class PostsController {
             post.setTitre(result.get().titre());
             post.setCategorie(result.get().categorie());
             post.setContenu(result.get().contenu());
-            post.setEmotion(null);
-            post.setRiskLevel("low");
-            post.setSensitive(false);
+
+            RiskAnalysisResult analysis = appState.getPostModerationService().analyze(post.getContenu());
+            post.setEmotion(analysis.emotion());
+            post.setRiskLevel(analysis.riskLevel());
+            post.setSensitive(analysis.sensitive());
             post.setMediaUrl(storeSelectedImage(result.get().selectedImagePath(), null, false));
             appState.getPostDao().insert(post);
+
+            if ("high".equalsIgnoreCase(analysis.riskLevel())) {
+                appState.getPostInteractionService().notifyHighRisk(post, currentUser, analysis.matchedSignals());
+                showInfo("Risk Alert", "High-risk signals were detected. Admin notifications were created.");
+            }
+
             refreshFeed();
         } catch (Exception exception) {
             showError("Failed to create the post: " + exception.getMessage());
@@ -154,8 +202,48 @@ public class PostsController {
             return;
         }
 
+        renderRecommendations();
         for (Post post : posts) {
             postsContainer.getChildren().add(createPostCard(post));
+        }
+    }
+
+    private void renderRecommendations() {
+        UserSummary currentUser = appState.getCurrentUser();
+        if (currentUser == null) {
+            return;
+        }
+
+        try {
+            List<Integer> visibleIds = posts.stream().map(Post::getId).toList();
+            List<Post> recommended = appState.getPostRecommendationService().getRecommendedForUser(currentUser, 4, visibleIds);
+            if (recommended.isEmpty()) {
+                return;
+            }
+
+            Label title = new Label("Recommended For You");
+            title.getStyleClass().add("section-title");
+            postsContainer.getChildren().add(title);
+
+            for (Post post : recommended) {
+                VBox rec = new VBox(6);
+                rec.getStyleClass().add("detail-card");
+                rec.setPadding(new Insets(12));
+
+                Label postTitle = new Label(post.getTitre());
+                postTitle.getStyleClass().add("post-card-title");
+                Label meta = new Label(post.getLikesCount() + " likes - " + post.getCommentsCount() + " comments");
+                meta.getStyleClass().add("muted-label");
+
+                Button open = new Button("Open");
+                open.getStyleClass().add("primary-button");
+                open.setOnAction(event -> navigateToDetails(post));
+
+                rec.getChildren().addAll(postTitle, meta, open);
+                postsContainer.getChildren().add(rec);
+            }
+        } catch (SQLException exception) {
+            // Recommendations are optional; keep feed usable if query fails.
         }
     }
 
@@ -192,6 +280,15 @@ public class PostsController {
         commentsButton.getStyleClass().add("ghost-button");
         commentsButton.setOnAction(event -> navigateToComments(post));
 
+        Button likeButton = new Button();
+        likeButton.getStyleClass().add("ghost-button");
+        likeButton.setOnAction(event -> handleToggleLike(post));
+
+        Button saveButton = new Button();
+        saveButton.getStyleClass().add("ghost-button");
+        saveButton.setOnAction(event -> handleToggleSave(post));
+        refreshLikeSaveLabels(post, likeButton, saveButton);
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
@@ -205,9 +302,61 @@ public class PostsController {
         deleteButton.setDisable(!post.canBeEditedBy(appState.getCurrentUser()));
         deleteButton.setOnAction(event -> handleDeletePost(post));
 
-        actions.getChildren().addAll(detailsButton, commentsButton, spacer, editButton, deleteButton);
+        actions.getChildren().addAll(detailsButton, commentsButton, likeButton, saveButton, spacer, editButton, deleteButton);
         card.getChildren().addAll(title, meta, tag, excerpt, stats, actions);
         return card;
+    }
+
+    private void handleToggleLike(Post post) {
+        UserSummary currentUser = appState.getCurrentUser();
+        if (currentUser == null) {
+            showError("Select an active user first.");
+            return;
+        }
+
+        try {
+            boolean liked = appState.getLikeDao().toggleLike(post.getId(), currentUser.id());
+            if (liked) {
+                appState.getPostInteractionService().notifyLike(post, currentUser);
+            }
+            refreshFeed();
+        } catch (SQLException exception) {
+            showError("Failed to toggle like: " + exception.getMessage());
+        }
+    }
+
+    private void handleToggleSave(Post post) {
+        UserSummary currentUser = appState.getCurrentUser();
+        if (currentUser == null) {
+            showError("Select an active user first.");
+            return;
+        }
+
+        try {
+            appState.getSavedPostDao().toggleSaved(post.getId(), currentUser.id());
+            refreshFeed();
+        } catch (SQLException exception) {
+            showError("Failed to toggle saved post: " + exception.getMessage());
+        }
+    }
+
+    private void refreshLikeSaveLabels(Post post, Button likeButton, Button saveButton) {
+        UserSummary currentUser = appState.getCurrentUser();
+        if (currentUser == null) {
+            likeButton.setText("Like");
+            saveButton.setText("Save");
+            return;
+        }
+
+        try {
+            boolean liked = appState.getLikeDao().hasUserLiked(post.getId(), currentUser.id());
+            boolean saved = appState.getSavedPostDao().hasUserSaved(post.getId(), currentUser.id());
+            likeButton.setText(liked ? "Unlike" : "Like");
+            saveButton.setText(saved ? "Unsave" : "Save");
+        } catch (SQLException exception) {
+            likeButton.setText("Like");
+            saveButton.setText("Save");
+        }
     }
 
     private void handleEditPost(Post post) {
@@ -239,7 +388,17 @@ public class PostsController {
             post.setCategorie(result.get().categorie());
             post.setContenu(result.get().contenu());
             post.setMediaUrl(storeSelectedImage(result.get().selectedImagePath(), post.getMediaUrl(), result.get().removeExistingImage()));
+
+            RiskAnalysisResult analysis = appState.getPostModerationService().analyze(post.getContenu());
+            post.setEmotion(analysis.emotion());
+            post.setRiskLevel(analysis.riskLevel());
+            post.setSensitive(analysis.sensitive());
+
             appState.getPostDao().update(post);
+            if ("high".equalsIgnoreCase(analysis.riskLevel())) {
+                appState.getPostInteractionService().notifyHighRisk(post, appState.getCurrentUser(), analysis.matchedSignals());
+                showInfo("Risk Alert", "High-risk signals were detected. Admin notifications were created.");
+            }
             refreshFeed();
         } catch (Exception exception) {
             showError("Failed to update the post: " + exception.getMessage());
@@ -341,17 +500,24 @@ public class PostsController {
     }
 
     private boolean confirm(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.OK, ButtonType.CANCEL);
         alert.setTitle(title);
         alert.setHeaderText(title);
-        alert.setContentText(message);
-        return alert.showAndWait().filter(buttonType -> buttonType.getButtonData().isDefaultButton()).isPresent();
+        return alert.showAndWait().filter(buttonType -> buttonType == ButtonType.OK).isPresent();
     }
 
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Bekri JavaFX");
         alert.setHeaderText("Posts screen");
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showInfo(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Bekri JavaFX");
+        alert.setHeaderText(title);
         alert.setContentText(message);
         alert.showAndWait();
     }

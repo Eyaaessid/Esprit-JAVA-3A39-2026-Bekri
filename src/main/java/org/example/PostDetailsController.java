@@ -13,6 +13,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.example.community.model.Post;
 import org.example.community.model.PostFormData;
+import org.example.community.model.RiskAnalysisResult;
 import org.example.community.model.UserSummary;
 
 import java.io.IOException;
@@ -46,6 +47,10 @@ public class PostDetailsController {
     private Button editPostButton;
     @FXML
     private Button deletePostButton;
+    @FXML
+    private Button likeButton;
+    @FXML
+    private Button saveButton;
 
     private AppState appState;
 
@@ -78,6 +83,41 @@ public class PostDetailsController {
             Navigator.showCommentsView(post);
         } catch (IOException exception) {
             showError("Failed to open comments: " + exception.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleToggleLike() {
+        Post post = appState.getCurrentPost();
+        UserSummary user = appState.getCurrentUser();
+        if (post == null || user == null) {
+            showError("Select a user and a post first.");
+            return;
+        }
+        try {
+            boolean liked = appState.getLikeDao().toggleLike(post.getId(), user.id());
+            if (liked) {
+                appState.getPostInteractionService().notifyLike(post, user);
+            }
+            refreshPost();
+        } catch (SQLException exception) {
+            showError("Failed to toggle like: " + exception.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleToggleSave() {
+        Post post = appState.getCurrentPost();
+        UserSummary user = appState.getCurrentUser();
+        if (post == null || user == null) {
+            showError("Select a user and a post first.");
+            return;
+        }
+        try {
+            appState.getSavedPostDao().toggleSaved(post.getId(), user.id());
+            refreshPost();
+        } catch (SQLException exception) {
+            showError("Failed to toggle saved post: " + exception.getMessage());
         }
     }
 
@@ -117,7 +157,17 @@ public class PostDetailsController {
             post.setCategorie(result.get().categorie());
             post.setContenu(result.get().contenu());
             post.setMediaUrl(storeSelectedImage(result.get().selectedImagePath(), post.getMediaUrl(), result.get().removeExistingImage()));
+
+            RiskAnalysisResult analysis = appState.getPostModerationService().analyze(post.getContenu());
+            post.setEmotion(analysis.emotion());
+            post.setRiskLevel(analysis.riskLevel());
+            post.setSensitive(analysis.sensitive());
+
             appState.getPostDao().update(post);
+            if ("high".equalsIgnoreCase(analysis.riskLevel())) {
+                appState.getPostInteractionService().notifyHighRisk(post, appState.getCurrentUser(), analysis.matchedSignals());
+                showInfo("Risk Alert", "High-risk signals were detected. Admin notifications were created.");
+            }
             refreshPost();
         } catch (Exception exception) {
             showError("Failed to update the post: " + exception.getMessage());
@@ -192,6 +242,25 @@ public class PostDetailsController {
         boolean canEdit = post.canBeEditedBy(appState.getCurrentUser());
         editPostButton.setDisable(!canEdit);
         deletePostButton.setDisable(!canEdit);
+        refreshLikeSaveButtons(post);
+    }
+
+    private void refreshLikeSaveButtons(Post post) {
+        UserSummary user = appState.getCurrentUser();
+        if (user == null) {
+            likeButton.setText("Like");
+            saveButton.setText("Save");
+            return;
+        }
+        try {
+            boolean liked = appState.getLikeDao().hasUserLiked(post.getId(), user.id());
+            boolean saved = appState.getSavedPostDao().hasUserSaved(post.getId(), user.id());
+            likeButton.setText(liked ? "Unlike" : "Like");
+            saveButton.setText(saved ? "Unsave" : "Save");
+        } catch (SQLException exception) {
+            likeButton.setText("Like");
+            saveButton.setText("Save");
+        }
     }
 
     private void bindCurrentUser() {
@@ -203,6 +272,7 @@ public class PostDetailsController {
                     boolean canEdit = post.canBeEditedBy(newValue);
                     editPostButton.setDisable(!canEdit);
                     deletePostButton.setDisable(!canEdit);
+                    refreshLikeSaveButtons(post);
                 }
             }
         });
@@ -289,6 +359,14 @@ public class PostDetailsController {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Bekri JavaFX");
         alert.setHeaderText("Post details screen");
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showInfo(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Bekri JavaFX");
+        alert.setHeaderText(title);
         alert.setContentText(message);
         alert.showAndWait();
     }

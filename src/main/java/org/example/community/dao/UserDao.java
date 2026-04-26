@@ -35,4 +35,22 @@ public class UserDao {
         }
         return users;
     }
+
+    public List<Integer> findAdminIds() throws SQLException {
+        String sql = """
+                SELECT id
+                FROM utilisateur
+                WHERE statut = 'actif' AND LOWER(role) = 'admin'
+                """;
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            List<Integer> ids = new ArrayList<>();
+            while (resultSet.next()) {
+                ids.add(resultSet.getInt("id"));
+            }
+            return ids;
+        }
+    }
 }

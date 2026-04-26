@@ -10,14 +10,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class CommentDao {
-    private static final String FIND_BY_POST_SQL = """
+    private static final String BASE_SELECT = """
             SELECT c.id, c.post_id, c.utilisateur_id, c.contenu, c.created_at, c.updated_at,
                    u.nom, u.prenom, u.role
             FROM commentaire c
             INNER JOIN utilisateur u ON u.id = c.utilisateur_id
+            """;
+
+    private static final String FIND_BY_POST_SQL = BASE_SELECT + """
             WHERE c.post_id = ? AND c.deleted_at IS NULL
             ORDER BY c.created_at ASC
             """;
@@ -75,6 +79,36 @@ public class CommentDao {
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, commentId);
             statement.executeUpdate();
+        }
+    }
+
+    public List<Comment> findVisible(Integer postId, String sort) throws SQLException {
+        StringBuilder sql = new StringBuilder(BASE_SELECT)
+                .append(" WHERE c.deleted_at IS NULL ");
+        List<Object> parameters = new ArrayList<>();
+        if (postId != null) {
+            sql.append(" AND c.post_id = ?");
+            parameters.add(postId);
+        }
+        sql.append(" ORDER BY c.created_at DESC");
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+            for (int i = 0; i < parameters.size(); i++) {
+                statement.setObject(i + 1, parameters.get(i));
+            }
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<Comment> comments = new ArrayList<>();
+                while (resultSet.next()) {
+                    comments.add(mapComment(resultSet));
+                }
+                if ("oldest".equalsIgnoreCase(sort)) {
+                    comments.sort(Comparator.comparing(Comment::getCreatedAt));
+                } else {
+                    comments.sort(Comparator.comparing(Comment::getCreatedAt).reversed());
+                }
+                return comments;
+            }
         }
     }
 

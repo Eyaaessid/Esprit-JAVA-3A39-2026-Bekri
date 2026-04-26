@@ -104,6 +104,7 @@ public class CommentsController {
             comment.setUserId(currentUser.id());
             comment.setContenu(result.get().contenu());
             appState.getCommentDao().insert(comment);
+            appState.getPostInteractionService().notifyComment(post, currentUser, comment.getContenu());
             refreshComments();
         } catch (SQLException exception) {
             showError("Failed to add the comment: " + exception.getMessage());

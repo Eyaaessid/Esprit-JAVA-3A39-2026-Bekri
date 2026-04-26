@@ -36,6 +36,7 @@
                     <Label styleClass="screen-subtitle" text="Posts"/>
                 </VBox>
                 <Region HBox.hgrow="ALWAYS"/>
+                <Button onAction="#handleOpenNotifications" styleClass="topbar-button" text="Notifications"/>
                 <Button onAction="#handleRefresh" styleClass="topbar-button" text="Refresh"/>
             </HBox>
         </VBox>
