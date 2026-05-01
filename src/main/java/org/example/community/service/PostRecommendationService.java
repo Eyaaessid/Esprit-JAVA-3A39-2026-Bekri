@@ -10,7 +10,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PostRecommendationService {
     private final PostDao postDao;
@@ -24,6 +26,10 @@ public class PostRecommendationService {
     }
 
     public List<Post> getRecommendedForUser(UserSummary user, int limit, List<Integer> excludedFeedIds) throws SQLException {
+        return getRecommendedForUser(user, limit, excludedFeedIds, false);
+    }
+
+    public List<Post> getRecommendedForUser(UserSummary user, int limit, List<Integer> excludedFeedIds, boolean prioritizeSavedAuthors) throws SQLException {
         if (limit <= 0) {
             return List.of();
         }
@@ -33,14 +39,51 @@ public class PostRecommendationService {
         }
 
         Set<Integer> excludeIds = new LinkedHashSet<>(excludedFeedIds == null ? List.of() : excludedFeedIds);
-        excludeIds.addAll(likeDao.findLikedPostIdsByUser(user.id()));
-        excludeIds.addAll(savedPostDao.findSavedPostIdsByUser(user.id()));
-        excludeIds.addAll(postDao.findPostIdsByAuthor(user.id()));
+        List<Integer> likedIds = likeDao.findLikedPostIdsByUser(user.id());
+        List<Integer> savedIds = savedPostDao.findSavedPostIdsByUser(user.id());
+        List<Integer> ownPostIds = postDao.findPostIdsByAuthor(user.id());
+
+        excludeIds.addAll(likedIds);
+        excludeIds.addAll(savedIds);
+        excludeIds.addAll(ownPostIds);
 
         List<Post> recommendations = new ArrayList<>();
-        List<String> categories = postDao.findDistinctCategoriesByAuthor(user.id());
-        if (!categories.isEmpty()) {
-            recommendations.addAll(postDao.findByCategories(categories, new ArrayList<>(excludeIds), user.id(), limit));
+        if (!savedIds.isEmpty()) {
+            List<Post> savedPosts = postDao.findVisibleByIds(savedIds);
+            List<Integer> savedAuthors = savedPosts.stream()
+                    .map(Post::getUserId)
+                    .distinct()
+                    .filter(authorId -> authorId != user.id())
+                    .toList();
+            if (!savedAuthors.isEmpty()) {
+                recommendations.addAll(postDao.findByAuthors(savedAuthors, new ArrayList<>(excludeIds), user.id(), limit));
+                recommendations.forEach(post -> excludeIds.add(post.getId()));
+            }
+        }
+
+        if (recommendations.size() < limit && !prioritizeSavedAuthors) {
+            List<Integer> interestPostIds = new ArrayList<>();
+            interestPostIds.addAll(likedIds);
+            interestPostIds.addAll(savedIds);
+
+            List<String> categories = List.of();
+            if (!interestPostIds.isEmpty()) {
+                List<Post> interestPosts = postDao.findVisibleByIds(interestPostIds);
+                Map<String, Long> categoryCounts = interestPosts.stream()
+                        .map(Post::getCategorie)
+                        .filter(value -> value != null && !value.isBlank())
+                        .collect(Collectors.groupingBy(value -> value, Collectors.counting()));
+                categories = categoryCounts.entrySet().stream()
+                        .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                        .map(Map.Entry::getKey)
+                        .limit(3)
+                        .toList();
+            }
+
+            if (!categories.isEmpty()) {
+                recommendations.addAll(postDao.findByCategories(categories, new ArrayList<>(excludeIds), user.id(), limit - recommendations.size()));
+                recommendations.forEach(post -> excludeIds.add(post.getId()));
+            }
         }
 
         if (recommendations.size() < limit) {

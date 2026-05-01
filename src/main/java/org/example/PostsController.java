@@ -28,30 +28,26 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class PostsController {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    @FXML
-    private Label dbStatusLabel;
-    @FXML
-    private ComboBox<UserSummary> currentUserComboBox;
-    @FXML
-    private ComboBox<String> categoryComboBox;
-    @FXML
-    private TextField searchField;
-    @FXML
-    private VBox postsContainer;
-    @FXML
-    private Label feedInfoLabel;
+    @FXML private Label dbStatusLabel;
+    @FXML private ComboBox<UserSummary> currentUserComboBox;
+    @FXML private ComboBox<String> categoryComboBox;
+    @FXML private TextField searchField;
+    @FXML private VBox postsContainer;
+    @FXML private Label feedInfoLabel;
+    @FXML private Button savedPostsButton;
 
     private AppState appState;
     private List<Post> posts = Collections.emptyList();
+    private boolean showingSavedOnly = false;
 
     @FXML
     public void initialize() {
@@ -64,18 +60,12 @@ public class PostsController {
         bindCurrentUser();
         refreshDatabaseStatus();
         refreshUsers();
+        updateSavedPostsButton();
         refreshFeed();
     }
 
-    @FXML
-    private void handleRefresh() {
-        refreshFeed();
-    }
-
-    @FXML
-    private void handleSearch() {
-        refreshFeed();
-    }
+    @FXML private void handleRefresh() { refreshFeed(); }
+    @FXML private void handleSearch() { refreshFeed(); }
 
     @FXML
     private void handleResetFilters() {
@@ -169,6 +159,18 @@ public class PostsController {
         }
     }
 
+    @FXML
+    private void handleToggleSavedFilter() {
+        UserSummary currentUser = appState.getCurrentUser();
+        if (currentUser == null) {
+            showError("Select an active user first.");
+            return;
+        }
+        showingSavedOnly = !showingSavedOnly;
+        updateSavedPostsButton();
+        refreshFeed();
+    }
+
     private void refreshUsers() {
         try {
             appState.refreshUsers();
@@ -183,7 +185,12 @@ public class PostsController {
 
     private void refreshFeed() {
         try {
-            posts = appState.getPostDao().findAllVisible(searchField.getText(), categoryComboBox.getValue());
+            if (showingSavedOnly) {
+                UserSummary currentUser = appState.getCurrentUser();
+                posts = currentUser == null ? List.of() : appState.getSavedPostDao().findSavedPostsForUser(currentUser.id());
+            } else {
+                posts = appState.getPostDao().findAllVisible(searchField.getText(), categoryComboBox.getValue());
+            }
             renderFeed();
         } catch (SQLException exception) {
             postsContainer.getChildren().clear();
@@ -193,16 +200,17 @@ public class PostsController {
 
     private void renderFeed() {
         postsContainer.getChildren().clear();
-        feedInfoLabel.setText(posts.size() + " post(s) loaded");
+        feedInfoLabel.setText(showingSavedOnly ? posts.size() + " saved post(s) loaded" : posts.size() + " post(s) loaded");
+
+        renderRecommendations();
 
         if (posts.isEmpty()) {
-            Label emptyLabel = new Label("No posts found for the current filters.");
+            Label emptyLabel = new Label(showingSavedOnly ? "No saved posts yet." : "No posts found for the current filters.");
             emptyLabel.getStyleClass().add("empty-label");
             postsContainer.getChildren().add(emptyLabel);
             return;
         }
 
-        renderRecommendations();
         for (Post post : posts) {
             postsContainer.getChildren().add(createPostCard(post));
         }
@@ -216,12 +224,13 @@ public class PostsController {
 
         try {
             List<Integer> visibleIds = posts.stream().map(Post::getId).toList();
-            List<Post> recommended = appState.getPostRecommendationService().getRecommendedForUser(currentUser, 4, visibleIds);
+            List<Post> recommended = appState.getPostRecommendationService()
+                    .getRecommendedForUser(currentUser, 4, visibleIds, showingSavedOnly);
             if (recommended.isEmpty()) {
                 return;
             }
 
-            Label title = new Label("Recommended For You");
+            Label title = new Label(showingSavedOnly ? "Recommended from authors you saved" : "Recommended For You");
             title.getStyleClass().add("section-title");
             postsContainer.getChildren().add(title);
 
@@ -236,14 +245,14 @@ public class PostsController {
                 meta.getStyleClass().add("muted-label");
 
                 Button open = new Button("Open");
-                open.getStyleClass().add("primary-button");
+                open.getStyleClass().addAll("primary-button", "topbar-button-compact");
                 open.setOnAction(event -> navigateToDetails(post));
 
                 rec.getChildren().addAll(postTitle, meta, open);
                 postsContainer.getChildren().add(rec);
             }
         } catch (SQLException exception) {
-            // Recommendations are optional; keep feed usable if query fails.
+            // Keep feed usable if recommendations fail.
         }
     }
 
@@ -258,9 +267,19 @@ public class PostsController {
         Label meta = new Label(post.getAuthorDisplayName() + " - " + DATE_FORMATTER.format(post.getCreatedAt()));
         meta.getStyleClass().add("post-card-meta");
 
+        HBox badgeRow = new HBox(8);
+        badgeRow.getStyleClass().add("post-badge-row");
+
         String category = post.getCategorie() == null || post.getCategorie().isBlank() ? "No category" : post.getCategorie();
-        Label tag = new Label(category);
-        tag.getStyleClass().addAll("pill-label", cssCategoryClass(post.getCategorie()));
+        Label categoryLabel = new Label(category);
+        categoryLabel.getStyleClass().addAll("pill-label", cssCategoryClass(post.getCategorie()));
+        badgeRow.getChildren().add(categoryLabel);
+
+        if (post.getEmotion() != null && !post.getEmotion().isBlank()) {
+            Label emotionLabel = new Label(getEmotionEmoji(post.getEmotion()) + " " + capitalize(post.getEmotion()));
+            emotionLabel.getStyleClass().addAll("pill-label", "pill-neutral");
+            badgeRow.getChildren().add(emotionLabel);
+        }
 
         Label excerpt = new Label(abbreviate(post.getContenu(), 170));
         excerpt.getStyleClass().add("post-card-excerpt");
@@ -270,22 +289,23 @@ public class PostsController {
         stats.getStyleClass().add("post-card-stats");
 
         HBox actions = new HBox(8);
+        actions.getStyleClass().add("post-card-actions");
         actions.setAlignment(Pos.CENTER_LEFT);
 
-        Button detailsButton = new Button("Post Details");
-        detailsButton.getStyleClass().add("primary-button");
+        Button detailsButton = new Button("View Details");
+        detailsButton.getStyleClass().addAll("primary-button", "topbar-button-compact");
         detailsButton.setOnAction(event -> navigateToDetails(post));
 
         Button commentsButton = new Button("Comments");
-        commentsButton.getStyleClass().add("ghost-button");
+        commentsButton.getStyleClass().addAll("ghost-button", "topbar-button-compact");
         commentsButton.setOnAction(event -> navigateToComments(post));
 
         Button likeButton = new Button();
-        likeButton.getStyleClass().add("ghost-button");
+        likeButton.getStyleClass().addAll("ghost-button", "topbar-button-compact");
         likeButton.setOnAction(event -> handleToggleLike(post));
 
         Button saveButton = new Button();
-        saveButton.getStyleClass().add("ghost-button");
+        saveButton.getStyleClass().addAll("ghost-button", "topbar-button-compact");
         saveButton.setOnAction(event -> handleToggleSave(post));
         refreshLikeSaveLabels(post, likeButton, saveButton);
 
@@ -293,17 +313,17 @@ public class PostsController {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Button editButton = new Button("Edit");
-        editButton.getStyleClass().add("ghost-button");
+        editButton.getStyleClass().addAll("ghost-button", "topbar-button-compact");
         editButton.setDisable(!post.canBeEditedBy(appState.getCurrentUser()));
         editButton.setOnAction(event -> handleEditPost(post));
 
         Button deleteButton = new Button("Delete");
-        deleteButton.getStyleClass().add("danger-button");
+        deleteButton.getStyleClass().addAll("danger-button", "topbar-button-compact");
         deleteButton.setDisable(!post.canBeEditedBy(appState.getCurrentUser()));
         deleteButton.setOnAction(event -> handleDeletePost(post));
 
         actions.getChildren().addAll(detailsButton, commentsButton, likeButton, saveButton, spacer, editButton, deleteButton);
-        card.getChildren().addAll(title, meta, tag, excerpt, stats, actions);
+        card.getChildren().addAll(title, meta, badgeRow, excerpt, stats, actions);
         return card;
     }
 
@@ -343,20 +363,48 @@ public class PostsController {
     private void refreshLikeSaveLabels(Post post, Button likeButton, Button saveButton) {
         UserSummary currentUser = appState.getCurrentUser();
         if (currentUser == null) {
-            likeButton.setText("Like");
-            saveButton.setText("Save");
+            likeButton.setText("👍 Like");
+            saveButton.setText("🔖 Save");
             return;
         }
 
         try {
             boolean liked = appState.getLikeDao().hasUserLiked(post.getId(), currentUser.id());
             boolean saved = appState.getSavedPostDao().hasUserSaved(post.getId(), currentUser.id());
-            likeButton.setText(liked ? "Unlike" : "Like");
-            saveButton.setText(saved ? "Unsave" : "Save");
+            likeButton.setText(liked ? "❤ Unlike" : "👍 Like");
+            saveButton.setText(saved ? "🔖 Unsave" : "🔖 Save");
         } catch (SQLException exception) {
-            likeButton.setText("Like");
-            saveButton.setText("Save");
+            likeButton.setText("👍 Like");
+            saveButton.setText("🔖 Save");
         }
+    }
+
+    private void updateSavedPostsButton() {
+        if (savedPostsButton != null) {
+            savedPostsButton.setText(showingSavedOnly ? "Show All Posts" : "Saved Posts");
+        }
+    }
+
+    private String getEmotionEmoji(String emotion) {
+        if (emotion == null) {
+            return "🙂";
+        }
+        return switch (emotion.toLowerCase(Locale.ROOT)) {
+            case "happy" -> "😊";
+            case "sad" -> "😔";
+            case "anxious" -> "😰";
+            case "stressed" -> "😵";
+            case "angry" -> "😠";
+            case "hopeful" -> "🌱";
+            default -> "🙂";
+        };
+    }
+
+    private String capitalize(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+        return value.substring(0, 1).toUpperCase(Locale.ROOT) + value.substring(1).toLowerCase(Locale.ROOT);
     }
 
     private void handleEditPost(Post post) {
@@ -533,7 +581,7 @@ public class PostsController {
         if (category == null || category.isBlank()) {
             return "pill-neutral";
         }
-        return switch (category.toLowerCase()) {
+        return switch (category.toLowerCase(Locale.ROOT)) {
             case "health" -> "pill-health";
             case "nutrition" -> "pill-nutrition";
             case "mental" -> "pill-mental";

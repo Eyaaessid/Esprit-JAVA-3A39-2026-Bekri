@@ -36,8 +36,10 @@
                     <Label styleClass="screen-subtitle" text="Posts"/>
                 </VBox>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button onAction="#handleOpenNotifications" styleClass="topbar-button" text="Notifications"/>
-                <Button onAction="#handleRefresh" styleClass="topbar-button" text="Refresh"/>
+                <Button fx:id="savedPostsButton" onAction="#handleToggleSavedFilter" styleClass="topbar-button topbar-button-compact" text="Saved Posts"/>
+                <Button onAction="#handleCreatePost" styleClass="primary-button topbar-button-compact" text="New Post"/>
+                <Button onAction="#handleOpenNotifications" styleClass="topbar-button topbar-button-compact" text="Notifications"/>
+                <Button onAction="#handleRefresh" styleClass="topbar-button topbar-button-compact" text="Refresh"/>
             </HBox>
         </VBox>
     </top>
@@ -59,14 +61,13 @@
             </HBox>
             <HBox spacing="10.0">
                 <TextField fx:id="searchField" onAction="#handleSearch" promptText="Search title, content, or category..." HBox.hgrow="ALWAYS"/>
-                <Button onAction="#handleSearch" styleClass="primary-button" text="Search"/>
-                <Button onAction="#handleResetFilters" styleClass="ghost-button" text="Reset"/>
+                <Button onAction="#handleSearch" styleClass="primary-button topbar-button-compact" text="Search"/>
+                <Button onAction="#handleResetFilters" styleClass="ghost-button topbar-button-compact" text="Reset"/>
             </HBox>
             <HBox alignment="CENTER_LEFT" spacing="10.0">
                 <Label styleClass="section-title" text="Posts Feed"/>
                 <Label fx:id="feedInfoLabel" styleClass="muted-label" text="0 post(s) loaded"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button onAction="#handleCreatePost" styleClass="primary-button" text="New Post"/>
             </HBox>
             <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS">
                 <content>

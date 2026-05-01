@@ -265,3 +265,18 @@
 .scroll-pane > .viewport {
     -fx-background-color: transparent;
 }
+
+.topbar-button-compact {
+    -fx-padding: 8 14 8 14;
+    -fx-font-size: 12px;
+}
+
+.post-badge-row {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 8;
+}
+
+.post-card-actions {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 8;
+}
