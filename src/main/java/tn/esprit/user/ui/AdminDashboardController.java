@@ -27,46 +27,43 @@ public class AdminDashboardController {
 
     @FXML
     private void handleAccueil() {
-        try {
-            SceneManager.switchTo("admin-dashboard");
-        } catch (IOException e) {
-            DialogHelper.showError("Navigation", e.getMessage());
-        }
+        navigateTo("admin-dashboard");
     }
 
     @FXML
     private void handleQuestions() {
-        try {
-            SceneManager.switchTo("questions");
-        } catch (IOException e) {
-            DialogHelper.showError("Navigation", e.getMessage());
-        }
+        navigateTo("questions");
     }
 
     @FXML
     private void handleUtilisateurs() {
-        try {
-            SceneManager.switchTo("admin-users");
-        } catch (IOException e) {
-            DialogHelper.showError("Navigation", e.getMessage());
-        }
+        navigateTo("admin-users");
+    }
+
+    @FXML
+    private void handleReactivations() {
+        navigateTo("admin-reactivation-requests");
+    }
+
+    @FXML
+    private void handlePosts() {
+        navigateTo("admin-posts");
     }
 
     @FXML
     private void handleProfil() {
-        try {
-            // Navigate to the unified profile screen (has 2FA + face auth for all roles)
-            SceneManager.switchTo("profile");
-        } catch (IOException e) {
-            DialogHelper.showError("Navigation", e.getMessage());
-        }
+        navigateTo("profile");
     }
 
     @FXML
     private void handleLogout() {
         SessionManager.getInstance().logout();
+        navigateTo("login");
+    }
+
+    private void navigateTo(String scene) {
         try {
-            SceneManager.switchTo("login");
+            SceneManager.switchTo(scene);
         } catch (IOException e) {
             DialogHelper.showError("Navigation", e.getMessage());
         }

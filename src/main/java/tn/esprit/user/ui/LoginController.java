@@ -243,7 +243,9 @@ public class LoginController {
 
     @FXML
     private void handleOpenReactivationRequest() {
-        InactiveAccountFlowHelper.openSupportScreen(this::showError);
+        String email = emailField == null ? null : emailField.getText();
+        String prefEmail = email == null || email.isBlank() ? null : email.trim();
+        InactiveAccountFlowHelper.openSupportScreen(prefEmail, this::showError);
     }
 
     @FXML

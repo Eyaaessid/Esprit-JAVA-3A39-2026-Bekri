@@ -9,9 +9,11 @@ import java.util.function.Consumer;
 
 public final class InactiveAccountFlowHelper {
     private static final String FALLBACK_MESSAGE =
-            "Votre compte est inactif. Veuillez consulter votre email ou contacter support@bekri.tn.";
-    private static final String ADMIN_SUPPORT_MESSAGE =
-            "Votre compte a ete desactive par un administrateur. Veuillez contacter support@bekri.tn pour le reactiver.";
+            "Votre compte est inactif. Vous pouvez soumettre une demande de reactivation depuis l'application.";
+    private static final String ADMIN_REQUEST_MESSAGE =
+            "Votre compte a ete desactive par un administrateur. Vous pouvez soumettre une demande de reactivation.";
+    private static final String SELF_CODE_MESSAGE =
+            "Votre compte a ete desactive par vous. Saisissez le code de reactivation recu par email pour le reactiver.";
 
     private InactiveAccountFlowHelper() {
     }
@@ -28,16 +30,10 @@ public final class InactiveAccountFlowHelper {
             return;
         }
 
-        String deactivatedBy = user.getDeactivatedBy();
-        if ("admin".equalsIgnoreCase(deactivatedBy)) {
-            DialogHelper.showInfo("Compte inactif", ADMIN_SUPPORT_MESSAGE);
-            return;
-        }
-
-        if ("user".equalsIgnoreCase(deactivatedBy)) {
+        if ("user".equalsIgnoreCase(user.getDeactivatedBy())) {
             boolean openCodeScreen = DialogHelper.showChoice(
                     "Compte desactive",
-                    "Votre compte a ete desactive par vous. Saisissez le code de reactivation recu par email pour le reactiver.",
+                    SELF_CODE_MESSAGE,
                     "Entrer le code",
                     "Fermer"
             );
@@ -47,17 +43,37 @@ public final class InactiveAccountFlowHelper {
             return;
         }
 
-        DialogHelper.showInfo("Compte inactif", FALLBACK_MESSAGE);
+        boolean openRequestScreen = DialogHelper.showChoice(
+                "Compte inactif",
+                "admin".equalsIgnoreCase(user.getDeactivatedBy()) ? ADMIN_REQUEST_MESSAGE : FALLBACK_MESSAGE,
+                "Soumettre une demande",
+                "Fermer"
+        );
+        if (openRequestScreen) {
+            openSupportScreen(user.getEmail(), beforeNavigate, navigationErrorHandler);
+        }
     }
 
     public static void openSupportScreen(Consumer<String> navigationErrorHandler) {
-        openSupportScreen(() -> {}, navigationErrorHandler);
+        openSupportScreen(null, () -> {}, navigationErrorHandler);
     }
 
     public static void openSupportScreen(Runnable beforeNavigate, Consumer<String> navigationErrorHandler) {
+        openSupportScreen(null, beforeNavigate, navigationErrorHandler);
+    }
+
+    public static void openSupportScreen(String email, Consumer<String> navigationErrorHandler) {
+        openSupportScreen(email, () -> {}, navigationErrorHandler);
+    }
+
+    public static void openSupportScreen(String email,
+                                         Runnable beforeNavigate,
+                                         Consumer<String> navigationErrorHandler) {
         try {
             beforeNavigate.run();
-            SceneManager.switchTo("reactivation-request");
+            ReactivationRequestController controller =
+                    SceneManager.switchToAndGetController("reactivation-request");
+            controller.setEmail(email);
         } catch (IOException e) {
             navigationErrorHandler.accept("Erreur de navigation.");
         }

@@ -15,9 +15,6 @@ public final class SceneManager {
 
     private static Stage primaryStage;
 
-    /**
-     * Registered scene keys → classpath FXML path (see {@link #switchTo(String)}).
-     */
     private static final Map<String, String> SCENES;
 
     static {
@@ -31,6 +28,7 @@ public final class SceneManager {
         m.put("face-register", "/fxml/face_register.fxml");
         m.put("user-dashboard", "/fxml/user-dashboard.fxml");
         m.put("admin-dashboard", "/fxml/admin-dashboard.fxml");
+        m.put("admin-posts", "/fxml/admin-posts.fxml");
         m.put("objectifs", "/fxml/objectifs.fxml");
         m.put("objectif-form", "/fxml/objectif-form.fxml");
         m.put("questions", "/fxml/questions.fxml");
@@ -42,6 +40,7 @@ public final class SceneManager {
         m.put("admin-add-user", "/fxml/admin-add-user.fxml");
         m.put("admin-user-detail", "/fxml/admin-user-detail.fxml");
         m.put("admin-edit-user", "/fxml/admin-edit-user.fxml");
+        m.put("admin-reactivation-requests", "/fxml/admin-reactivation-requests.fxml"); // ADDED
         m.put("reactivation-request", "/fxml/reactivation_request.fxml");
         m.put("self-reactivation-code", "/fxml/self_reactivation_code.fxml");
         m.put("test", "/fxml/test.fxml");
@@ -69,17 +68,13 @@ public final class SceneManager {
     }
 
     private static void applyMinWindowSize(Stage stage) {
-        if (stage == null) {
-            return;
-        }
+        if (stage == null) return;
         stage.setMinWidth(900);
         stage.setMinHeight(600);
     }
 
     public static void resizePrimaryStage(double width, double height) {
-        if (primaryStage == null) {
-            return;
-        }
+        if (primaryStage == null) return;
         primaryStage.setMaximized(false);
         primaryStage.setWidth(width);
         primaryStage.setHeight(height);
@@ -107,12 +102,8 @@ public final class SceneManager {
         Parent root = loader.load();
         Scene scene = new Scene(root);
 
-        if (cssUrl != null) {
-            scene.getStylesheets().add(cssUrl.toExternalForm());
-        }
-        if (appCss != null) {
-            scene.getStylesheets().add(appCss.toExternalForm());
-        }
+        if (cssUrl != null) scene.getStylesheets().add(cssUrl.toExternalForm());
+        if (appCss != null) scene.getStylesheets().add(appCss.toExternalForm());
 
         primaryStage.setScene(scene);
         applyMinWindowSize(primaryStage);
@@ -128,12 +119,8 @@ public final class SceneManager {
         Parent root = loader.load();
         Scene scene = new Scene(root);
 
-        if (cssUrl != null) {
-            scene.getStylesheets().add(cssUrl.toExternalForm());
-        }
-        if (appCss != null) {
-            scene.getStylesheets().add(appCss.toExternalForm());
-        }
+        if (cssUrl != null) scene.getStylesheets().add(cssUrl.toExternalForm());
+        if (appCss != null) scene.getStylesheets().add(appCss.toExternalForm());
 
         primaryStage.setScene(scene);
         applyMinWindowSize(primaryStage);

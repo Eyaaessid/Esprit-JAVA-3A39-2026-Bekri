@@ -102,7 +102,7 @@ public class AccountSettingsController {
 
         if (statut == UtilisateurStatut.INACTIF) {
             if ("admin".equalsIgnoreCase(currentUser.getDeactivatedBy())) {
-                messageLabel.setText("Votre compte a ete desactive par un administrateur. Veuillez contacter support@bekri.tn pour le reactiver.");
+                messageLabel.setText("Votre compte a ete desactive par un administrateur. Depuis l'ecran de connexion, vous pouvez soumettre une demande de reactivation.");
             } else {
                 messageLabel.setText("Votre compte est inactif. Utilisez votre code de reactivation recu par email depuis l'ecran de connexion.");
             }

@@ -30,12 +30,17 @@ public class AccountStatusService {
 
         if ("user".equals(actor)) {
             sendSelfReactivationCode(target);
-            // ✅ FIX: wait 1.5s between emails to avoid Mailtrap free-plan rate limit (1 email/sec)
-            try { Thread.sleep(1500); } catch (InterruptedException ignored) {}
+            try {
+                Thread.sleep(1500);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+        } else {
+            utilisateurDao.clearReactivationToken(target.getId());
+            target.setReactivationToken(null);
+            target.setReactivationTokenExpiresAt(null);
         }
 
-        // ✅ FIX: wrapped in try/catch so a failed notification email
-        // does NOT roll back the deactivation that already happened in DB
         try {
             emailService.sendAccountDeactivated(target, actor);
         } catch (Exception e) {
@@ -49,8 +54,11 @@ public class AccountStatusService {
             throw new IllegalArgumentException("Ce compte est deja bloque.");
         }
         utilisateurDao.updateStatut(target.getId(), "BLOQUE", "admin");
+        utilisateurDao.clearReactivationToken(target.getId());
         target.setStatut(UtilisateurStatut.BLOQUE);
         target.setDeactivatedBy("admin");
+        target.setReactivationToken(null);
+        target.setReactivationTokenExpiresAt(null);
         try {
             emailService.sendAccountBlocked(target);
         } catch (Exception e) {
@@ -64,6 +72,8 @@ public class AccountStatusService {
         target.setStatut(UtilisateurStatut.ACTIF);
         target.setDeactivatedBy(null);
         target.setDeactivatedAt(null);
+        target.setReactivationToken(null);
+        target.setReactivationTokenExpiresAt(null);
         try {
             emailService.sendReactivationApproved(target);
         } catch (Exception e) {
@@ -98,6 +108,39 @@ public class AccountStatusService {
 
         utilisateurDao.reactivate(user.getId());
         utilisateurDao.clearReactivationToken(user.getId());
+    }
+
+    public void submitReactivationRequest(String email, String reason) throws ReactivationException {
+        if (email == null || email.isBlank()) {
+            throw new ReactivationException("Veuillez saisir votre adresse email.");
+        }
+        if (reason == null || reason.trim().length() < 10) {
+            throw new ReactivationException("Veuillez decrire votre demande en quelques mots.");
+        }
+
+        Utilisateur user = utilisateurDao.findByEmail(email.trim())
+                .orElseThrow(() -> new ReactivationException("Aucun compte ne correspond a cette adresse email."));
+
+        if (user.getStatut() != UtilisateurStatut.INACTIF) {
+            throw new ReactivationException("Seuls les comptes inactifs peuvent envoyer une demande de reactivation.");
+        }
+        if ("user".equalsIgnoreCase(user.getDeactivatedBy())) {
+            throw new ReactivationException(
+                    "Ce compte a ete desactive par vous. Utilisez votre code de reactivation recu par email."
+            );
+        }
+
+        try {
+            emailService.sendAdminReactivationRequest(user, reason.trim());
+        } catch (Exception e) {
+            throw new ReactivationException("Impossible d'envoyer la demande pour le moment. Veuillez reessayer.");
+        }
+
+        try {
+            emailService.sendReactivationRequestReceived(user);
+        } catch (Exception e) {
+            System.err.println("[AccountStatusService] Warning: request confirmation email failed: " + e.getMessage());
+        }
     }
 
     private void validateNotAdmin(Utilisateur target, String action) {

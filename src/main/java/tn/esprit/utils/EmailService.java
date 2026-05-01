@@ -19,12 +19,16 @@ public final class EmailService {
     private final Session session;
     private final String fromAddress;
     private final String fromName;
+    private final String supportAddress;
+    private final String adminAlertAddress;
 
     private EmailService() {
         Properties config = loadConfig();
 
-        this.fromAddress = config.getProperty("mail.from.address", "noreply@bekri.tn");
-        this.fromName    = config.getProperty("mail.from.name",    "Bekri Wellbeing");
+        this.fromAddress    = config.getProperty("mail.from.address",    "noreply@bekri.tn");
+        this.fromName       = config.getProperty("mail.from.name",       "Bekri Wellbeing");
+        this.supportAddress = config.getProperty("mail.support.address", "support@bekri.tn");
+        this.adminAlertAddress = config.getProperty("mail.admin.alert.address", this.supportAddress);
 
         String host     = config.getProperty("mail.smtp.host",     "sandbox.smtp.mailtrap.io");
         String port     = config.getProperty("mail.smtp.port",     "587");
@@ -33,10 +37,12 @@ public final class EmailService {
         String auth     = config.getProperty("mail.smtp.auth",     "true");
         String starttls = config.getProperty("mail.smtp.starttls", "true");
 
-        System.out.println("[EmailService] mail.smtp.host="     + host);
-        System.out.println("[EmailService] mail.smtp.port="     + port);
-        System.out.println("[EmailService] mail.smtp.username=" + username);
-        System.out.println("[EmailService] mail.from.address="  + fromAddress);
+        System.out.println("[EmailService] mail.smtp.host="      + host);
+        System.out.println("[EmailService] mail.smtp.port="      + port);
+        System.out.println("[EmailService] mail.smtp.username="  + username);
+        System.out.println("[EmailService] mail.from.address="   + fromAddress);
+        System.out.println("[EmailService] mail.support.address=" + supportAddress);
+        System.out.println("[EmailService] mail.admin.alert.address=" + adminAlertAddress);
 
         Properties mailProps = new Properties();
         mailProps.put("mail.smtp.host",            host);
@@ -60,7 +66,7 @@ public final class EmailService {
     }
 
     // ------------------------------------------------------------------ //
-    //  Password reset & verification (used by UtilisateurService)         //
+    //  Password reset & verification                                       //
     // ------------------------------------------------------------------ //
 
     public void sendPasswordResetEmail(String toEmail, String toName, String token) {
@@ -83,7 +89,7 @@ public final class EmailService {
     }
 
     // ------------------------------------------------------------------ //
-    //  Account status emails (used by AccountStatusService)               //
+    //  Account status emails                                               //
     // ------------------------------------------------------------------ //
 
     public void sendAccountDeactivated(Utilisateur user, String deactivatedBy) {
@@ -91,13 +97,12 @@ public final class EmailService {
                 ? "un administrateur"
                 : "vous";
         String nextStep = "admin".equalsIgnoreCase(deactivatedBy)
-                ? "Pour reactiver votre compte, veuillez contacter support@bekri.tn."
+                ? "Vous pouvez soumettre une demande de reactivation depuis l'application Bekri."
                 : "Un code de réactivation à 6 chiffres vous a été envoyé. Saisissez-le dans l'application pour réactiver votre compte.";
         String html = "<p>Bonjour " + escape(fullName(user)) + ",</p>"
                 + "<p>Votre compte Bekri a été désactivé par " + actor + ".</p>"
                 + "<p>" + nextStep + "</p>"
                 + "<p>Besoin d'aide ? Contactez <a href=\"mailto:support@bekri.tn\">support@bekri.tn</a></p>";
-        // ✅ FIX: send synchronously so the email is not killed by scene switch
         sendSync(user.getEmail(), fullName(user), "Votre compte Bekri est inactif", html);
     }
 
@@ -108,7 +113,6 @@ public final class EmailService {
                 + escape(code) + "</div>"
                 + "<p>Entrez ce code dans l'application pour réactiver votre compte.</p>"
                 + "<p>Ce code expire dans <strong>24 heures</strong>.</p>";
-        // ✅ FIX: send synchronously — this code is critical, must not be lost
         sendSync(user.getEmail(), fullName(user), "Votre code de réactivation Bekri", html);
     }
 
@@ -126,11 +130,49 @@ public final class EmailService {
         sendAsync(user, "Votre compte Bekri a été réactivé", html);
     }
 
+    // ADDED: denial email sent when admin refuses a reactivation request
+    public void sendReactivationDenied(Utilisateur user, String reason) {
+        String html = "<p>Bonjour " + escape(fullName(user)) + ",</p>"
+                + "<p>Votre demande de reactivation a ete refusee par un administrateur.</p>"
+                + "<p><strong>Motif du refus :</strong></p>"
+                + "<div style=\"background:#f5f5f5;padding:12px 14px;border-radius:8px;\">"
+                + escape(reason) + "</div>"
+                + "<p>Pour toute question, contactez <a href=\"mailto:support@bekri.tn\">support@bekri.tn</a></p>";
+        sendAsync(user, "Votre demande de reactivation Bekri a ete refusee", html);
+    }
+
+    public void sendAdminReactivationRequest(Utilisateur user, String reason) {
+        String userLabel = escape(fullName(user)) + " (" + escape(user.getEmail()) + ")";
+        String html = "<p>Une demande de reactivation a ete soumise depuis l'application Bekri.</p>"
+                + "<p><strong>Utilisateur :</strong> " + userLabel + "</p>"
+                + "<p><strong>Statut actuel :</strong> "
+                + escape(user.getStatut() != null ? user.getStatut().name() : "-") + "</p>"
+                + "<p><strong>Desactive par :</strong> " + escape(user.getDeactivatedBy()) + "</p>"
+                + "<p><strong>Motif :</strong></p>"
+                + "<p style=\"background:#f5f7f0;padding:12px 14px;border-radius:10px;\">"
+                + escape(reason) + "</p>";
+        sendSync(supportAddress, "Support Bekri", "Nouvelle demande de reactivation", html);
+    }
+
+    public void sendReactivationRequestReceived(Utilisateur user) {
+        String html = "<p>Bonjour " + escape(fullName(user)) + ",</p>"
+                + "<p>Votre demande de reactivation a bien ete transmise a l'equipe Bekri.</p>"
+                + "<p>Vous recevrez un email des qu'un administrateur aura traite votre demande.</p>";
+        sendAsync(user, "Votre demande de reactivation Bekri a ete recue", html);
+    }
+
+    public String getAdminAlertAddress() {
+        return adminAlertAddress;
+    }
+
+    public void sendHtmlEmail(String toEmail, String toName, String subject, String htmlBody) {
+        sendSync(toEmail, toName, subject, htmlBody);
+    }
+
     // ------------------------------------------------------------------ //
     //  Internal send helpers                                               //
     // ------------------------------------------------------------------ //
 
-    /** Synchronous send — used for critical emails (reset, verification, reactivation code). */
     private void sendSync(String toEmail, String toName, String subject, String htmlBody) {
         try {
             MimeMessage msg = new MimeMessage(session);
@@ -147,7 +189,6 @@ public final class EmailService {
         }
     }
 
-    /** Asynchronous send — used for non-critical notifications (fire-and-forget). */
     private void sendAsync(Utilisateur user, String subject, String htmlBody) {
         if (user == null || user.getEmail() == null || user.getEmail().isBlank()) {
             System.err.println("[EmailService] sendAsync: utilisateur ou email manquant.");
@@ -169,7 +210,7 @@ public final class EmailService {
                 e.printStackTrace(System.err);
             }
         }, "email-" + subject.substring(0, Math.min(subject.length(), 20)));
-        thread.setDaemon(false); // ✅ FIX: non-daemon so JVM waits for email to finish
+        thread.setDaemon(false);
         thread.start();
     }
 
