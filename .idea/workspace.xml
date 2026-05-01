@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="a8104ea3-1088-4f2d-9eec-e43525526854" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/services/EvenementService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/services/EvenementService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/services/ParticipationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/services/ParticipationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/views/EvenementDetailsView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/views/EvenementDetailsView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/views/EvenementFormView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/views/EvenementFormView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/views/EvenementView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/views/EvenementView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/views/MainView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/views/MainView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/views/ParticipationFormView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/views/ParticipationFormView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/views/ParticipationView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/views/ParticipationView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/tn/esprit/Main.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/models/Evenement.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/tn/esprit/models/Evenement.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/models/ParticipationDisplay.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/tn/esprit/models/ParticipationDisplay.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/models/ParticipationEvenement.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/tn/esprit/models/ParticipationEvenement.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/models/Utilisateur.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/tn/esprit/models/Utilisateur.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/services/EvenementService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/tn/esprit/services/EvenementService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/services/ParticipationService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/tn/esprit/services/ParticipationService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/services/UtilisateurService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/tn/esprit/services/UtilisateurService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/utils/MyConnection.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/tn/esprit/utils/MyConnection.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/views/EvenementDetailsView.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/tn/esprit/views/EvenementDetailsView.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/views/EvenementFormView.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/tn/esprit/views/EvenementFormView.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/views/EvenementView$1.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/views/EvenementView.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/tn/esprit/views/EvenementView.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/views/MainView.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/tn/esprit/views/MainView.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/views/ParticipationDetailsView.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/tn/esprit/views/ParticipationDetailsView.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/views/ParticipationFormView.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/tn/esprit/views/ParticipationFormView.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/views/ParticipationView$1.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/views/ParticipationView$2.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/tn/esprit/views/ParticipationView.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/tn/esprit/views/ParticipationView.class" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="3BxHbGMxCfUDvX23AQHJ0NBBySr" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.JavaFX App.executor&quot;: &quot;Run&quot;,
+    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
+    &quot;Application.Unnamed.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.EvenementServiceTest.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.ParticipationServiceTest.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/aziz/OneDrive/Documents/pi java&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager" selected="Application.JavaFX App">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="pi java" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="JavaFX App" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="tn.esprit.Main" />
+      <module name="bekri-java" />
+      <option name="VM_PARAMETERS" value="--module-path &quot;C:\Users\aziz\.m2\repository\org\openjfx\javafx-controls\21.0.5;C:\Users\aziz\.m2\repository\org\openjfx\javafx-graphics\21.0.5;C:\Users\aziz\.m2\repository\org\openjfx\javafx-base\21.0.5;C:\Users\aziz\.m2\repository\org\openjfx\javafx-fxml\21.0.5&quot; --add-modules javafx.controls,javafx.fxml,javafx.graphics -Dopenweather.api.key=88e319d3c2f18e52fa36153c525f2e88 " />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="JavaFX App" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="tn.esprit.Main" />
+      <module name="gestion-evenements" />
+      <option name="VM_PARAMETERS" value="--module-path &quot;C:\Users\aziz\.m2\repository\org\openjfx\javafx-controls\21.0.5;C:\Users\aziz\.m2\repository\org\openjfx\javafx-graphics\21.0.5;C:\Users\aziz\.m2\repository\org\openjfx\javafx-base\21.0.5;C:\Users\aziz\.m2\repository\org\openjfx\javafx-fxml\21.0.5&quot; --add-modules javafx.controls,javafx.fxml,javafx.graphics" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Unnamed" type="Application" factoryName="Application" nameIsGenerated="true">
+      <module name="gestion-evenements" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Unnamed" type="Application" factoryName="Application" nameIsGenerated="true">
+      <module name="gestion-evenements" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="EvenementServiceTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="gestion-evenements" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="tn.esprit.services.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="tn.esprit.services" />
+      <option name="MAIN_CLASS_NAME" value="tn.esprit.services.EvenementServiceTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="EvenementServiceTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="gestion-evenements" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="tn.esprit.services.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="tn.esprit.services" />
+      <option name="MAIN_CLASS_NAME" value="tn.esprit.services.EvenementServiceTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ParticipationServiceTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="gestion-evenements" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="tn.esprit.services.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="tn.esprit.services" />
+      <option name="MAIN_CLASS_NAME" value="tn.esprit.services.ParticipationServiceTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ParticipationServiceTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="gestion-evenements" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="tn.esprit.services.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="tn.esprit.services" />
+      <option name="MAIN_CLASS_NAME" value="tn.esprit.services.ParticipationServiceTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="pi java" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.JavaFX App" />
+      <item itemvalue="Application.Unnamed" />
+      <item itemvalue="JUnit.EvenementServiceTest" />
+      <item itemvalue="JUnit.ParticipationServiceTest" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.ParticipationServiceTest" />
+        <item itemvalue="JUnit.EvenementServiceTest" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.138" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a8104ea3-1088-4f2d-9eec-e43525526854" name="Changes" comment="" />
+      <created>1775423871362</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1775423871362</updated>
+      <workItem from="1775423872527" duration="61000" />
+      <workItem from="1775426321962" duration="1618000" />
+      <workItem from="1775428296499" duration="5965000" />
+      <workItem from="1776020764728" duration="7055000" />
+      <workItem from="1776069484095" duration="4538000" />
+      <workItem from="1776074700412" duration="1864000" />
+      <workItem from="1776903682170" duration="8000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

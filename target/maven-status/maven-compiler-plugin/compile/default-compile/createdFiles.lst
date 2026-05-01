@@ -1,0 +1,9 @@
+tn\esprit\utils\MyConnection.class
+tn\esprit\services\ParticipationService.class
+tn\esprit\Main.class
+tn\esprit\models\Evenement.class
+tn\esprit\services\EvenementService.class
+tn\esprit\views\MainView.class
+tn\esprit\models\ParticipationEvenement.class
+tn\esprit\views\ParticipationView.class
+tn\esprit\views\EvenementView.class
