@@ -24,6 +24,7 @@
                 <Button text="Questions"      styleClass="sidebar-btn" onAction="#handleQuestions"/>
                 <Button text="Utilisateurs"   styleClass="sidebar-btn" onAction="#handleUtilisateurs"/>
                 <Button text="Reactivations"  styleClass="sidebar-btn" onAction="#handleReactivations"/>
+                <Button text="Posts"          styleClass="sidebar-btn" onAction="#handlePosts"/>
                 <Button text="Mon Profil"     styleClass="sidebar-btn" onAction="#handleProfil"/>
             </VBox>
             <Region VBox.vgrow="ALWAYS"/>
@@ -59,6 +60,10 @@
                         <VBox styleClass="quick-card" onMouseClicked="#handleReactivations" alignment="CENTER" spacing="8">
                             <Label text="Reactivations" styleClass="quick-card-title"/>
                             <Label text="Demandes en attente" styleClass="quick-card-sub"/>
+                        </VBox>
+                        <VBox styleClass="quick-card" onMouseClicked="#handlePosts" alignment="CENTER" spacing="8">
+                            <Label text="Posts" styleClass="quick-card-title"/>
+                            <Label text="Posts et commentaires" styleClass="quick-card-sub"/>
                         </VBox>
                         <VBox styleClass="quick-card" onMouseClicked="#handleProfil" alignment="CENTER" spacing="8">
                             <Label text="Mon Profil" styleClass="quick-card-title"/>

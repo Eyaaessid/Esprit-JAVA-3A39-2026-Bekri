@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.evenement.ui.CoachDashboardController"
+            prefWidth="1100" prefHeight="700" styleClass="page-bg">
+    <stylesheets><URL value="@../css/app.css"/></stylesheets>
+    <left>
+        <VBox styleClass="sidebar">
+            <VBox styleClass="sidebar-logo-box" spacing="2">
+                <Label text="bekri" styleClass="sidebar-logo"/>
+                <Label text="Bien-être &amp; Objectifs" styleClass="sidebar-logo-sub"/>
+            </VBox>
+            <VBox styleClass="sidebar-nav-box">
+                <Label text="MENU" styleClass="sidebar-section-label"/>
+                <Button text="🏠  Accueil" styleClass="sidebar-btn" onAction="#handleAccueil"/>
+                <Label text="EVENTS" styleClass="sidebar-section-label"/>
+                <Button text="📅  Événements" styleClass="sidebar-btn" onAction="#handleEvenements"/>
+                <Button text="⚙️  Gérer Événements" styleClass="sidebar-btn" onAction="#handleCoachEvenements"/>
+                <Button text="📊  Dashboard Coach" styleClass="sidebar-btn-active" onAction="#handleCoachDashboard"/>
+                <Button text="🎫  Mes Participations" styleClass="sidebar-btn" onAction="#handleMesParticipations"/>
+                <Button text="❤️  Mes Favoris" styleClass="sidebar-btn" onAction="#handleMesFavoris"/>
+            </VBox>
+            <Region VBox.vgrow="ALWAYS"/>
+            <VBox styleClass="sidebar-divider">
+                <Button text="⎋  Déconnexion" styleClass="sidebar-logout" onAction="#handleLogout"/>
+            </VBox>
+        </VBox>
+    </left>
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <VBox spacing="24">
+                <padding><Insets top="32" right="36" bottom="32" left="36"/></padding>
+                <HBox styleClass="welcome-card" alignment="CENTER_LEFT" spacing="16">
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label fx:id="lblWelcome" text="Bonjour Coach 👋" styleClass="welcome-greeting"/>
+                        <Label text="Voici le tableau de bord de vos événements." styleClass="welcome-date"/>
+                    </VBox>
+                    <Label text="📊" style="-fx-font-size: 48px; -fx-opacity: 0.6; -fx-text-fill: white;"/>
+                </HBox>
+                <Label text="Statistiques globales" styleClass="section-title"/>
+                <FlowPane fx:id="globalStatsContainer" hgap="16" vgap="16"/>
+                <Label text="Mes événements" styleClass="section-title"/>
+                <FlowPane fx:id="coachStatsContainer" hgap="16" vgap="16"/>
+                <Button text="🔄  Actualiser" styleClass="btn-ghost" onAction="#handleRefresh"/>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

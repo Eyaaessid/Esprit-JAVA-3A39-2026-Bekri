@@ -28,6 +28,7 @@ public final class SceneManager {
         m.put("face-register", "/fxml/face_register.fxml");
         m.put("user-dashboard", "/fxml/user-dashboard.fxml");
         m.put("admin-dashboard", "/fxml/admin-dashboard.fxml");
+        m.put("admin-posts", "/fxml/admin-posts.fxml");
         m.put("objectifs", "/fxml/objectifs.fxml");
         m.put("objectif-form", "/fxml/objectif-form.fxml");
         m.put("questions", "/fxml/questions.fxml");
@@ -52,6 +53,13 @@ public final class SceneManager {
         m.put("two-factor-disable", "/fxml/TwoFactorDisable.fxml");
         m.put("two-factor-backup-codes", "/fxml/TwoFactorBackupCodes.fxml");
         m.put("two-factor-login", "/fxml/TwoFactorLogin.fxml");
+        m.put("evenements-list", "/fxml/evenements-list.fxml");
+        m.put("evenement-details", "/fxml/evenement-details.fxml");
+        m.put("evenement-form", "/fxml/evenement-form.fxml");
+        m.put("mes-participations", "/fxml/mes-participations.fxml");
+        m.put("mes-favoris", "/fxml/mes-favoris.fxml");
+        m.put("coach-evenements", "/fxml/coach-evenements.fxml");
+        m.put("coach-dashboard", "/fxml/coach-dashboard.fxml");
         SCENES = Collections.unmodifiableMap(m);
     }
 

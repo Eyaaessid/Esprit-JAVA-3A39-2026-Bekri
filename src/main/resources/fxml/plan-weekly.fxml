@@ -45,6 +45,7 @@
                 <Button text="✅  Daily Check-in"      styleClass="sidebar-btn" onAction="#handleDailyCheckIn"/>
                 <Button text="📅  Plan de la semaine"  styleClass="sidebar-btn,sidebar-btn-active" onAction="#handleWeekPlan"/>
                 <Button text="📈  Weekly Insights"     styleClass="sidebar-btn" onAction="#handleWeeklyInsights"/>
+                <Button text="💬  Posts"               styleClass="sidebar-btn" onAction="#handleCommunity"/>
                 <Button text="🤖  Chatbot"             styleClass="sidebar-btn" onAction="#handleChatBot"/>
                 <Button text="🧠  Test Psychologique"  styleClass="sidebar-btn" onAction="#handleTest"/>
                 <Button text="📊  Mon Profil Psy"      styleClass="sidebar-btn" onAction="#handleProfilPsy"/>
@@ -89,56 +90,35 @@
                                     </HBox>
                                     <Separator styleClass="plan-sep"/>
 
-                                    <!-- Poids + Taille -->
-                                    <HBox spacing="14" maxWidth="Infinity">
-                                        <VBox spacing="4" HBox.hgrow="ALWAYS" maxWidth="Infinity">
-                                            <Label text="Poids (kg)" styleClass="plan-field-label input-label"/>
-                                            <TextField fx:id="poidsField" promptText="ex: 72"
-                                                       styleClass="plan-field text-field" maxWidth="Infinity"/>
-                                            <Label fx:id="poidsError" styleClass="error-label"
-                                                   visible="false" managed="false" wrapText="true" maxWidth="Infinity"/>
-                                        </VBox>
-                                        <VBox spacing="4" HBox.hgrow="ALWAYS" maxWidth="Infinity">
-                                            <Label text="Taille (cm)" styleClass="plan-field-label input-label"/>
-                                            <TextField fx:id="tailleField" promptText="ex: 175"
-                                                       styleClass="plan-field text-field" maxWidth="Infinity"/>
-                                            <Label fx:id="tailleError" styleClass="error-label"
-                                                   visible="false" managed="false" wrapText="true" maxWidth="Infinity"/>
-                                        </VBox>
-                                    </HBox>
+                                    <GridPane hgap="14" vgap="12">
+                                        <columnConstraints>
+                                            <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+                                            <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+                                        </columnConstraints>
+                                        <Label text="Poids (kg)" styleClass="plan-field-label input-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="poidsField" promptText="ex: 72" styleClass="plan-field text-field"
+                                                   GridPane.rowIndex="1" GridPane.columnIndex="0" maxWidth="Infinity"/>
 
-                                    <!-- Âge + Sexe -->
-                                    <HBox spacing="14" maxWidth="Infinity">
-                                        <VBox spacing="4" HBox.hgrow="ALWAYS" maxWidth="Infinity">
-                                            <Label text="Âge" styleClass="plan-field-label"/>
-                                            <TextField fx:id="ageField" promptText="ex: 29"
-                                                       styleClass="plan-field" maxWidth="Infinity"/>
-                                            <Label fx:id="ageError" styleClass="error-label"
-                                                   visible="false" managed="false" wrapText="true" maxWidth="Infinity"/>
-                                        </VBox>
-                                        <VBox spacing="4" HBox.hgrow="ALWAYS" maxWidth="Infinity">
-                                            <Label text="Sexe" styleClass="plan-field-label"/>
-                                            <ComboBox fx:id="sexeCombo" styleClass="plan-field" maxWidth="Infinity"/>
-                                            <Label fx:id="sexeError" styleClass="error-label"
-                                                   visible="false" managed="false" wrapText="true" maxWidth="Infinity"/>
-                                        </VBox>
-                                    </HBox>
+                                        <Label text="Taille (cm)" styleClass="plan-field-label input-label" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                        <TextField fx:id="tailleField" promptText="ex: 175" styleClass="plan-field text-field"
+                                                   GridPane.rowIndex="1" GridPane.columnIndex="1" maxWidth="Infinity"/>
 
-                                    <!-- Objectif + Exercice -->
-                                    <HBox spacing="14" maxWidth="Infinity">
-                                        <VBox spacing="4" HBox.hgrow="ALWAYS" maxWidth="Infinity">
-                                            <Label text="Objectif" styleClass="plan-field-label"/>
-                                            <ComboBox fx:id="objectifCombo" styleClass="plan-field" maxWidth="Infinity"/>
-                                            <Label fx:id="objectifError" styleClass="error-label"
-                                                   visible="false" managed="false" wrapText="true" maxWidth="Infinity"/>
-                                        </VBox>
-                                        <VBox spacing="4" HBox.hgrow="ALWAYS" maxWidth="Infinity">
-                                            <Label text="Exercice" styleClass="plan-field-label"/>
-                                            <ComboBox fx:id="exerciceCombo" styleClass="plan-field" maxWidth="Infinity"/>
-                                            <Label fx:id="exerciceError" styleClass="error-label"
-                                                   visible="false" managed="false" wrapText="true" maxWidth="Infinity"/>
-                                        </VBox>
-                                    </HBox>
+                                        <Label text="Âge" styleClass="plan-field-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="ageField" promptText="ex: 29" styleClass="plan-field"
+                                                   GridPane.rowIndex="3" GridPane.columnIndex="0" maxWidth="Infinity"/>
+
+                                        <Label text="Sexe" styleClass="plan-field-label" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                                        <ComboBox fx:id="sexeCombo" styleClass="plan-field"
+                                                  GridPane.rowIndex="3" GridPane.columnIndex="1" maxWidth="Infinity"/>
+
+                                        <Label text="Objectif" styleClass="plan-field-label" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                                        <ComboBox fx:id="objectifCombo" styleClass="plan-field"
+                                                  GridPane.rowIndex="5" GridPane.columnIndex="0" maxWidth="Infinity"/>
+
+                                        <Label text="Exercice" styleClass="plan-field-label" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                                        <ComboBox fx:id="exerciceCombo" styleClass="plan-field"
+                                                  GridPane.rowIndex="5" GridPane.columnIndex="1" maxWidth="Infinity"/>
+                                    </GridPane>
 
                                     <Label text="Restrictions (optionnel)" styleClass="plan-field-label"/>
                                     <TextArea fx:id="restrictionsArea" promptText="ex: sans lactose, végétarien, allergie arachides..."

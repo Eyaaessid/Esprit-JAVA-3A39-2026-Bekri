@@ -142,7 +142,7 @@ public class TwoFactorLoginController {
             if (SessionManager.getInstance().isAdmin()) {
                 SceneManager.switchTo("admin-dashboard");
             } else if (SessionManager.getInstance().isCoach()) {
-                SceneManager.switchTo("user-dashboard");
+                SceneManager.switchTo("coach-dashboard");
             } else {
                 SceneManager.switchTo("user-dashboard");
             }

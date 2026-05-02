@@ -20,6 +20,7 @@ public final class EmailService {
     private final String fromAddress;
     private final String fromName;
     private final String supportAddress;
+    private final String adminAlertAddress;
 
     private EmailService() {
         Properties config = loadConfig();
@@ -27,6 +28,7 @@ public final class EmailService {
         this.fromAddress    = config.getProperty("mail.from.address",    "noreply@bekri.tn");
         this.fromName       = config.getProperty("mail.from.name",       "Bekri Wellbeing");
         this.supportAddress = config.getProperty("mail.support.address", "support@bekri.tn");
+        this.adminAlertAddress = config.getProperty("mail.admin.alert.address", this.supportAddress);
 
         String host     = config.getProperty("mail.smtp.host",     "sandbox.smtp.mailtrap.io");
         String port     = config.getProperty("mail.smtp.port",     "587");
@@ -40,6 +42,7 @@ public final class EmailService {
         System.out.println("[EmailService] mail.smtp.username="  + username);
         System.out.println("[EmailService] mail.from.address="   + fromAddress);
         System.out.println("[EmailService] mail.support.address=" + supportAddress);
+        System.out.println("[EmailService] mail.admin.alert.address=" + adminAlertAddress);
 
         Properties mailProps = new Properties();
         mailProps.put("mail.smtp.host",            host);
@@ -156,6 +159,14 @@ public final class EmailService {
                 + "<p>Votre demande de reactivation a bien ete transmise a l'equipe Bekri.</p>"
                 + "<p>Vous recevrez un email des qu'un administrateur aura traite votre demande.</p>";
         sendAsync(user, "Votre demande de reactivation Bekri a ete recue", html);
+    }
+
+    public String getAdminAlertAddress() {
+        return adminAlertAddress;
+    }
+
+    public void sendHtmlEmail(String toEmail, String toName, String subject, String htmlBody) {
+        sendSync(toEmail, toName, subject, htmlBody);
     }
 
     // ------------------------------------------------------------------ //

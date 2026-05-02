@@ -46,6 +46,11 @@ public class AdminDashboardController {
     }
 
     @FXML
+    private void handlePosts() {
+        navigateTo("admin-posts");
+    }
+
+    @FXML
     private void handleProfil() {
         navigateTo("profile");
     }

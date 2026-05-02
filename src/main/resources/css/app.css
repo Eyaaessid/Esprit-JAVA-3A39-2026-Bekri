@@ -1775,3 +1775,153 @@
 .dialog-footer-btn {
     -fx-min-width: 110px;
 }
+
+/* ==========================================================================
+   Admin Posts
+   ========================================================================== */
+
+.admin-posts-page {
+    -fx-background-color: linear-gradient(to bottom, #F9FBF6, #EFF5EF);
+}
+
+.admin-posts-hero {
+    -fx-background-color:
+        linear-gradient(to bottom right, rgba(250, 253, 245, 0.08), rgba(250, 253, 245, 0.02)),
+        linear-gradient(to bottom right, derive(-bekri-primary, 8%), derive(-bekri-primary, -14%));
+}
+
+.admin-posts-hero-badge {
+    -fx-background-color: rgba(255, 255, 255, 0.14);
+    -fx-background-radius: 22px;
+    -fx-padding: 14px 16px 14px 16px;
+    -fx-min-width: 120px;
+}
+
+.admin-posts-hero-icon {
+    -fx-font-size: 26px;
+}
+
+.admin-posts-hero-text {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: rgba(250, 253, 245, 0.92);
+}
+
+.admin-posts-stat-card {
+    -fx-pref-width: 220px;
+    -fx-min-width: 210px;
+    -fx-pref-height: 170px;
+    -fx-alignment: TOP_LEFT;
+}
+
+.admin-posts-tip-card {
+    -fx-pref-width: 260px;
+    -fx-min-width: 240px;
+}
+
+.admin-posts-stat-value {
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bekri-primary-deep;
+}
+
+.admin-posts-table-shell {
+    -fx-background-color: linear-gradient(to bottom, #F8FBF7, #FFFFFF);
+    -fx-background-radius: 22px;
+    -fx-border-radius: 22px;
+    -fx-padding: 18px 18px 18px 18px;
+}
+
+.admin-posts-table {
+    -fx-background-color: rgba(255, 255, 255, 0.96);
+    -fx-background-radius: 18px;
+    -fx-border-color: rgba(61, 107, 125, 0.10);
+    -fx-border-width: 1px;
+    -fx-border-radius: 18px;
+    -fx-effect: dropshadow(gaussian, rgba(30, 45, 61, 0.06), 18, 0.16, 0, 4);
+}
+
+.admin-posts-table .column-header-background {
+    -fx-background-color: linear-gradient(to bottom, #F5F9F5, #ECF2EC);
+    -fx-background-radius: 18px 18px 0 0;
+}
+
+.admin-posts-table .column-header,
+.admin-posts-table .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent rgba(61, 107, 125, 0.10) transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 14px 14px 14px 14px;
+}
+
+.admin-posts-table .column-header .label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bekri-primary-deep;
+}
+
+.admin-posts-table .table-row-cell {
+    -fx-background-color: rgba(255, 255, 255, 0.95);
+    -fx-cell-size: 58px;
+}
+
+.admin-posts-table .table-row-cell:odd {
+    -fx-background-color: #FBFCF8;
+}
+
+.admin-posts-table .table-row-cell:hover {
+    -fx-background-color: rgba(184, 201, 106, 0.10);
+}
+
+.admin-posts-table .table-cell {
+    -fx-padding: 11px 12px 11px 12px;
+    -fx-text-fill: -bekri-text;
+    -fx-font-size: 12px;
+}
+
+/* ==========================================================================
+   Événements — Extensions coach et module événements
+   ========================================================================== */
+
+.event-card-statut-ouvert  { -fx-border-color: rgba(110,155,103,0.45) rgba(110,155,103,0.08) rgba(110,155,103,0.08) rgba(110,155,103,0.45); }
+.event-card-statut-ferme   { -fx-border-color: rgba(197,110,90,0.45)  rgba(197,110,90,0.08)  rgba(197,110,90,0.08)  rgba(197,110,90,0.45); }
+.event-card-statut-planifie { -fx-border-color: rgba(61,107,125,0.45) rgba(61,107,125,0.08)  rgba(61,107,125,0.08)  rgba(61,107,125,0.45); }
+
+.badge-ouvert   { -fx-background-color: rgba(110,155,103,0.18); -fx-text-fill: -bekri-success; }
+.badge-ferme    { -fx-background-color: rgba(197,110,90,0.16);  -fx-text-fill: -bekri-danger-deep; }
+.badge-planifie { -fx-background-color: rgba(61,107,125,0.14);  -fx-text-fill: -bekri-primary-deep; }
+.badge-complet  { -fx-background-color: rgba(201,154,81,0.16);  -fx-text-fill: #8C662A; }
+.badge-annule   { -fx-background-color: rgba(94,110,120,0.14);  -fx-text-fill: -bekri-text-muted; }
+
+.chip-type {
+    -fx-background-color: rgba(61, 107, 125, 0.12);
+    -fx-text-fill: -bekri-primary-deep;
+    -fx-background-radius: 999px;
+    -fx-padding: 4px 12px 4px 12px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.stat-card-coach {
+    -fx-background-color: linear-gradient(to bottom, rgba(61,107,125,0.08), rgba(61,107,125,0.02));
+    -fx-border-color: rgba(61,107,125,0.08) rgba(61,107,125,0.08) rgba(61,107,125,0.08) rgba(61,107,125,0.45);
+    -fx-border-width: 1 1 1 4;
+    -fx-background-radius: 18px;
+    -fx-border-radius: 18px;
+    -fx-padding: 18px;
+    -fx-effect: dropshadow(gaussian, rgba(30,45,61,0.08), 24, 0.20, 0, 6);
+}
+
+.coach-mode-badge {
+    -fx-background-color: rgba(61, 107, 125, 0.14);
+    -fx-text-fill: -bekri-primary-deep;
+    -fx-background-radius: 999px;
+    -fx-padding: 5px 14px 5px 14px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.btn-favori-active {
+    -fx-background-color: rgba(197, 110, 90, 0.16);
+    -fx-text-fill: -bekri-danger-deep;
+}

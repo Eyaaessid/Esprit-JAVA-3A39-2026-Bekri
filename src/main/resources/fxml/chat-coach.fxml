@@ -37,6 +37,7 @@
                 <Button text="✅  Daily Check-in"      styleClass="sidebar-btn" onAction="#handleDailyCheckIn"/>
                 <Button text="📅  Plan de la semaine"  styleClass="sidebar-btn" onAction="#handleWeekPlan"/>
                 <Button text="📈  Weekly Insights"     styleClass="sidebar-btn" onAction="#handleWeeklyInsights"/>
+                <Button text="💬  Posts"               styleClass="sidebar-btn" onAction="#handleCommunity"/>
                 <Button text="🤖  Chatbot"             styleClass="sidebar-btn,sidebar-btn-active" onAction="#handleChatBot"/>
                 <Button text="🧠  Test Psychologique"  styleClass="sidebar-btn" onAction="#handleTest"/>
                 <Button text="📊  Mon Profil Psy"      styleClass="sidebar-btn" onAction="#handleProfilPsy"/>

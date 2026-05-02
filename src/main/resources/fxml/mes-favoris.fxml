@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.evenement.ui.MesFavorisController"
+            prefWidth="1100" prefHeight="700" styleClass="page-bg">
+    <stylesheets><URL value="@../css/app.css"/></stylesheets>
+    <left>
+        <VBox styleClass="sidebar">
+            <VBox styleClass="sidebar-logo-box" spacing="2">
+                <Label text="bekri" styleClass="sidebar-logo"/>
+                <Label text="Bien-être &amp; Objectifs" styleClass="sidebar-logo-sub"/>
+            </VBox>
+            <VBox styleClass="sidebar-nav-box">
+                <Label text="MENU" styleClass="sidebar-section-label"/>
+                <Button text="🏠  Accueil" styleClass="sidebar-btn" onAction="#handleAccueil"/>
+                <Label text="EVENTS" styleClass="sidebar-section-label"/>
+                <Button text="📅  Événements" styleClass="sidebar-btn" onAction="#handleEvenements"/>
+                <Button text="🎫  Mes Participations" styleClass="sidebar-btn" onAction="#handleMesParticipations"/>
+                <Button text="❤️  Mes Favoris" styleClass="sidebar-btn-active" onAction="#handleMesFavoris"/>
+                <Button text="⚙️  Gérer Événements" styleClass="sidebar-btn" onAction="#handleCoachEvenements"/>
+                <Button text="📊  Dashboard Coach" styleClass="sidebar-btn" onAction="#handleCoachDashboard"/>
+            </VBox>
+            <Region VBox.vgrow="ALWAYS"/>
+            <VBox styleClass="sidebar-divider">
+                <Button text="⎋  Déconnexion" styleClass="sidebar-logout" onAction="#handleLogout"/>
+            </VBox>
+        </VBox>
+    </left>
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <VBox spacing="24">
+                <padding><Insets top="32" right="36" bottom="32" left="36"/></padding>
+                <Label text="Mes favoris" styleClass="page-title"/>
+                <FlowPane fx:id="cardsContainer" hgap="16" vgap="16"/>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

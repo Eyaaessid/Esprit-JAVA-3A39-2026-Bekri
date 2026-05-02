@@ -302,6 +302,8 @@ public class LoginController {
     private void navigateToDashboard() throws IOException {
         if (SessionManager.getInstance().isAdmin()) {
             SceneManager.switchTo("admin-dashboard");
+        } else if (SessionManager.getInstance().isCoach()) {
+            SceneManager.switchTo("coach-dashboard");
         } else {
             SceneManager.switchTo("user-dashboard");
         }

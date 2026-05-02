@@ -35,10 +35,15 @@
                 <Button text="✅  Daily Check-in"      styleClass="sidebar-btn"        onAction="#handleDailyCheckIn"/>
                 <Button text="📅  Plan de la semaine"  styleClass="sidebar-btn"        onAction="#handleWeekPlan"/>
                 <Button text="📈  Weekly Insights"     styleClass="sidebar-btn"        onAction="#handleWeeklyInsights"/>
+                <Button text="💬  Posts"               styleClass="sidebar-btn"        onAction="#handleCommunity"/>
                 <Button text="🤖  Chatbot"             styleClass="sidebar-btn"        onAction="#handleChatBot"/>
                 <Button text="🧠  Test Psychologique"  styleClass="sidebar-btn"        onAction="#handleTest"/>
                 <Button text="📊  Mon Profil Psy"      styleClass="sidebar-btn"        onAction="#handleProfilPsy"/>
                 <Button text="👤  Mon Profil"          styleClass="sidebar-btn"        onAction="#handleProfil"/>
+                <Label text="EVENTS" styleClass="sidebar-section-label"/>
+                <Button text="📅  Événements" styleClass="sidebar-btn" onAction="#handleEvenements"/>
+                <Button text="🎫  Mes Participations" styleClass="sidebar-btn" onAction="#handleMesParticipations"/>
+                <Button text="❤️  Mes Favoris" styleClass="sidebar-btn" onAction="#handleMesFavoris"/>
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
@@ -98,6 +103,13 @@
                             <Label text="📈" styleClass="quick-card-icon"/>
                             <Label text="Weekly Insights"       styleClass="quick-card-title"/>
                             <Label text="Bilan &amp; tendances" styleClass="quick-card-sub"/>
+                        </VBox>
+
+                        <VBox styleClass="quick-card" onMouseClicked="#handleCommunityClick"
+                              alignment="CENTER" spacing="8">
+                            <Label text="ðŸ’¬" styleClass="quick-card-icon"/>
+                            <Label text="Posts" styleClass="quick-card-title"/>
+                            <Label text="Voir la communaute" styleClass="quick-card-sub"/>
                         </VBox>
 
                         <VBox styleClass="quick-card" onMouseClicked="#handleChatBotClick"
