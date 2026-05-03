@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
@@ -35,3 +36,22 @@ application-local.properties
 Thumbs.db
 
 src/main/resources/config.properties
+=======
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+out/
+
+# Spring Boot
+application-local.properties
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+>>>>>>> 6a7a515cd1e90014622d2c3f4dcdbd36044218c1
