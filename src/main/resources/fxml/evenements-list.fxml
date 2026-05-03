@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.evenement.ui.EvenementsListController"
+            prefWidth="1100" prefHeight="700" styleClass="page-bg">
+    <stylesheets>
+        <URL value="@../css/app.css"/>
+    </stylesheets>
+    <left>
+        <VBox styleClass="sidebar">
+            <VBox styleClass="sidebar-logo-box" spacing="2">
+                <Label text="bekri" styleClass="sidebar-logo"/>
+                <Label text="Bien-être &amp; Objectifs" styleClass="sidebar-logo-sub"/>
+            </VBox>
+            <VBox styleClass="sidebar-nav-box">
+                <Label text="MENU" styleClass="sidebar-section-label"/>
+                <Button text="🏠  Accueil" styleClass="sidebar-btn" onAction="#handleAccueil"/>
+                <Label text="EVENTS" styleClass="sidebar-section-label"/>
+                <Button text="📅  Événements" styleClass="sidebar-btn-active" onAction="#handleEvenements"/>
+                <Button text="🎫  Mes Participations" styleClass="sidebar-btn" onAction="#handleMesParticipations"/>
+                <Button text="❤️  Mes Favoris" styleClass="sidebar-btn" onAction="#handleMesFavoris"/>
+                <Button fx:id="btnCoachEvenements" text="⚙️  Gérer Événements" styleClass="sidebar-btn" onAction="#handleCoachEvenements" visible="false" managed="false"/>
+                <Button fx:id="btnCoachDashboard" text="📊  Dashboard Coach" styleClass="sidebar-btn" onAction="#handleCoachDashboard" visible="false" managed="false"/>
+            </VBox>
+            <Region VBox.vgrow="ALWAYS"/>
+            <VBox styleClass="sidebar-divider">
+                <Button text="⎋  Déconnexion" styleClass="sidebar-logout" onAction="#handleLogout"/>
+            </VBox>
+        </VBox>
+    </left>
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <VBox spacing="24">
+                <padding><Insets top="32" right="36" bottom="32" left="36"/></padding>
+                <HBox alignment="CENTER_LEFT" spacing="16">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label text="Événements" styleClass="page-title"/>
+                        <Label text="Découvrez tous les événements disponibles." styleClass="page-subtitle"/>
+                    </VBox>
+                    <Button text="🔄  Actualiser" styleClass="btn-ghost" onAction="#handleRefresh"/>
+                </HBox>
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <ComboBox fx:id="filterStatut" promptText="Statut" styleClass="combo-box"/>
+                    <ComboBox fx:id="filterType" promptText="Type" styleClass="combo-box"/>
+                    <TextField fx:id="searchField" promptText="🔍  Rechercher..." styleClass="text-field" HBox.hgrow="ALWAYS"/>
+                </HBox>
+                <FlowPane fx:id="cardsContainer" hgap="16" vgap="16"/>
+                <VBox fx:id="emptyState" styleClass="card" alignment="CENTER" spacing="12" visible="false" managed="false">
+                    <padding><Insets top="48" bottom="48"/></padding>
+                    <Label text="📅" style="-fx-font-size: 40px;"/>
+                    <Label text="Aucun événement trouvé" styleClass="section-title"/>
+                    <Label text="Revenez plus tard ou modifiez vos filtres." styleClass="page-subtitle"/>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

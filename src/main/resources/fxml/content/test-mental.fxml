@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.testmental.ui.TestMentalController"
+            maxWidth="Infinity"
+            maxHeight="Infinity">
+    <stylesheets>
+        <URL value="@../../css/bekri.css"/>
+    </stylesheets>
+    <ScrollPane fitToWidth="true"
+                fitToHeight="false"
+                hbarPolicy="NEVER"
+                vbarPolicy="AS_NEEDED"
+                maxWidth="Infinity"
+                maxHeight="Infinity"
+                styleClass="scroll-pane"
+                AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+                AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <content>
+            <VBox spacing="0" fillWidth="true">
+                <VBox spacing="0">
+                    <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="16">
+                        <padding><Insets left="28" right="28"/></padding>
+                        <Button text="← Retour" onAction="#retourDashboard" styleClass="btn-ghost"/>
+                        <Label text="Test Mental Manager" styleClass="top-bar-title"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="Tests Mentaux" disable="true" styleClass="btn-secondary"/>
+                        <Button text="Passage test" onAction="#ouvrirPassageTest" styleClass="btn-primary"/>
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="20" fillWidth="true">
+                    <padding><Insets top="24" right="28" bottom="0" left="28"/></padding>
+
+                    <HBox spacing="12" alignment="CENTER_LEFT" styleClass="card">
+                        <Label text="Rechercher" styleClass="input-label"/>
+                        <TextField fx:id="txtRecherche"
+                                   promptText="Titre, niveau ou type..."
+                                   styleClass="text-field"
+                                   HBox.hgrow="ALWAYS"/>
+                        <Button text="Exporter PDF" onAction="#exporterPDF" styleClass="btn-ghost"/>
+                    </HBox>
+
+                    <SplitPane dividerPositions="0.68" VBox.vgrow="ALWAYS" maxHeight="Infinity">
+
+                        <VBox styleClass="card" spacing="0">
+                            <TableView fx:id="tableTests" styleClass="users-table" VBox.vgrow="ALWAYS">
+                                <columns>
+                                    <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+                                    <TableColumn fx:id="colTitre" text="Titre" prefWidth="160"/>
+                                    <TableColumn fx:id="colDescription" text="Description" prefWidth="200"/>
+                                    <TableColumn fx:id="colNiveau" text="Niveau" prefWidth="100"/>
+                                    <TableColumn fx:id="colDuree" text="Durée (min)" prefWidth="100"/>
+                                    <TableColumn fx:id="colType" text="Type" prefWidth="130"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+
+                        <VBox spacing="12" alignment="CENTER" styleClass="card">
+                            <Label text="Statistiques" styleClass="section-title"/>
+                            <PieChart fx:id="pieChart"
+                                      title="Répartition par Niveau"
+                                      prefWidth="280" prefHeight="280"/>
+                        </VBox>
+
+                    </SplitPane>
+                </VBox>
+
+                <VBox spacing="16" styleClass="card">
+                    <padding><Insets top="20" right="28" bottom="20" left="28"/></padding>
+
+                    <Label text="Gestion des Tests Mentaux" styleClass="section-title"/>
+
+                    <GridPane hgap="16" vgap="12">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="15"/>
+                            <ColumnConstraints percentWidth="35"/>
+                            <ColumnConstraints percentWidth="15"/>
+                            <ColumnConstraints percentWidth="35"/>
+                        </columnConstraints>
+
+                        <Label text="Titre :" styleClass="input-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <TextField fx:id="txtTitre" promptText="Titre" styleClass="text-field"
+                                   GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                        <Label text="Description :" styleClass="input-label" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                        <TextField fx:id="txtDescription" promptText="Description" styleClass="text-field"
+                                   GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+
+                        <Label text="Niveau :" styleClass="input-label" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <TextField fx:id="txtNiveau" promptText="Facile, Moyen, Difficile" styleClass="text-field"
+                                   GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                        <Label text="Durée :" styleClass="input-label" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+                        <TextField fx:id="txtDuree" promptText="Durée en minutes" styleClass="text-field"
+                                   GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+
+                        <Label text="Type :" styleClass="input-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <TextField fx:id="txtType" promptText="Type de test" styleClass="text-field"
+                                   GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                    </GridPane>
+
+                    <HBox spacing="12" alignment="CENTER">
+                        <Button text="Ajouter" onAction="#ajouter" styleClass="btn-primary"/>
+                        <Button text="Modifier" onAction="#modifier" styleClass="btn-secondary"/>
+                        <Button text="Supprimer" onAction="#supprimer" styleClass="btn-danger"/>
+                        <Button text="Actualiser" onAction="#actualiser" styleClass="btn-ghost"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </content>
+    </ScrollPane>
+</AnchorPane>

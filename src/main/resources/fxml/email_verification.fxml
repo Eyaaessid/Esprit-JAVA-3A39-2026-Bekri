@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.user.ui.EmailVerificationController"
+            prefWidth="960" prefHeight="640"
+            styleClass="page-bg">
+    <stylesheets>
+        <URL value="@../css/bekri.css"/>
+    </stylesheets>
+    <center>
+        <VBox alignment="CENTER" spacing="18" styleClass="auth-right-panel">
+            <padding><Insets top="48" right="48" bottom="48" left="48"/></padding>
+
+            <VBox styleClass="auth-form-card" spacing="14" maxWidth="560">
+                <VBox spacing="4">
+                    <Label text="Vérifiez votre email" styleClass="auth-title"/>
+                    <Label fx:id="infoLabel" text="Un code de vérification a été envoyé." wrapText="true" styleClass="auth-subtitle"/>
+                </VBox>
+                <Separator/>
+
+                <TextField fx:id="tokenField" promptText="Entrez le code reçu par email" styleClass="text-field"/>
+
+                <Label fx:id="statusLabel" wrapText="true" managed="false" visible="false" styleClass="error-label"/>
+
+                <HBox spacing="10">
+                    <Button fx:id="verifyButton" text="Vérifier" onAction="#handleVerify" styleClass="btn-primary"/>
+                    <Button fx:id="resendButton" text="Renvoyer le code" onAction="#handleResend" styleClass="btn-secondary"/>
+                </HBox>
+
+                <Hyperlink fx:id="backToLoginLink" text="← Retour à la connexion" onAction="#goToLogin"/>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>
+

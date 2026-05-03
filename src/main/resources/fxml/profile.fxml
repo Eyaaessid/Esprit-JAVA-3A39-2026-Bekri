@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.user.ui.ProfileController"
+            styleClass="page-bg"
+            prefWidth="1100" prefHeight="700">
+    <stylesheets>
+        <URL value="@../css/bekri.css"/>
+    </stylesheets>
+
+    <top>
+        <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="16">
+            <Button text="Retour" styleClass="btn-ghost" onAction="#goBack"/>
+            <Label text="Mon Profil" styleClass="top-bar-title page-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Déconnexion" styleClass="btn-danger" onAction="#handleLogout"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <StackPane>
+                <padding><Insets top="40" right="40" bottom="40" left="40"/></padding>
+
+                <VBox spacing="20" maxWidth="750" StackPane.alignment="TOP_CENTER">
+                    <VBox styleClass="welcome-card" spacing="8" alignment="CENTER">
+                        <StackPane>
+                            <VBox alignment="CENTER"
+                                  style="-fx-background-color: rgba(255,255,255,0.2);
+                                         -fx-background-radius: 50;
+                                         -fx-pref-width: 80px; -fx-pref-height: 80px;
+                                         -fx-min-width: 80px; -fx-min-height: 80px;">
+                                <Label fx:id="avatarLabel" text="?"
+                                       style="-fx-font-size: 28px; -fx-font-weight: bold;
+                                              -fx-text-fill: white;"/>
+                            </VBox>
+                        </StackPane>
+                        <Label fx:id="fullNameLabel" text=""
+                               style="-fx-font-size: 22px; -fx-font-weight: bold;
+                                      -fx-text-fill: white;"/>
+                        <Label fx:id="roleLabel" text=""
+                               style="-fx-background-color: rgba(255,255,255,0.2);
+                                      -fx-background-radius: 20; -fx-padding: 4 16;
+                                      -fx-font-size: 12px; -fx-font-weight: bold;
+                                      -fx-text-fill: white;"/>
+                    </VBox>
+
+                    <VBox styleClass="card" spacing="20">
+                        <Label text="Informations personnelles" styleClass="section-title"/>
+                        <Separator/>
+
+                        <HBox spacing="24">
+                            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                <Label text="Prénom" styleClass="input-label"/>
+                                <Label fx:id="prenomLabel" text="-" styleClass="body-text" style="-fx-font-size:14px;"/>
+                            </VBox>
+                            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                <Label text="Nom" styleClass="input-label"/>
+                                <Label fx:id="nomLabel" text="-" styleClass="body-text" style="-fx-font-size:14px;"/>
+                            </VBox>
+                        </HBox>
+
+                        <VBox spacing="6">
+                            <Label text="Adresse email" styleClass="input-label"/>
+                            <Label fx:id="emailLabel" text="-" styleClass="body-text" style="-fx-font-size:14px;"/>
+                        </VBox>
+
+                        <HBox spacing="24">
+                            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                <Label text="Téléphone" styleClass="input-label"/>
+                                <Label fx:id="telLabel" text="-" styleClass="body-text" style="-fx-font-size:14px;"/>
+                            </VBox>
+                            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                <Label text="Date de naissance" styleClass="input-label"/>
+                                <Label fx:id="dateNaissanceLabel" text="-" styleClass="body-text" style="-fx-font-size:14px;"/>
+                            </VBox>
+                        </HBox>
+
+                        <HBox spacing="24">
+                            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                <Label text="Statut" styleClass="input-label"/>
+                                <Label fx:id="statutLabel" text="-" styleClass="body-text" style="-fx-font-size:14px;"/>
+                            </VBox>
+                            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                <Label text="Membre depuis" styleClass="input-label"/>
+                                <Label fx:id="createdAtLabel" text="-" styleClass="body-text" style="-fx-font-size:14px;"/>
+                            </VBox>
+                        </HBox>
+
+                        <Separator/>
+
+                        <VBox spacing="10">
+                            <Label text="Sécurité" styleClass="section-title"/>
+                            <Label fx:id="twoFactorStatusLabel" text="Authentification à deux facteurs : désactivée"/>
+                            <HBox spacing="10">
+                                <Button fx:id="enableTwoFactorBtn" text="Activer 2FA"
+                                        styleClass="btn-primary"
+                                        onAction="#goToTwoFactorSetup"/>
+                                <Button fx:id="disableTwoFactorBtn" text="Désactiver 2FA"
+                                        styleClass="btn-danger"
+                                        visible="false" managed="false"
+                                        onAction="#goToTwoFactorDisable"/>
+                                <Button fx:id="regenerateBackupCodesBtn" text="Régénérer les codes de secours"
+                                        styleClass="btn-secondary"
+                                        visible="false" managed="false"
+                                        onAction="#goToRegenerateBackupCodes"/>
+                            </HBox>
+
+                            <Label fx:id="faceAuthStatusLabel" text="Reconnaissance faciale : désactivée"/>
+                            <HBox spacing="10">
+                                <Button fx:id="enableFaceAuthBtn" text="Activer Face ID"
+                                        styleClass="btn-secondary"
+                                        onAction="#goToFaceRegister"/>
+                                <Button fx:id="disableFaceAuthBtn" text="Désactiver Face ID"
+                                        styleClass="btn-danger"
+                                        visible="false" managed="false"
+                                        onAction="#handleDisableFaceAuth"/>
+                            </HBox>
+                        </VBox>
+
+                        <Separator/>
+
+                        <HBox spacing="12">
+                            <Button text="Modifier mon profil"
+                                    styleClass="btn-primary"
+                                    onAction="#goToEditProfile"/>
+                            <Button fx:id="deactivateAccountBtn"
+                                    text="Desactiver mon compte"
+                                    styleClass="btn-danger"
+                                    onAction="#handleDeactivateAccount"
+                                    visible="false" managed="false"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+            </StackPane>
+        </ScrollPane>
+    </center>
+</BorderPane>

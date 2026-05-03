@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.evenement.ui.EvenementsListController"
+            maxWidth="Infinity"
+            maxHeight="Infinity">
+    <stylesheets>
+        <URL value="@../../css/app.css"/>
+    </stylesheets>
+    <ScrollPane fitToWidth="true"
+                fitToHeight="false"
+                hbarPolicy="NEVER"
+                vbarPolicy="AS_NEEDED"
+                maxWidth="Infinity"
+                maxHeight="Infinity"
+                styleClass="scroll-pane"
+                AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+                AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <content>
+            <VBox spacing="24" fillWidth="true">
+                <padding><Insets top="32" right="36" bottom="32" left="36"/></padding>
+                <HBox alignment="CENTER_LEFT" spacing="16">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label text="Événements" styleClass="page-title"/>
+                        <Label text="Découvrez tous les événements disponibles." styleClass="page-subtitle"/>
+                    </VBox>
+                    <Button text="🔄  Actualiser" styleClass="btn-ghost" onAction="#handleRefresh"/>
+                </HBox>
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <ComboBox fx:id="filterStatut" promptText="Statut" styleClass="combo-box"/>
+                    <ComboBox fx:id="filterType" promptText="Type" styleClass="combo-box"/>
+                    <TextField fx:id="searchField" promptText="🔍  Rechercher..." styleClass="text-field" HBox.hgrow="ALWAYS"/>
+                </HBox>
+                <FlowPane fx:id="cardsContainer" hgap="16" vgap="16"/>
+                <VBox fx:id="emptyState" styleClass="card" alignment="CENTER" spacing="12" visible="false" managed="false">
+                    <padding><Insets top="48" bottom="48"/></padding>
+                    <Label text="📅" style="-fx-font-size: 40px;"/>
+                    <Label text="Aucun événement trouvé" styleClass="section-title"/>
+                    <Label text="Revenez plus tard ou modifiez vos filtres." styleClass="page-subtitle"/>
+                </VBox>
+            </VBox>
+        </content>
+    </ScrollPane>
+</AnchorPane>

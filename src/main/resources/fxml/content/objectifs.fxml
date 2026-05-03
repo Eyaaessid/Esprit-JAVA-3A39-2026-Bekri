@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.esprit.objectif.ui.ObjectifsController"
+      maxWidth="Infinity"
+      maxHeight="Infinity"
+      styleClass="page-bg">
+    <stylesheets>
+        <URL value="@../../css/bekri.css"/>
+    </stylesheets>
+
+    <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="16">
+        <Label text="Mes Objectifs" styleClass="top-bar-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="+ Nouvel objectif" styleClass="btn-primary" onAction="#handleNew"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true"
+                fitToHeight="false"
+                hbarPolicy="NEVER"
+                vbarPolicy="AS_NEEDED"
+                maxWidth="Infinity"
+                maxHeight="Infinity"
+                styleClass="scroll-pane"
+                VBox.vgrow="ALWAYS">
+        <content>
+            <VBox spacing="20" fillWidth="true">
+                <padding><Insets top="28" right="36" bottom="28" left="36"/></padding>
+                <VBox styleClass="card" spacing="16">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <TextField fx:id="searchField" promptText="Rechercher un objectif..." styleClass="text-field" HBox.hgrow="ALWAYS"/>
+                        <ComboBox fx:id="filterStatut" promptText="Tous les statuts" styleClass="combo-box" prefWidth="160"/>
+                        <Button text="Rechercher" styleClass="btn-primary" onAction="#handleSearch"/>
+                    </HBox>
+                    <FlowPane fx:id="cardsPane" hgap="16" vgap="16" prefWrapLength="9999"/>
+                    <HBox fx:id="paginationBar" alignment="CENTER" spacing="8">
+                        <Button fx:id="btnPrev" text="← Précédent" styleClass="btn-ghost" onAction="#handlePrev"/>
+                        <Label fx:id="pageLabel" text="Page 1 / 1" styleClass="muted"/>
+                        <Button fx:id="btnNext" text="Suivant →" styleClass="btn-ghost" onAction="#handleNext"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </content>
+    </ScrollPane>
+</VBox>

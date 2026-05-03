@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.objectif.ui.ObjectifFormController"
+            styleClass="page-bg"
+            prefWidth="1100" prefHeight="700">
+    <stylesheets>
+        <URL value="@../css/bekri.css"/>
+    </stylesheets>
+    <top>
+        <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="16">
+            <Button text="← Retour" styleClass="btn-ghost" onAction="#handleBack"/>
+            <Label text="Objectif" styleClass="top-bar-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <VBox spacing="20">
+                <padding><Insets top="28" right="36" bottom="28" left="36"/></padding>
+                <VBox spacing="12" styleClass="card">
+
+            <!-- Titre -->
+            <Label text="Titre *" styleClass="input-label"/>
+            <TextField fx:id="titreField" promptText="Ex : Perdre 5 kg" styleClass="text-field"/>
+            <Label fx:id="titreError" styleClass="error-label" text=""/>
+            <Region prefHeight="16"/>
+
+            <!-- Type + Statut -->
+            <HBox spacing="20">
+                <VBox spacing="0" HBox.hgrow="ALWAYS">
+                    <Label text="Type *" styleClass="input-label"/>
+                    <ComboBox fx:id="typeCombo" promptText="Choisir un type"
+                              styleClass="combo-box" maxWidth="Infinity"/>
+                    <Label fx:id="typeError" styleClass="error-label" text=""/>
+                </VBox>
+                <VBox spacing="0" HBox.hgrow="ALWAYS">
+                    <Label text="Statut *" styleClass="input-label"/>
+                    <ComboBox fx:id="statutCombo" promptText="Choisir un statut"
+                              styleClass="combo-box" maxWidth="Infinity"/>
+                    <Label fx:id="statutError" styleClass="error-label" text=""/>
+                </VBox>
+            </HBox>
+            <Region prefHeight="16"/>
+
+            <!-- Description -->
+            <Label text="Description" styleClass="input-label"/>
+            <TextArea fx:id="descriptionArea" promptText="Description de l'objectif..."
+                      styleClass="text-area" prefRowCount="3" wrapText="true"/>
+            <Region prefHeight="16"/>
+
+            <!-- Valeur cible + actuelle -->
+            <HBox spacing="20">
+                <VBox spacing="0" HBox.hgrow="ALWAYS">
+                    <Label text="Valeur cible *" styleClass="input-label"/>
+                    <TextField fx:id="valeurCibleField" promptText="Ex : 70" styleClass="text-field"/>
+                    <Label fx:id="valeurCibleError" styleClass="error-label" text=""/>
+                </VBox>
+                <VBox spacing="0" HBox.hgrow="ALWAYS">
+                    <Label text="Valeur actuelle" styleClass="input-label"/>
+                    <TextField fx:id="valeurActuelleField" promptText="Ex : 80" styleClass="text-field"/>
+                    <Label fx:id="valeurActuelleError" styleClass="error-label" text=""/>
+                </VBox>
+            </HBox>
+            <Region prefHeight="16"/>
+
+            <!-- Divider -->
+            <Region style="-fx-background-color: #e8ecf0; -fx-pref-height:1; -fx-min-height:1; -fx-max-height:1;"/>
+            <Region prefHeight="16"/>
+
+            <!-- Dates -->
+            <HBox spacing="20">
+                <VBox spacing="0" HBox.hgrow="ALWAYS">
+                    <Label text="Date de début *" styleClass="input-label"/>
+                    <DatePicker fx:id="dateDebutPicker" styleClass="combo-box" maxWidth="Infinity"/>
+                    <Label fx:id="dateDebutError" styleClass="error-label" text=""/>
+                </VBox>
+                <VBox spacing="0" HBox.hgrow="ALWAYS">
+                    <Label text="Date de fin *" styleClass="input-label"/>
+                    <DatePicker fx:id="dateFinPicker" styleClass="combo-box" maxWidth="Infinity"/>
+                    <Label fx:id="dateFinError" styleClass="error-label" text=""/>
+                </VBox>
+            </HBox>
+            <Region prefHeight="16"/>
+
+            <!-- Slug -->
+            <Label text="Slug (optionnel)" styleClass="input-label"/>
+            <TextField fx:id="slugField" promptText="Ex : perdre-5-kg" styleClass="text-field"/>
+            <Region prefHeight="8"/>
+                    <HBox alignment="CENTER_RIGHT" spacing="12">
+                        <Button text="Annuler" onAction="#onAnnuler" styleClass="btn-ghost"/>
+                        <Button text="💾  Enregistrer" onAction="#onEnregistrer" styleClass="btn-primary"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

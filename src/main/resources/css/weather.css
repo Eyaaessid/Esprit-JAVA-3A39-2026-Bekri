@@ -1,0 +1,214 @@
+/*
+ * Weather Card — Bekri Design System  (v2 — redesigned)
+ * Fully dynamic: background gradient, emoji size, stat icons,
+ * pill badges, and tip rows all use brand tokens from app.css.
+ */
+
+/* ==========================================================================
+   Card Root — full-width gradient that shifts by weather condition
+   ========================================================================== */
+
+.weather-card-root {
+    -fx-min-height: 280px;
+    -fx-max-height: Infinity;
+    -fx-background-color: linear-gradient(to bottom right, #EBF3F7, #F4F8F2);
+    -fx-background-radius: 22px;
+    -fx-border-color:
+            rgba(61,107,125,0.07)
+            rgba(61,107,125,0.07)
+            rgba(61,107,125,0.07)
+            rgba(61,107,125,0.50);
+    -fx-border-width: 1 1 1 5;
+    -fx-border-radius: 22px;
+    -fx-effect: dropshadow(gaussian, rgba(30,45,61,0.10), 32, 0.22, 0, 8);
+    -fx-padding: 0;
+}
+
+/* Condition-driven card backgrounds injected by controller via setStyle() */
+.weather-card-hot   { -fx-background-color: linear-gradient(to bottom right, #FDF0EC, #FBF5EE); }
+.weather-card-warm  { -fx-background-color: linear-gradient(to bottom right, #FDF6E8, #F9F5E0); }
+.weather-card-mild  { -fx-background-color: linear-gradient(to bottom right, #EBF3F0, #F2F8F0); }
+.weather-card-cold  { -fx-background-color: linear-gradient(to bottom right, #E8EFF5, #EBF3F7); }
+.weather-card-rain  { -fx-background-color: linear-gradient(to bottom right, #E9EDF5, #EEF2F8); }
+.weather-card-storm { -fx-background-color: linear-gradient(to bottom right, #E5E8F0, #EAECF5); }
+.weather-card-snow  { -fx-background-color: linear-gradient(to bottom right, #EEF3F8, #F4F8FC); }
+
+/* ==========================================================================
+   Header band — subtle tinted strip across the top of the card
+   ========================================================================== */
+
+.weather-header-band {
+    -fx-background-color: linear-gradient(to right,
+    rgba(61,107,125,0.08), rgba(61,107,125,0.01));
+    -fx-background-radius: 22px 22px 0 0;
+    -fx-padding: 18px 22px 16px 22px;
+}
+
+/* ==========================================================================
+   Emoji — large, prominent
+   ========================================================================== */
+
+.weather-emoji-big {
+    -fx-font-size: 52px;
+    -fx-effect: dropshadow(gaussian, rgba(30,45,61,0.12), 8, 0.10, 0, 3);
+}
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+
+.weather-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bekri-text;
+}
+
+.weather-city-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: -bekri-text-muted;
+    -fx-font-style: italic;
+}
+
+.weather-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: -bekri-text-muted;
+}
+
+.weather-tips-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bekri-primary-deep;
+}
+
+.weather-tip-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: -bekri-text;
+    -fx-wrap-text: true;
+}
+
+.weather-status-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -bekri-text-muted;
+}
+
+.weather-status-error {
+    -fx-text-fill: -bekri-danger;
+}
+
+/* ==========================================================================
+   Condition Badge — pill in top-right corner
+   ========================================================================== */
+
+.weather-badge {
+    -fx-padding: 5px 14px 5px 14px;
+    -fx-background-radius: 999px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.weather-default {
+    -fx-background-color: rgba(61,107,125,0.10);
+    -fx-text-fill: -bekri-primary-deep;
+}
+
+.weather-hot {
+    -fx-background-color: rgba(197,110,90,0.16);
+    -fx-text-fill: -bekri-danger-deep;
+}
+
+.weather-warm {
+    -fx-background-color: rgba(201,154,81,0.18);
+    -fx-text-fill: -bekri-warning;
+}
+
+.weather-mild {
+    -fx-background-color: rgba(110,155,103,0.18);
+    -fx-text-fill: -bekri-success;
+}
+
+.weather-cold {
+    -fx-background-color: rgba(61,107,125,0.14);
+    -fx-text-fill: -bekri-primary-deep;
+}
+
+/* ==========================================================================
+   Stat Row — three pill-shaped mini cards side by side
+   ========================================================================== */
+
+.weather-stats-row {
+    -fx-padding: 0 22px 0 22px;
+}
+
+.weather-stat-box {
+    -fx-background-color: rgba(255,255,255,0.80);
+    -fx-background-radius: 16px;
+    -fx-border-color: rgba(61,107,125,0.10);
+    -fx-border-width: 1px;
+    -fx-border-radius: 16px;
+    -fx-padding: 12px 10px 12px 10px;
+    -fx-effect: dropshadow(gaussian, rgba(30,45,61,0.06), 10, 0.10, 0, 3);
+    -fx-min-width: 120px;
+    -fx-pref-width: 160px;
+}
+
+.weather-stat-icon {
+    -fx-font-size: 20px;
+}
+
+.weather-stat-label {
+    -fx-font-size: 11px;
+    -fx-text-fill: -bekri-text-muted;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 0.5px;
+}
+
+.weather-stat-value {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bekri-text;
+}
+
+/* Per-stat accent colours */
+.weather-stat-temp  { -fx-border-color: rgba(197,110,90,0.28);  }
+.weather-stat-hum   { -fx-border-color: rgba(61,107,125,0.22);  }
+.weather-stat-wind  { -fx-border-color: rgba(184,201,106,0.30); }
+
+/* ==========================================================================
+   Divider
+   ========================================================================== */
+
+.weather-divider {
+    -fx-border-color: transparent transparent rgba(61,107,125,0.10) transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0 22px 0 22px;
+}
+
+/* ==========================================================================
+   Tips section
+   ========================================================================== */
+
+.weather-tips-section {
+    -fx-padding: 0 22px 18px 22px;
+}
+
+.weather-tip-row {
+    -fx-background-color: rgba(255,255,255,0.62);
+    -fx-background-radius: 12px;
+    -fx-border-color: rgba(61,107,125,0.08);
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+    -fx-padding: 9px 12px 9px 12px;
+}
+
+.weather-tip-icon {
+    -fx-font-size: 16px;
+    -fx-min-width: 24px;
+}
+
+/* ==========================================================================
+   Loading skeleton pulse — applied by controller while fetching
+   ========================================================================== */
+
+.weather-loading {
+    -fx-opacity: 0.55;
+}

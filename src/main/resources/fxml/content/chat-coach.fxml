@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.esprit.chat.ui.ChatCoachController"
+      maxWidth="Infinity"
+      maxHeight="Infinity"
+      styleClass="sym-root page-bg">
+    <stylesheets>
+        <URL value="@../../css/bekri.css"/>
+    </stylesheets>
+
+    <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="16">
+        <VBox spacing="2">
+            <Label text="Coach bien-être — Eya" styleClass="top-bar-title"/>
+            <Label fx:id="subtitleLabel"
+                   text="Je réponds uniquement aux sujets bien-être (stress, sommeil, humeur, activité, nutrition...)."
+                   styleClass="sym-topbar-period"/>
+        </VBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Nouveau chat" styleClass="btn-ghost" onAction="#handleNewChat"/>
+    </HBox>
+
+    <VBox spacing="14" styleClass="sym-content" VBox.vgrow="ALWAYS" maxHeight="Infinity">
+        <padding><Insets top="18" right="22" bottom="18" left="22"/></padding>
+
+        <VBox styleClass="sym-card" spacing="10" VBox.vgrow="ALWAYS" maxHeight="Infinity">
+            <HBox alignment="CENTER_LEFT">
+                <Label text="Conversation" styleClass="sym-card-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="providerLabel" text="Provider: -" styleClass="sym-topbar-period"/>
+            </HBox>
+
+            <Label fx:id="scopeLabel"
+                   text="Règle: si la question n'est pas liée au bien-être, je refuse."
+                   wrapText="true"
+                   styleClass="sym-empty-text"/>
+
+            <Separator/>
+
+            <ScrollPane fx:id="messagesScroll" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                        styleClass="sym-scroll" prefHeight="470" VBox.vgrow="ALWAYS" maxHeight="Infinity">
+                <content>
+                    <VBox fx:id="messagesBox" spacing="10" style="-fx-padding: 10 6 10 6;"/>
+                </content>
+            </ScrollPane>
+
+            <Label fx:id="errorLabel" text="" styleClass="error-label"/>
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <TextField fx:id="inputField"
+                           promptText="Ex: Je suis stressé(e), que puis-je faire aujourd'hui ?"
+                           HBox.hgrow="ALWAYS"
+                           styleClass="chat-input text-field"/>
+                <Button text="Envoyer" onAction="#handleSend" styleClass="sym-btn sym-btn-teal btn-primary"/>
+            </HBox>
+        </VBox>
+    </VBox>
+</VBox>

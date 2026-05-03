@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.community.ui.CommentsController"
+            maxWidth="Infinity" maxHeight="Infinity">
+    <stylesheets>
+        <URL value="@../../css/app.css"/>
+        <URL value="@../../css/community.css"/>
+    </stylesheets>
+    <ScrollPane fitToWidth="true"
+                fitToHeight="false"
+                hbarPolicy="NEVER"
+                vbarPolicy="AS_NEEDED"
+                maxWidth="Infinity"
+                maxHeight="Infinity"
+                styleClass="scroll-pane"
+                AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+                AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <content>
+            <VBox spacing="16" fillWidth="true">
+                <padding>
+                    <Insets top="16" right="24" bottom="24" left="24"/>
+                </padding>
+                <HBox alignment="CENTER_LEFT" spacing="12" styleClass="top-bar">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label styleClass="top-bar-title" text="Commentaires"/>
+                        <Label styleClass="muted" text="Discussion sur ce post"/>
+                    </VBox>
+                    <Button onAction="#handleBackToDashboard" styleClass="btn-ghost" text="Accueil"/>
+                    <Button onAction="#handleBackToPosts" styleClass="btn-ghost" text="Posts"/>
+                    <Button onAction="#handleBackToDetails" styleClass="btn-ghost" text="Détail"/>
+                    <Button onAction="#handleAddComment" styleClass="btn-primary" text="Ajouter"/>
+                </HBox>
+
+                <HBox spacing="12">
+                    <VBox spacing="6">
+                        <Label styleClass="section-label" text="Utilisateur"/>
+                        <ComboBox fx:id="currentUserComboBox" prefWidth="260"/>
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                </HBox>
+
+                <VBox spacing="6" styleClass="detail-card">
+                    <padding>
+                        <Insets top="16" right="16" bottom="16" left="16"/>
+                    </padding>
+                    <Label fx:id="postTitleLabel" styleClass="detail-title" text="Post title"/>
+                    <Label fx:id="postSummaryLabel" styleClass="muted-label" text="Post summary"/>
+                    <Label fx:id="commentsCountLabel" styleClass="section-label" text="0 comment(s)"/>
+                </VBox>
+
+                <VBox fx:id="commentsContainer" spacing="12"/>
+            </VBox>
+        </content>
+    </ScrollPane>
+</AnchorPane>

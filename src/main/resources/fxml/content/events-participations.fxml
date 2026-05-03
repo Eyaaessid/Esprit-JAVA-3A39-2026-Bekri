@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.evenement.ui.MesParticipationsController"
+            maxWidth="Infinity"
+            maxHeight="Infinity">
+    <stylesheets>
+        <URL value="@../../css/app.css"/>
+    </stylesheets>
+    <ScrollPane fitToWidth="true"
+                fitToHeight="false"
+                hbarPolicy="NEVER"
+                vbarPolicy="AS_NEEDED"
+                maxWidth="Infinity"
+                maxHeight="Infinity"
+                styleClass="scroll-pane"
+                AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+                AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <content>
+            <VBox spacing="24" fillWidth="true">
+                <padding><Insets top="32" right="36" bottom="32" left="36"/></padding>
+                <Label text="Mes participations" styleClass="page-title"/>
+                <FlowPane fx:id="cardsContainer" hgap="16" vgap="16"/>
+            </VBox>
+        </content>
+    </ScrollPane>
+</AnchorPane>

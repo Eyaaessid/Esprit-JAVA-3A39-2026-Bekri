@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.profil.ui.TestController"
+            maxWidth="Infinity"
+            maxHeight="Infinity">
+    <stylesheets>
+        <URL value="@../../css/bekri.css"/>
+    </stylesheets>
+    <ScrollPane fitToWidth="true"
+                fitToHeight="false"
+                hbarPolicy="NEVER"
+                vbarPolicy="AS_NEEDED"
+                maxWidth="Infinity"
+                maxHeight="Infinity"
+                styleClass="scroll-pane"
+                AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+                AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <content>
+            <BorderPane styleClass="page-bg"
+                        maxWidth="Infinity">
+                <top>
+                    <VBox styleClass="test-header" spacing="10">
+                        <HBox alignment="CENTER_LEFT">
+                            <Button text="← Retour" styleClass="btn-ghost" onAction="#handleRetour"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="pageLabel" text="" styleClass="muted"/>
+                        </HBox>
+                        <Label fx:id="sectionLabel" text="" styleClass="section-title top-bar-title"/>
+                        <ProgressBar fx:id="progressBar" maxWidth="Infinity" progress="0" styleClass="progress-bar" prefHeight="8"/>
+                    </VBox>
+                </top>
+
+                <center>
+                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" styleClass="scroll-pane">
+                        <VBox fx:id="questionsContainer" spacing="16" fillWidth="true">
+                            <padding><Insets top="24" right="36" bottom="24" left="36"/></padding>
+                        </VBox>
+                    </ScrollPane>
+                </center>
+
+                <bottom>
+                    <HBox spacing="12" alignment="CENTER_RIGHT" styleClass="test-footer">
+                        <Button fx:id="prevBtn" text="← Précédent" onAction="#handlePrev" styleClass="btn-ghost"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="nextBtn" text="Suivant →" onAction="#handleNext" styleClass="btn-primary"/>
+                    </HBox>
+                </bottom>
+            </BorderPane>
+        </content>
+    </ScrollPane>
+</AnchorPane>

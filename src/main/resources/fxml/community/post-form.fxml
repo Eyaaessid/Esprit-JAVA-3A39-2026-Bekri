@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import java.lang.String?>
+
+<VBox spacing="14.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.community.ui.PostFormController">
+    <stylesheets>
+        <String fx:value="/css/community.css" />
+    </stylesheets>
+    <padding>
+        <Insets top="20.0" right="22.0" bottom="20.0" left="22.0"/>
+    </padding>
+
+    <Label styleClass="dialog-title" text="Post Form"/>
+    <Label styleClass="muted-label" text="Use this dialog for both create and edit, like the Symfony modals."/>
+
+    <Label styleClass="section-label" text="Author"/>
+    <ComboBox fx:id="authorComboBox" disable="true"/>
+
+    <Label styleClass="section-label" text="Title"/>
+    <TextField fx:id="titleField" promptText="Donnez un titre a votre post..."/>
+
+    <Label styleClass="section-label" text="Category"/>
+    <ComboBox fx:id="categoryComboBox"/>
+
+    <Label styleClass="section-label" text="Content"/>
+    <TextArea fx:id="contentArea" prefRowCount="8" promptText="Partagez vos pensees, experiences ou conseils..." wrapText="true"/>
+
+    <Label styleClass="section-label" text="Image"/>
+    <Label fx:id="imagePathLabel" styleClass="muted-label" text="No image selected"/>
+    <HBox spacing="10.0">
+        <Button onAction="#handleChooseImage" styleClass="ghost-button" text="Choose Image"/>
+        <Button onAction="#handleRemoveImage" styleClass="ghost-button" text="Remove Image"/>
+    </HBox>
+
+    <HBox alignment="CENTER_RIGHT" spacing="10.0">
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button onAction="#handleCancel" styleClass="ghost-button" text="Cancel"/>
+        <Button onAction="#handleSave" styleClass="primary-button" text="Save"/>
+    </HBox>
+</VBox>

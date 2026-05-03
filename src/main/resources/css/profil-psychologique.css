@@ -1,0 +1,136 @@
+/*
+ * Profil Psychologique — Bekri Design System
+ * Aligned with app.css brand tokens and component patterns.
+ *
+ * Requires .root tokens from app.css to be loaded first so that
+ * -bekri-* variables are available in scope.
+ */
+
+/* ==========================================================================
+   Analysis Card
+   ========================================================================== */
+
+/* .analysis-card is already declared in app.css as part of the shared
+   card group. This block only adds profile-specific overrides. */
+.analysis-card {
+    -fx-background-color: -bekri-card;
+    -fx-background-radius: 18px;
+    -fx-border-color:
+            rgba(61, 107, 125, 0.08)
+            rgba(61, 107, 125, 0.08)
+            rgba(61, 107, 125, 0.08)
+            rgba(61, 107, 125, 0.45);
+    -fx-border-width: 1 1 1 4;
+    -fx-border-radius: 18px;
+    -fx-effect: dropshadow(gaussian, rgba(30, 45, 61, 0.08), 24, 0.20, 0, 6);
+    -fx-padding: 22px;
+}
+
+.analysis-card:hover {
+    -fx-background-color: linear-gradient(to bottom, #F7FAF5, #FFFFFF);
+    -fx-effect: dropshadow(gaussian, rgba(30, 45, 61, 0.12), 28, 0.22, 0, 8);
+}
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+
+/* card-title, section-header, reco-label, reco-reason, date-label are all
+   already covered by shared selectors in app.css. These blocks keep the
+   file self-contained and override only what differs for this screen. */
+
+.card-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bekri-text-muted;
+}
+
+.card-body {
+    -fx-font-size: 13px;
+    -fx-text-fill: -bekri-text;
+    -fx-line-spacing: 4;
+}
+
+.section-header {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bekri-text;
+}
+
+.reco-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bekri-text;
+}
+
+.reco-reason {
+    -fx-font-size: 12px;
+    -fx-text-fill: -bekri-text-muted;
+}
+
+.date-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -bekri-text-muted;
+}
+
+/* ==========================================================================
+   Score Banner (hero area at the top of the profile)
+   ========================================================================== */
+
+.score-big {
+    -fx-font-size: 36px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -bekri-text-light;
+}
+
+.profil-subtitle {
+    -fx-font-size: 17px;
+    -fx-font-style: italic;
+    -fx-text-fill: rgba(250, 253, 245, 0.84);
+}
+
+/* ==========================================================================
+   Badge Pill
+   ========================================================================== */
+
+.badge-pill {
+    -fx-background-radius: 20px;
+    -fx-padding: 4px 16px;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.add-btn {
+    -fx-background-color: -bekri-primary;
+    -fx-text-fill: -bekri-text-light;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-padding: 6px 14px;
+    -fx-cursor: hand;
+}
+
+.add-btn:hover {
+    -fx-background-color: -bekri-primary-deep;
+}
+
+.regen-btn {
+    -fx-background-color: -bekri-primary;
+    -fx-text-fill: -bekri-text-light;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 14px;
+    -fx-border-radius: 14px;
+    -fx-padding: 10px 22px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(61, 107, 125, 0.28), 14, 0.20, 0, 4);
+}
+
+.regen-btn:hover {
+    -fx-background-color: -bekri-primary-deep;
+}

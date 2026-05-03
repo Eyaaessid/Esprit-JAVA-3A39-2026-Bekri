@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.profil.ui.TestController"
+            styleClass="page-bg"
+            prefWidth="1100" prefHeight="700">
+    <stylesheets>
+        <URL value="@../css/bekri.css"/>
+    </stylesheets>
+
+    <top>
+        <VBox styleClass="test-header" spacing="10">
+            <HBox alignment="CENTER_LEFT">
+                <Button text="← Retour" styleClass="btn-ghost" onAction="#handleRetour"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="pageLabel" text="" styleClass="muted"/>
+            </HBox>
+            <Label fx:id="sectionLabel" text="" styleClass="section-title top-bar-title"/>
+            <ProgressBar fx:id="progressBar" maxWidth="Infinity" progress="0" styleClass="progress-bar" prefHeight="8"/>
+        </VBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <VBox fx:id="questionsContainer" spacing="16">
+                <padding><Insets top="24" right="36" bottom="24" left="36"/></padding>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <bottom>
+        <HBox spacing="12" alignment="CENTER_RIGHT" styleClass="test-footer">
+            <Button fx:id="prevBtn" text="← Précédent" onAction="#handlePrev" styleClass="btn-ghost"/>
+                <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="nextBtn" text="Suivant →" onAction="#handleNext" styleClass="btn-primary"/>
+            </HBox>
+    </bottom>
+</BorderPane>
+
