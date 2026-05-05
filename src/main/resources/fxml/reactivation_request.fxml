@@ -6,36 +6,51 @@
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="tn.esprit.user.ui.ReactivationRequestController"
-            prefWidth="820" prefHeight="600">
+            prefWidth="960" prefHeight="640">
     <center>
-        <StackPane>
-            <VBox spacing="18" maxWidth="520" styleClass="auth-form-card">
-                <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-                <Label text="Demande de reactivation" styleClass="auth-title"/>
-                <Label text="Envoyez une demande a l'administrateur si votre compte a ete desactive."
-                       wrapText="true" styleClass="auth-subtitle"/>
+        <VBox alignment="CENTER" spacing="18" styleClass="auth-right-panel">
+            <padding><Insets top="48" right="48" bottom="48" left="48"/></padding>
 
-                <VBox spacing="8">
+            <VBox spacing="16" maxWidth="560" styleClass="auth-form-card">
+                <VBox spacing="4">
+                    <Label text="Demande de reactivation" styleClass="auth-title"/>
+                    <Label fx:id="messageLabel"
+                           text="Si votre compte a ete desactive par un administrateur, vous pouvez envoyer une demande de reactivation."
+                           wrapText="true"
+                           styleClass="auth-subtitle"/>
+                </VBox>
+                <Separator/>
+
+                <VBox spacing="6">
                     <Label text="Adresse email" styleClass="input-label"/>
-                    <TextField fx:id="emailField" promptText="vous@exemple.com"/>
+                    <TextField fx:id="emailField" promptText="vous@exemple.com" styleClass="text-field"/>
                 </VBox>
 
-                <VBox spacing="8">
-                    <Label text="Motif de la demande" styleClass="input-label"/>
-                    <TextArea fx:id="reasonArea" wrapText="true" prefRowCount="7"
-                              promptText="Expliquez pourquoi vous souhaitez reactiver votre compte..."/>
-                    <Label fx:id="charCountLabel" text="0 caracteres" styleClass="muted"/>
+                <VBox spacing="6">
+                    <Label text="Pourquoi souhaitez-vous reactiver ce compte ?" styleClass="input-label"/>
+                    <TextArea fx:id="reasonArea"
+                              promptText="Expliquez brievement votre situation ou votre demande."
+                              prefRowCount="5"
+                              wrapText="true"
+                              styleClass="text-area"/>
                 </VBox>
 
-                <Label fx:id="statusLabel" text="" wrapText="true"/>
+                <Label fx:id="statusLabel"
+                       wrapText="true"
+                       managed="false"
+                       visible="false"
+                       styleClass="error-label"/>
 
                 <HBox spacing="10">
-                    <Button fx:id="submitButton" text="Envoyer" onAction="#handleSubmit" styleClass="btn-primary"/>
-                    <Button fx:id="returnButton" text="Retour"
-                            onAction="#handleBackToLogin" styleClass="btn-ghost"
-                            visible="true" managed="true"/>
+                    <Button fx:id="submitButton"
+                            text="Envoyer la demande"
+                            onAction="#handleSubmit"
+                            styleClass="btn-primary"/>
+                    <Button text="Retour a la connexion"
+                            onAction="#handleBackToLogin"
+                            styleClass="btn-secondary"/>
                 </HBox>
             </VBox>
-        </StackPane>
+        </VBox>
     </center>
 </BorderPane>

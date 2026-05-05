@@ -14,9 +14,13 @@ import java.util.List;
 import java.util.Optional;
 
 public class ProfilPsychologiqueDao {
-    private final Connection cnx = MyDataBase.getInstance().getCnx();
+
+    private Connection getCnx() {
+        return MyDataBase.getInstance().getCnx();
+    }
 
     public ProfilPsychologique save(ProfilPsychologique p) {
+        Connection cnx = getCnx();
         try {
             if (p.getId() == null) {
                 String sql = "INSERT INTO profil_psychologique "
@@ -61,6 +65,7 @@ public class ProfilPsychologiqueDao {
     }
 
     private Optional<ProfilPsychologique> findById(Integer id) {
+        Connection cnx = getCnx();
         String sql = "SELECT * FROM profil_psychologique WHERE id = ?";
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -76,6 +81,7 @@ public class ProfilPsychologiqueDao {
     }
 
     public Optional<ProfilPsychologique> findByUtilisateurId(Integer utilisateurId) {
+        Connection cnx = getCnx();
         String sql = "SELECT * FROM profil_psychologique WHERE utilisateur_id = ? "
                 + "ORDER BY date_evaluation DESC LIMIT 1";
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
@@ -92,6 +98,7 @@ public class ProfilPsychologiqueDao {
     }
 
     public List<ProfilPsychologique> findAll() {
+        Connection cnx = getCnx();
         String sql = "SELECT * FROM profil_psychologique ORDER BY date_evaluation DESC";
         try (PreparedStatement ps = cnx.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {

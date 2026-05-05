@@ -131,7 +131,7 @@ public class TwoFactorLoginController {
                 return;
             }
             if (user.getStatut() == UtilisateurStatut.INACTIF) {
-                showStatus("Votre compte est inactif. Veuillez repasser par l'écran de connexion pour demander une réactivation.", true);
+                InactiveAccountFlowHelper.handleInactiveUser(user, message -> showStatus(message, true));
                 return;
             }
             SessionManager.getInstance().setCurrentUser(user);
@@ -142,7 +142,7 @@ public class TwoFactorLoginController {
             if (SessionManager.getInstance().isAdmin()) {
                 SceneManager.switchTo("admin-dashboard");
             } else if (SessionManager.getInstance().isCoach()) {
-                SceneManager.switchTo("user-dashboard");
+                SceneManager.switchTo("coach-dashboard");
             } else {
                 SceneManager.switchTo("user-dashboard");
             }

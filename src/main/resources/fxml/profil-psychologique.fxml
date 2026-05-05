@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.shape.*?>
@@ -9,9 +10,12 @@
     maxHeight="700"
     prefHeight="700"
     style="-fx-background-color: #f9fafb;"
-    stylesheets="@../css/profil-psychologique.css"
+    styleClass="page-bg"
     xmlns:fx="http://javafx.com/fxml"
     fx:controller="tn.esprit.profil.ui.ProfilPsychologiqueController">
+  <stylesheets>
+    <URL value="@../css/app.css"/>
+  </stylesheets>
   <content>
     <VBox spacing="0" maxWidth="Infinity" style="-fx-background-color: #f9fafb; -fx-padding: 0;">
 
@@ -33,6 +37,7 @@
         <HBox style="-fx-padding: 16px 20px 0px 20px;">
           <Button fx:id="backBtn" text="← Retour"
                   onAction="#handleBack"
+                  styleClass="btn-ghost"
                   style="-fx-background-color: transparent;
                          -fx-text-fill: #6b7280;
                          -fx-font-size: 13px;

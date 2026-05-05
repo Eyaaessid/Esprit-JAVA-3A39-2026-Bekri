@@ -10,6 +10,7 @@
             prefWidth="720" prefHeight="520"
             styleClass="page-bg admin-edit-page">
     <stylesheets>
+        <URL value="@../css/bekri.css"/>
         <URL value="@/css/admin-edit.css"/>
     </stylesheets>
 

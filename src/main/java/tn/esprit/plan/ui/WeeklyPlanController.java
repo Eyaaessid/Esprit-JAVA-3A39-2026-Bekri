@@ -35,6 +35,7 @@ import tn.esprit.plan.model.WeeklyPlan;
 import tn.esprit.plan.service.WeeklyPlanPdfExporter;
 import tn.esprit.plan.service.WeeklyPlanService;
 import tn.esprit.session.SessionManager;
+import tn.esprit.shared.CommunityNavigation;
 import tn.esprit.shared.DialogHelper;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.user.entity.Utilisateur;
@@ -178,6 +179,7 @@ public class WeeklyPlanController implements Initializable {
     @FXML private void handleDailyCheckIn(ActionEvent e)   { loadView(stageFrom(e), "/fxml/suivi_today.fxml"); }
     @FXML private void handleWeekPlan(ActionEvent e)       { loadView(stageFrom(e), "/fxml/plan-weekly.fxml"); }
     @FXML private void handleWeeklyInsights(ActionEvent e) { loadView(stageFrom(e), "/fxml/weekly-insight.fxml"); }
+    @FXML private void handleCommunity(ActionEvent e)      { CommunityNavigation.openPosts(stageFrom(e)); }
     @FXML private void handleChatBot(ActionEvent e)        { loadView(stageFrom(e), "/fxml/chat-coach.fxml"); }
     @FXML private void handleTest(ActionEvent e)           { loadView(stageFrom(e), "/fxml/test.fxml"); }
     @FXML private void handleProfilPsy(ActionEvent e)      { loadView(stageFrom(e), "/fxml/profil-psychologique.fxml"); }

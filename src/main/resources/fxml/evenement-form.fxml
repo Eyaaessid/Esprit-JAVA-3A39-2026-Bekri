@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.evenement.ui.EvenementFormController"
+            prefWidth="1100" prefHeight="700" styleClass="page-bg">
+    <stylesheets><URL value="@../css/app.css"/></stylesheets>
+    <left>
+        <VBox styleClass="sidebar">
+            <VBox styleClass="sidebar-logo-box" spacing="2">
+                <Label text="bekri" styleClass="sidebar-logo"/>
+                <Label text="Bien-être &amp; Objectifs" styleClass="sidebar-logo-sub"/>
+            </VBox>
+            <VBox styleClass="sidebar-nav-box" spacing="0">
+                <Label text="MENU" styleClass="sidebar-section-label"/>
+                <Button text="🏠  Accueil" styleClass="sidebar-btn" onAction="#handleAccueil"/>
+                <Label text="EVENTS" styleClass="sidebar-section-label"/>
+                <Button text="📅  Événements" styleClass="sidebar-btn" onAction="#handleEvenements"/>
+                <Button text="⚙️  Gérer Événements" styleClass="sidebar-btn-active" onAction="#handleCoachEvenements"/>
+                <Button text="📊  Dashboard Coach" styleClass="sidebar-btn" onAction="#handleCoachDashboard"/>
+                <Button text="🎫  Mes Participations" styleClass="sidebar-btn" onAction="#handleMesParticipations"/>
+                <Button text="❤️  Mes Favoris" styleClass="sidebar-btn" onAction="#handleMesFavoris"/>
+            </VBox>
+            <Region VBox.vgrow="ALWAYS"/>
+            <VBox styleClass="sidebar-divider">
+                <Button text="⎋  Déconnexion" styleClass="sidebar-logout" onAction="#handleLogout"/>
+            </VBox>
+        </VBox>
+    </left>
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <VBox spacing="24" maxWidth="680">
+                <padding><Insets top="32" right="36" bottom="32" left="36"/></padding>
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <Button text="← Retour" styleClass="btn-ghost" onAction="#handleRetour"/>
+                    <VBox spacing="4">
+                        <Label fx:id="formTitle" text="Créer un événement" styleClass="page-title"/>
+                        <Label text="Remplissez les informations de l'événement." styleClass="page-subtitle"/>
+                    </VBox>
+                </HBox>
+                <VBox styleClass="section-card" spacing="20">
+                    <VBox spacing="6">
+                        <Label text="Titre *" styleClass="input-label"/>
+                        <TextField fx:id="txtTitre" promptText="Nom de l'événement" styleClass="text-field"/>
+                        <Label fx:id="errTitre" styleClass="error-label" visible="false" managed="false"/>
+                    </VBox>
+                    <VBox spacing="6">
+                        <Label text="Description" styleClass="input-label"/>
+                        <TextArea fx:id="txtDescription" promptText="Décrivez l'événement..." styleClass="text-area" prefRowCount="3"/>
+                    </VBox>
+                    <HBox spacing="12" alignment="CENTER_LEFT">
+                        <VBox spacing="6" HBox.hgrow="ALWAYS">
+                            <Label text="Date de début *" styleClass="input-label"/>
+                            <DatePicker fx:id="dpDateDebut" styleClass="date-picker" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox spacing="6">
+                            <Label text="Heure" styleClass="input-label"/>
+                            <HBox spacing="6"><Spinner fx:id="spinHeureDebut" prefWidth="72"/><Label text="h" styleClass="muted"/><Spinner fx:id="spinMinDebut" prefWidth="72"/></HBox>
+                        </VBox>
+                    </HBox>
+                    <HBox spacing="12" alignment="CENTER_LEFT">
+                        <VBox spacing="6" HBox.hgrow="ALWAYS">
+                            <Label text="Date de fin *" styleClass="input-label"/>
+                            <DatePicker fx:id="dpDateFin" styleClass="date-picker" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox spacing="6">
+                            <Label text="Heure" styleClass="input-label"/>
+                            <HBox spacing="6"><Spinner fx:id="spinHeureFin" prefWidth="72"/><Label text="h" styleClass="muted"/><Spinner fx:id="spinMinFin" prefWidth="72"/></HBox>
+                        </VBox>
+                    </HBox>
+                    <VBox spacing="6">
+                        <Label text="Lien de session (optionnel)" styleClass="input-label"/>
+                        <TextField fx:id="txtLienSession" promptText="https://..." styleClass="text-field"/>
+                    </VBox>
+                    <HBox spacing="12">
+                        <VBox spacing="6" HBox.hgrow="ALWAYS">
+                            <Label text="Capacité max *" styleClass="input-label"/>
+                            <TextField fx:id="txtCapacite" promptText="Ex: 50" styleClass="text-field"/>
+                        </VBox>
+                        <VBox spacing="6" HBox.hgrow="ALWAYS">
+                            <Label text="Type *" styleClass="input-label"/>
+                            <ComboBox fx:id="cmbType" styleClass="combo-box" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox spacing="6" HBox.hgrow="ALWAYS">
+                            <Label text="Statut *" styleClass="input-label"/>
+                            <ComboBox fx:id="cmbStatut" styleClass="combo-box" maxWidth="Infinity"/>
+                        </VBox>
+                    </HBox>
+                    <Label fx:id="errGlobal" styleClass="error-label" visible="false" managed="false" wrapText="true"/>
+                    <HBox spacing="12" alignment="CENTER_RIGHT">
+                        <Button text="Annuler" styleClass="btn-secondary" onAction="#handleRetour"/>
+                        <Button text="Enregistrer" styleClass="btn-primary" onAction="#handleEnregistrer"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

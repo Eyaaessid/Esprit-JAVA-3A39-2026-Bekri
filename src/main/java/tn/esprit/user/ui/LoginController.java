@@ -243,7 +243,9 @@ public class LoginController {
 
     @FXML
     private void handleOpenReactivationRequest() {
-        openReactivationRequestForm(emailField.getText());
+        String email = emailField == null ? null : emailField.getText();
+        String prefEmail = email == null || email.isBlank() ? null : email.trim();
+        InactiveAccountFlowHelper.openSupportScreen(prefEmail, this::showError);
     }
 
     @FXML
@@ -300,6 +302,8 @@ public class LoginController {
     private void navigateToDashboard() throws IOException {
         if (SessionManager.getInstance().isAdmin()) {
             SceneManager.switchTo("admin-dashboard");
+        } else if (SessionManager.getInstance().isCoach()) {
+            SceneManager.switchTo("coach-dashboard");
         } else {
             SceneManager.switchTo("user-dashboard");
         }
@@ -311,56 +315,6 @@ public class LoginController {
     }
 
     private void handleInactiveUser(Utilisateur user) {
-        String deactivatedBy = user.getDeactivatedBy();
-        if ("admin".equalsIgnoreCase(deactivatedBy)) {
-            boolean openRequest = DialogHelper.showChoice(
-                    "Compte inactif",
-                    "Votre compte a ete desactive par un administrateur. Vous pouvez envoyer une demande de reactivation.",
-                    "Demander",
-                    "Fermer"
-            );
-            if (openRequest) {
-                openReactivationRequestForm(user.getEmail());
-            }
-            return;
-        }
-
-        if ("user".equalsIgnoreCase(deactivatedBy)) {
-            boolean openCodeScreen = DialogHelper.showChoice(
-                    "Compte desactive",
-                    "Votre compte a ete desactive par vous. Saisissez le code de reactivation recu par email pour le reactiver.",
-                    "Entrer le code",
-                    "Fermer"
-            );
-            if (openCodeScreen) {
-                openSelfReactivationCode(user.getEmail());
-            }
-            return;
-        }
-
-        DialogHelper.showInfo(
-                "Compte inactif",
-                "Votre compte est inactif. Veuillez consulter votre email ou contacter le support."
-        );
-    }
-
-    private void openReactivationRequestForm(String email) {
-        try {
-            ReactivationRequestController controller = SceneManager.switchToAndGetController("reactivation-request");
-            if (email != null && !email.isBlank()) {
-                controller.setPrefilledEmail(email.trim());
-            }
-        } catch (IOException e) {
-            showError("Erreur de navigation.");
-        }
-    }
-
-    private void openSelfReactivationCode(String email) {
-        try {
-            SelfReactivationCodeController controller = SceneManager.switchToAndGetController("self-reactivation-code");
-            controller.setEmail(email);
-        } catch (IOException e) {
-            showError("Erreur de navigation.");
-        }
+        InactiveAccountFlowHelper.handleInactiveUser(user, this::showError);
     }
 }

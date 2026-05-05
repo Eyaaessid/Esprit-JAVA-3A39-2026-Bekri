@@ -537,8 +537,7 @@ public class EditProfileController implements Initializable {
                 Platform.runLater(() -> {
                     applyUserToForm(updated);
                     showSuccess("Profil mis à jour avec succès !");
-                    saveBtn.setDisable(false);
-                    saveBtn.setText("✓  Enregistrer les modifications");
+                    navigateAfterSave();
                 });
             } catch (Exception e) {
                 Platform.runLater(() -> {
@@ -554,6 +553,20 @@ public class EditProfileController implements Initializable {
     private static String getExtension(String name) {
         int i = name.lastIndexOf('.');
         return i >= 0 ? name.substring(i + 1) : "";
+    }
+
+    private void navigateAfterSave() {
+        try {
+            if (SessionManager.getInstance().isAdmin()) {
+                SceneManager.switchTo("admin-dashboard");
+            } else {
+                SceneManager.switchTo("user-dashboard");
+            }
+        } catch (Exception e) {
+            DialogHelper.showError("Navigation", e.getMessage());
+            saveBtn.setDisable(false);
+            saveBtn.setText("Enregistrer les modifications");
+        }
     }
 
     @FXML

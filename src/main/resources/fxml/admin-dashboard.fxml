@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -7,24 +8,28 @@
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="tn.esprit.user.ui.AdminDashboardController"
             prefWidth="1100" prefHeight="700" styleClass="page-bg">
+    <stylesheets>
+        <URL value="@../css/bekri.css"/>
+    </stylesheets>
 
     <left>
         <VBox styleClass="sidebar">
             <VBox styleClass="sidebar-logo-box" spacing="2">
                 <Label text="bekri" styleClass="sidebar-logo"/>
-                <Label text="Bien-être &amp; Administration" styleClass="sidebar-logo-sub"/>
+                <Label text="Bien-etre &amp; Administration" styleClass="sidebar-logo-sub"/>
             </VBox>
             <VBox styleClass="sidebar-nav-box" spacing="0">
                 <Label text="MENU" styleClass="sidebar-section-label"/>
-                <Button text="🏠  Accueil" styleClass="sidebar-btn sidebar-btn-active"/>
-                <Button text="❓  Questions" styleClass="sidebar-btn" onAction="#handleQuestions"/>
-                <Button text="👥  Utilisateurs" styleClass="sidebar-btn" onAction="#handleUtilisateurs"/>
-                <Button text="📨  Réactivations" styleClass="sidebar-btn" onAction="#handleReactivationRequests"/>
-                <Button text="👤  Mon Profil" styleClass="sidebar-btn" onAction="#handleProfil"/>
+                <Button text="Accueil"       styleClass="sidebar-btn sidebar-btn-active"/>
+                <Button text="Questions"      styleClass="sidebar-btn" onAction="#handleQuestions"/>
+                <Button text="Utilisateurs"   styleClass="sidebar-btn" onAction="#handleUtilisateurs"/>
+                <Button text="Reactivations"  styleClass="sidebar-btn" onAction="#handleReactivations"/>
+                <Button text="Posts"          styleClass="sidebar-btn" onAction="#handlePosts"/>
+                <Button text="Mon Profil"     styleClass="sidebar-btn" onAction="#handleProfil"/>
             </VBox>
             <Region VBox.vgrow="ALWAYS"/>
             <VBox styleClass="sidebar-divider">
-                <Button text="⎋  Déconnexion" styleClass="sidebar-logout" onAction="#handleLogout"/>
+                <Button text="Deconnexion" styleClass="sidebar-logout" onAction="#handleLogout"/>
             </VBox>
         </VBox>
     </left>
@@ -36,32 +41,31 @@
 
                 <HBox styleClass="welcome-card" alignment="CENTER_LEFT" spacing="16">
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
-                        <Label fx:id="welcomeLabel" text="Bonjour Admin 👋" styleClass="welcome-greeting"/>
-                        <Label text="Gérez votre plateforme bien-être" styleClass="welcome-tagline"/>
+                        <Label fx:id="welcomeLabel" text="Bonjour Admin" styleClass="welcome-greeting"/>
+                        <Label text="Gerez votre plateforme bien-etre" styleClass="welcome-tagline"/>
                     </VBox>
-                    <Label text="💙" style="-fx-font-size: 48px; -fx-text-fill: #FFFFFF; -fx-opacity: 0.6;"/>
                 </HBox>
 
                 <VBox spacing="16">
-                    <Label text="Accès rapide" styleClass="section-title"/>
+                    <Label text="Acces rapide" styleClass="section-title"/>
                     <FlowPane hgap="16" vgap="16">
                         <VBox styleClass="quick-card" onMouseClicked="#handleQuestions" alignment="CENTER" spacing="8">
-                            <Label text="❓" styleClass="quick-card-icon"/>
                             <Label text="Questions" styleClass="quick-card-title"/>
-                            <Label text="Gérer les questions" styleClass="quick-card-sub"/>
+                            <Label text="Gerer les questions" styleClass="quick-card-sub"/>
                         </VBox>
                         <VBox styleClass="quick-card" onMouseClicked="#handleUtilisateurs" alignment="CENTER" spacing="8">
-                            <Label text="👥" styleClass="quick-card-icon"/>
                             <Label text="Utilisateurs" styleClass="quick-card-title"/>
-                            <Label text="Gérer les comptes" styleClass="quick-card-sub"/>
+                            <Label text="Gerer les comptes" styleClass="quick-card-sub"/>
                         </VBox>
-                        <VBox styleClass="quick-card" onMouseClicked="#handleReactivationRequests" alignment="CENTER" spacing="8">
-                            <Label text="📨" styleClass="quick-card-icon"/>
-                            <Label text="Réactivations" styleClass="quick-card-title"/>
-                            <Label text="Traiter les demandes" styleClass="quick-card-sub"/>
+                        <VBox styleClass="quick-card" onMouseClicked="#handleReactivations" alignment="CENTER" spacing="8">
+                            <Label text="Reactivations" styleClass="quick-card-title"/>
+                            <Label text="Demandes en attente" styleClass="quick-card-sub"/>
+                        </VBox>
+                        <VBox styleClass="quick-card" onMouseClicked="#handlePosts" alignment="CENTER" spacing="8">
+                            <Label text="Posts" styleClass="quick-card-title"/>
+                            <Label text="Posts et commentaires" styleClass="quick-card-sub"/>
                         </VBox>
                         <VBox styleClass="quick-card" onMouseClicked="#handleProfil" alignment="CENTER" spacing="8">
-                            <Label text="👤" styleClass="quick-card-icon"/>
                             <Label text="Mon Profil" styleClass="quick-card-title"/>
                             <Label text="Mes informations" styleClass="quick-card-sub"/>
                         </VBox>

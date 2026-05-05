@@ -12,8 +12,7 @@ import javafx.util.Duration;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.user.exception.ReactivationException;
 import tn.esprit.user.service.AccountStatusService;
-import tn.esprit.user.service.EmailService;
-import tn.esprit.user.dao.ReactivationRequestDao;
+import tn.esprit.utils.EmailService;
 import tn.esprit.user.dao.UtilisateurDao;
 
 public class SelfReactivationCodeController {
@@ -25,11 +24,8 @@ public class SelfReactivationCodeController {
     @FXML private Button resendButton;
     @FXML private Hyperlink backToLoginLink;
 
-    private final AccountStatusService accountStatusService = new AccountStatusService(
-            new UtilisateurDao(),
-            new ReactivationRequestDao(),
-            new EmailService()
-    );
+    private final AccountStatusService accountStatusService =
+            new AccountStatusService(new UtilisateurDao(), EmailService.getInstance());
 
     @FXML
     private void initialize() {

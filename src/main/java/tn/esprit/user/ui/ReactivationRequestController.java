@@ -7,42 +7,37 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import tn.esprit.shared.SceneManager;
-import tn.esprit.user.dao.ReactivationRequestDao;
 import tn.esprit.user.dao.UtilisateurDao;
 import tn.esprit.user.exception.ReactivationException;
 import tn.esprit.user.service.AccountStatusService;
-import tn.esprit.user.service.EmailService;
+import tn.esprit.utils.EmailService;
 
 import java.io.IOException;
-import java.util.regex.Pattern;
 
 public class ReactivationRequestController {
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
-
+    @FXML private Label messageLabel;
     @FXML private TextField emailField;
     @FXML private TextArea reasonArea;
-    @FXML private Label charCountLabel;
     @FXML private Label statusLabel;
     @FXML private Button submitButton;
-    @FXML private Button returnButton;
 
-    private final AccountStatusService accountStatusService = new AccountStatusService(
-            new UtilisateurDao(),
-            new ReactivationRequestDao(),
-            new EmailService()
-    );
+    private final AccountStatusService accountStatusService =
+            new AccountStatusService(new UtilisateurDao(), EmailService.getInstance());
 
     @FXML
     private void initialize() {
-        reasonArea.textProperty().addListener((obs, oldValue, newValue) ->
-                charCountLabel.setText((newValue == null ? 0 : newValue.length()) + " caracteres"));
-        charCountLabel.setText("0 caracteres");
-        returnButton.setVisible(true);
-        returnButton.setManaged(true);
+        if (messageLabel != null) {
+            messageLabel.setText(
+                    "Si votre compte a ete desactive par un administrateur, vous pouvez envoyer une demande de reactivation."
+            );
+        }
+        hideStatus();
     }
 
-    public void setPrefilledEmail(String email) {
-        emailField.setText(email);
+    public void setEmail(String email) {
+        if (emailField != null && email != null && !email.isBlank()) {
+            emailField.setText(email.trim());
+        }
     }
 
     @FXML
@@ -50,37 +45,24 @@ public class ReactivationRequestController {
         String email = emailField.getText() == null ? "" : emailField.getText().trim();
         String reason = reasonArea.getText() == null ? "" : reasonArea.getText().trim();
 
-        if (!EMAIL_PATTERN.matcher(email).matches()) {
-            showStatus("Veuillez saisir une adresse email valide.", true);
-            return;
-        }
-        if (reason.length() < 10) {
-            showStatus("Veuillez saisir une raison d'au moins 10 caracteres.", true);
-            return;
-        }
-
         submitButton.setDisable(true);
         runAsync(() -> {
             try {
                 accountStatusService.submitReactivationRequest(email, reason);
                 Platform.runLater(() -> {
-                    emailField.setDisable(true);
-                    reasonArea.setDisable(true);
-                    showStatus("Votre demande a ete envoyee avec succes. Un administrateur l'examinera prochainement.", false);
-                    returnButton.setVisible(true);
-                    returnButton.setManaged(true);
+                    submitButton.setDisable(false);
+                    showSuccess("Votre demande a ete envoyee. Vous recevrez un email apres traitement.");
+                    reasonArea.clear();
                 });
             } catch (ReactivationException e) {
                 Platform.runLater(() -> {
                     submitButton.setDisable(false);
-                    showStatus(e.getMessage(), true);
+                    showError(e.getMessage());
                 });
             } catch (Exception e) {
-                System.err.println("[ReactivationRequestController.handleSubmit] email=" + email + " " + e.getMessage());
-                e.printStackTrace(System.err);
                 Platform.runLater(() -> {
                     submitButton.setDisable(false);
-                    showStatus("Une erreur est survenue lors de l'envoi de votre demande.", true);
+                    showError("Impossible d'envoyer la demande pour le moment.");
                 });
             }
         });
@@ -95,9 +77,26 @@ public class ReactivationRequestController {
         }
     }
 
-    private void showStatus(String message, boolean error) {
+    private void showError(String message) {
         statusLabel.setText(message);
-        statusLabel.setStyle("-fx-text-fill: " + (error ? "#dc3545" : "#217693") + ";");
+        statusLabel.setStyle("-fx-text-fill: #b85d49;");
+        statusLabel.setVisible(true);
+        statusLabel.setManaged(true);
+    }
+
+    private void showSuccess(String message) {
+        statusLabel.setText(message);
+        statusLabel.setStyle("-fx-text-fill: #305764;");
+        statusLabel.setVisible(true);
+        statusLabel.setManaged(true);
+    }
+
+    private void hideStatus() {
+        if (statusLabel != null) {
+            statusLabel.setVisible(false);
+            statusLabel.setManaged(false);
+            statusLabel.setText("");
+        }
     }
 
     private void runAsync(Runnable runnable) {

@@ -8,12 +8,11 @@ import tn.esprit.faceauth.FaceAuthService;
 import tn.esprit.session.SessionManager;
 import tn.esprit.shared.DialogHelper;
 import tn.esprit.shared.SceneManager;
-import tn.esprit.user.dao.ReactivationRequestDao;
 import tn.esprit.user.dao.UtilisateurDao;
 import tn.esprit.user.entity.Utilisateur;
 import tn.esprit.user.enums.UtilisateurRole;
 import tn.esprit.user.service.AccountStatusService;
-import tn.esprit.user.service.EmailService;
+import tn.esprit.utils.EmailService;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -40,11 +39,8 @@ public class ProfileController implements Initializable {
     @FXML private Button deactivateAccountBtn;
 
     private final FaceAuthService faceAuthService = new FaceAuthService();
-    private final AccountStatusService accountStatusService = new AccountStatusService(
-            new UtilisateurDao(),
-            new ReactivationRequestDao(),
-            new EmailService()
-    );
+    private final AccountStatusService accountStatusService =
+            new AccountStatusService(new UtilisateurDao(), EmailService.getInstance());
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {

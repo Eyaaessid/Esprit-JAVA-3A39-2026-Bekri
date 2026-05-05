@@ -10,9 +10,12 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 
 public class TwoFactorDAO {
-    private final Connection connection = MyDataBase.getInstance().getCnx();
+    private Connection getCnx() {
+        return MyDataBase.getInstance().getCnx();
+    }
 
     public void saveTotpSecret(int userId, String secret) {
+        Connection connection = getCnx();
         String sql = "UPDATE utilisateur SET totp_secret=? WHERE id=?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, secret);
@@ -24,6 +27,7 @@ public class TwoFactorDAO {
     }
 
     public void enableTwoFactor(int userId, String backupCodesJson) {
+        Connection connection = getCnx();
         String sql = "UPDATE utilisateur SET is_two_factor_enabled=1, two_factor_enabled_at=NOW(), backup_codes=? WHERE id=?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, backupCodesJson);
@@ -35,6 +39,7 @@ public class TwoFactorDAO {
     }
 
     public void disableTwoFactor(int userId) {
+        Connection connection = getCnx();
         String sql = "UPDATE utilisateur SET is_two_factor_enabled=0, totp_secret=NULL, backup_codes=NULL, two_factor_enabled_at=NULL WHERE id=?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
@@ -45,6 +50,7 @@ public class TwoFactorDAO {
     }
 
     public void updateBackupCodes(int userId, String backupCodesJson) {
+        Connection connection = getCnx();
         String sql = "UPDATE utilisateur SET backup_codes=? WHERE id=?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, backupCodesJson);
@@ -56,6 +62,7 @@ public class TwoFactorDAO {
     }
 
     public void loadTwoFactorFields(Utilisateur user) {
+        Connection connection = getCnx();
         if (user == null || user.getId() == null) {
             return;
         }

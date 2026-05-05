@@ -16,7 +16,6 @@
                     <Label fx:id="pageSubtitleLabel" text="0 utilisateurs au total" styleClass="users-page-subtitle"/>
                 </VBox>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="Demandes de reactivation" onAction="#handleOpenRequests" styleClass="users-add-btn"/>
                 <Button text="Retour" onAction="#handleBack" styleClass="btn-ghost"/>
             </HBox>
             <Region styleClass="users-header-accent"/>

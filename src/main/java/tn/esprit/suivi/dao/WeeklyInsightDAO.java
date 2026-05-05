@@ -13,104 +13,140 @@ import java.time.LocalDate;
 import java.util.*;
 
 public class WeeklyInsightDAO {
+
     private Connection getCnx() {
         return MyDataBase.getInstance().getCnx();
     }
 
-
+    // ── 1. All answers for the week (category summaries + daily global avg) ──
     private static final String SQL_WEEK_ANSWERS =
             """
             SELECT
-                s.date AS day_date,
-                q.category AS category,
-                r.valeur AS valeur
+                s.date       AS day_date,
+                q.category   AS category,
+                r.valeur     AS valeur
             FROM suivi_quotidien s
-            JOIN reponse_suivi r ON r.suivi_id = s.id
-            JOIN question_evaluation q ON q.id = r.question_id
+            JOIN reponse_suivi       r  ON r.suivi_id   = s.id
+            JOIN question_evaluation q  ON q.id          = r.question_id
             WHERE s.utilisateur_id = ?
               AND s.date >= ?
               AND s.date <= ?
             ORDER BY s.date ASC
             """;
 
+    // ── 2. Humeur-only answers per day (for the line chart) ──────────────────
+    private static final String SQL_DAILY_HUMEUR =
+            """
+            SELECT
+                s.date     AS day_date,
+                r.valeur   AS valeur
+            FROM suivi_quotidien s
+            JOIN reponse_suivi       r  ON r.suivi_id   = s.id
+            JOIN question_evaluation q  ON q.id          = r.question_id
+            WHERE s.utilisateur_id = ?
+              AND s.date >= ?
+              AND s.date <= ?
+              AND LOWER(TRIM(q.category)) = 'humeur'
+            ORDER BY s.date ASC
+            """;
+
+    // ─────────────────────────────────────────────────────────────────────────
+
     public WeeklyInsightResult getWeeklyInsight(int userId, LocalDate start, LocalDate end) {
+
         Map<String, List<Double>> categoryScores = new LinkedHashMap<>();
-        Map<LocalDate, List<Double>> dailyScores = new LinkedHashMap<>();
+        Map<LocalDate, List<Double>> dailyScores  = new LinkedHashMap<>();
 
         Connection cnx = getCnx();
-        try (PreparedStatement ps = cnx.prepareStatement(SQL_WEEK_ANSWERS)) {
 
+        // ── Pass 1: global answers ────────────────────────────────────────────
+        try (PreparedStatement ps = cnx.prepareStatement(SQL_WEEK_ANSWERS)) {
             ps.setInt(1, userId);
             ps.setDate(2, java.sql.Date.valueOf(start));
             ps.setDate(3, java.sql.Date.valueOf(end));
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    LocalDate date = rs.getDate("day_date").toLocalDate();
-                    String category = rs.getString("category");
-                    String valeur = rs.getString("valeur");
+                    LocalDate date    = rs.getDate("day_date").toLocalDate();
+                    String    category = rs.getString("category");
+                    String    valeur   = rs.getString("valeur");
 
                     double score = convertResponseToScore(valeur);
 
                     String catKey = normalizeCategory(category);
                     categoryScores.computeIfAbsent(catKey, k -> new ArrayList<>()).add(score);
-                    dailyScores.computeIfAbsent(date, k -> new ArrayList<>()).add(score);
+                    dailyScores  .computeIfAbsent(date,   k -> new ArrayList<>()).add(score);
                 }
             }
-
         } catch (SQLException e) {
             WeeklyInsightResult empty = new WeeklyInsightResult();
             empty.setTotalSubmittedDays(0);
             empty.setCategorySummaries(List.of());
+            empty.setDailyHumeurScores(new LinkedHashMap<>());
             return empty;
         }
 
+        // ── Pass 2: humeur-per-day for the line chart ─────────────────────────
+        Map<LocalDate, Double> dailyHumeurScores = new LinkedHashMap<>();
+        try (PreparedStatement ps = cnx.prepareStatement(SQL_DAILY_HUMEUR)) {
+            ps.setInt(1, userId);
+            ps.setDate(2, java.sql.Date.valueOf(start));
+            ps.setDate(3, java.sql.Date.valueOf(end));
+
+            // Accumulate per day, then average
+            Map<LocalDate, List<Double>> humeurRaw = new LinkedHashMap<>();
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    LocalDate date  = rs.getDate("day_date").toLocalDate();
+                    double    score = convertResponseToScore(rs.getString("valeur"));
+                    humeurRaw.computeIfAbsent(date, k -> new ArrayList<>()).add(score);
+                }
+            }
+            humeurRaw.forEach((date, scores) ->
+                    dailyHumeurScores.put(date, round1(avg(scores))));
+
+        } catch (SQLException e) {
+            // leave map empty — chart will just be blank rather than crashing
+        }
+
+        // ── Build result ──────────────────────────────────────────────────────
         WeeklyInsightResult result = new WeeklyInsightResult();
         result.setTotalSubmittedDays(dailyScores.size());
+        result.setDailyHumeurScores(dailyHumeurScores);
 
-        // Build category summaries (avg always computed if there are answers)
+        // Category summaries
         List<CategorySummary> summaries = new ArrayList<>();
         for (Map.Entry<String, List<Double>> entry : categoryScores.entrySet()) {
-            String cat = entry.getKey();
             List<Double> scores = entry.getValue();
-
             CategorySummary cs = new CategorySummary();
-            cs.setCategory(cat);
+            cs.setCategory(entry.getKey());
             cs.setCountAnswers(scores.size());
             cs.setAvgNumericScore(scores.isEmpty() ? null : round1(avg(scores)));
             summaries.add(cs);
         }
         result.setCategorySummaries(summaries);
 
-        // Best / worst day based on daily average score
-        LocalDate bestDay = null;
-        LocalDate worstDay = null;
-        Double bestScore = null;
-        Double worstScore = null;
+        // Best / worst day
+        LocalDate bestDay = null, worstDay = null;
+        Double    bestScore = null, worstScore = null;
 
         for (Map.Entry<LocalDate, List<Double>> entry : dailyScores.entrySet()) {
             List<Double> scores = entry.getValue();
             if (scores == null || scores.isEmpty()) continue;
-
             double dayAvg = avg(scores);
-
-            if (bestScore == null || dayAvg > bestScore) {
-                bestScore = dayAvg;
-                bestDay = entry.getKey();
-            }
-            if (worstScore == null || dayAvg < worstScore) {
-                worstScore = dayAvg;
-                worstDay = entry.getKey();
-            }
+            if (bestScore  == null || dayAvg > bestScore)  { bestScore  = dayAvg; bestDay  = entry.getKey(); }
+            if (worstScore == null || dayAvg < worstScore) { worstScore = dayAvg; worstDay = entry.getKey(); }
         }
 
         result.setBestDay(bestDay);
         result.setWorstDay(worstDay);
-        result.setBestScore(bestScore == null ? null : round1(bestScore));
+        result.setBestScore(bestScore  == null ? null : round1(bestScore));
         result.setWorstScore(worstScore == null ? null : round1(worstScore));
 
         return result;
     }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static double avg(List<Double> list) {
         double sum = 0;
@@ -128,7 +164,8 @@ public class WeeklyInsightDAO {
         return v.isBlank() ? "autre" : v;
     }
 
-    
+    // ── Score conversion ──────────────────────────────────────────────────────
+
     public static double convertResponseToScore(String valeur) {
         if (valeur == null) return 0.0;
 
@@ -138,6 +175,7 @@ public class WeeklyInsightDAO {
         v = v.replaceAll("\\s+", " ");
 
         return switch (v) {
+            // ── 100 — best answers ──────────────────────────────────────────
             case "positive", "positif",
                  "tres bien",
                  "oui, plusieurs",
@@ -156,8 +194,29 @@ public class WeeklyInsightDAO {
                  "non",
                  "tous",
                  "jamais",
-                 "0 fois" -> 100.0;
+                 "0 fois",
+                 // ── extra values present in seed data ──
+                 "oui, profond",
+                 "tres bonne",
+                 "oui, souvent",
+                 "tres stable",
+                 "en paix",
+                 "oui, tres agreable",
+                 "oui, efficace",
+                 "oui, toute la nuit",
+                 "oui beaucoup",
+                 "oui, tous",
+                 "beaucoup",
+                 "oui completement",
+                 "naturelle",
+                 "oui, intense",
+                 "oui, 10 min+",
+                 "oui regulierement",
+                 "oui, souple",
+                 "oui, tres claire"
+                    -> 100.0;
 
+            // ── 66 — mid answers ────────────────────────────────────────────
             case "neutre",
                  "correct", "correcte",
                  "oui, un peu",
@@ -171,11 +230,33 @@ public class WeeklyInsightDAO {
                  "moderee", "modere",
                  "moyen",
                  "10-30 min",
-                 "normal",
+                 "normal", "normale",
                  "legers",
                  "oui, moderees",
-                 "1-2 fois" -> 66.0;
+                 "1-2 fois",
+                 // ── extra values present in seed data ──
+                 "oui, leger",
+                 "acceptable",
+                 "oui, une fois",
+                 "oui, une",
+                 "oui, correct",
+                 "oui, courte",
+                 "egal", "egale",
+                 "en partie",
+                 "oui un peu",
+                 "oui, la plupart",
+                 "quelques-uns",
+                 "oui en grande partie",
+                 "mixte",
+                 "oui, legere",
+                 "parfois",
+                 "oui, rapide",
+                 "oui, correcte",
+                 "jaune clair",
+                 "en grande partie",
+                 "peut-etre" -> 66.0;
 
+            // ── 33 — bad answers ────────────────────────────────────────────
             case "negative", "negatif",
                  "pas terrible",
                  "plutot pessimiste",
@@ -189,7 +270,21 @@ public class WeeklyInsightDAO {
                  "fatigue", "fatiguee",
                  "oui, tres fortes",
                  "3 fois ou plus",
-                 "souvent", "toujours" -> 33.0;
+                 "souvent", "toujours",
+                 // ── extra values present in seed data ──
+                 "basse",
+                 "tres changeante",
+                 "mal a l'aise",
+                 "force / difficile",
+                 "pas vraiment",
+                 "moins bonne",
+                 "emotionnelle",
+                 "lourde / ballonnements",
+                 "souvent voutee",
+                 "seche",
+                 "foncee",
+                 "non mais plus tard"
+                    -> 33.0;
 
             default -> 0.0;
         };

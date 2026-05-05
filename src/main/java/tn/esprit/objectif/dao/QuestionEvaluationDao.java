@@ -13,9 +13,12 @@ import java.util.List;
 import java.util.Optional;
 
 public class QuestionEvaluationDao {
-    private final Connection cnx = MyDataBase.getInstance().getCnx();
+    private Connection getCnx() {
+        return MyDataBase.getInstance().getCnx();
+    }
 
     public List<QuestionEvaluation> findAll() {
+        Connection cnx = getCnx();
         String sql = "SELECT * FROM question_evaluation ORDER BY id DESC";
         try (PreparedStatement ps = cnx.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -30,6 +33,7 @@ public class QuestionEvaluationDao {
     }
 
     public Optional<QuestionEvaluation> findById(Integer id) {
+        Connection cnx = getCnx();
         String sql = "SELECT * FROM question_evaluation WHERE id = ?";
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -45,6 +49,7 @@ public class QuestionEvaluationDao {
     }
 
     public QuestionEvaluation save(QuestionEvaluation q) {
+        Connection cnx = getCnx();
         try {
             if (q.getId() == null) {
                 String sql = "INSERT INTO question_evaluation "
@@ -109,6 +114,7 @@ public class QuestionEvaluationDao {
     }
 
     public boolean existsById(Integer id) {
+        Connection cnx = getCnx();
         String sql = "SELECT COUNT(*) FROM question_evaluation WHERE id = ?";
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -124,6 +130,7 @@ public class QuestionEvaluationDao {
     }
 
     public void deleteById(Integer id) {
+        Connection cnx = getCnx();
         String sql = "DELETE FROM question_evaluation WHERE id = ?";
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setInt(1, id);

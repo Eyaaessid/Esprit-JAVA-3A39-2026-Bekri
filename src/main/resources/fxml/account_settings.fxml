@@ -9,7 +9,7 @@
     <top>
         <HBox spacing="12" alignment="CENTER_LEFT" styleClass="top-bar">
             <Button text="Retour" onAction="#handleBack" styleClass="btn-ghost"/>
-            <Label text="Paramètres du compte" styleClass="top-bar-title"/>
+            <Label text="Parametres du compte" styleClass="top-bar-title"/>
         </HBox>
     </top>
     <center>
@@ -19,22 +19,9 @@
                 <Label fx:id="statusBadgeLabel" text="-" />
                 <Label fx:id="messageLabel" text="" wrapText="true"/>
 
-                <Button fx:id="deactivateButton" text="Désactiver mon compte"
+                <Button fx:id="deactivateButton" text="Desactiver mon compte"
                         onAction="#handleDeactivate" styleClass="btn-danger"
                         visible="false" managed="false"/>
-
-                <Button fx:id="showRequestButton" text="Demander une réactivation"
-                        onAction="#handleShowRequestForm" styleClass="btn-primary"
-                        visible="false" managed="false"/>
-
-                <TextArea fx:id="reasonArea" promptText="Expliquez brièvement votre demande..."
-                          wrapText="true" prefRowCount="6" visible="false" managed="false"/>
-
-                <Button fx:id="submitRequestButton" text="Envoyer la demande"
-                        onAction="#handleSubmitRequest" styleClass="btn-primary"
-                        visible="false" managed="false"/>
-
-                <Label fx:id="feedbackLabel" text="" wrapText="true"/>
             </VBox>
         </VBox>
     </center>

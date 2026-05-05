@@ -21,6 +21,9 @@ public class UtilisateurService {
     private final UtilisateurDao dao = new UtilisateurDao();
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
+    private final AccountStatusService accountStatusService =
+            new AccountStatusService(dao, EmailService.getInstance());
+
     public Utilisateur register(String nom, String prenom, String email, String password) {
         return register(nom, prenom, email, password, null, null);
     }
@@ -60,26 +63,37 @@ public class UtilisateurService {
     }
 
     public void requestPasswordReset(String email) {
+        System.out.println("[UtilisateurService] requestPasswordReset called for: " + email);
+
         Utilisateur user = dao.findByEmail(email).orElse(null);
         if (user == null) {
-            return; // no info leak
+            System.out.println("[UtilisateurService] No user found for email: " + email);
+            return;
         }
+        System.out.println("[UtilisateurService] User found: id=" + user.getId() + " verified=" + user.isVerified());
+
         if (!user.isVerified()) {
-            return; // prevent overriding verification token (shared reset_token column)
+            System.out.println("[UtilisateurService] User is not verified, skipping reset for: " + email);
+            return;
         }
 
         String token = generateToken6Digits();
         LocalDateTime expiresAt = LocalDateTime.now().plusHours(1);
         dao.saveResetToken(user.getId(), token, expiresAt);
+        System.out.println("[UtilisateurService] Reset token saved: " + token);
 
         try {
+            System.out.println("[UtilisateurService] Attempting to send email via EmailService...");
             EmailService.getInstance().sendPasswordResetEmail(
                     user.getEmail(),
                     user.getPrenom() + " " + user.getNom(),
                     token
             );
+            System.out.println("[UtilisateurService] Email sent successfully to: " + email);
         } catch (Exception e) {
-            System.out.println("[UtilisateurService] Failed to send reset email: " + e.getMessage());
+            System.err.println("[UtilisateurService] Failed to send reset email to " + email + ": " + e.getMessage());
+            e.printStackTrace(System.err);
+            throw new RuntimeException("Erreur envoi email: " + e.getMessage(), e);
         }
     }
 
@@ -179,7 +193,19 @@ public class UtilisateurService {
     }
 
     public void updateRoleAndStatus(Integer id, UtilisateurRole role, UtilisateurStatut statut) {
-        dao.updateRoleAndStatus(id, role, statut);
+        Utilisateur u = getUserById(id);
+        UtilisateurStatut oldStatut = u.getStatut();
+        UtilisateurStatut newStatut = statut != null ? statut : oldStatut;
+        UtilisateurRole targetRole = role != null ? role : u.getRole();
+
+        validateAdminStatusCombination(targetRole, newStatut);
+
+        if (role != null) {
+            u.setRole(role);
+        }
+        u.setStatut(oldStatut);
+        dao.save(u);
+        applyManagedStatusChange(u, oldStatut, newStatut);
     }
 
     public List<Utilisateur> findUtilisateursFiltered(String search, String roleFilter, String statutFilter) {
@@ -196,15 +222,8 @@ public class UtilisateurService {
         return dao.fetchRoleStats();
     }
 
-    private boolean matchesSearch(Utilisateur u, String q) {
-        String nom = u.getNom() != null ? u.getNom().toLowerCase(Locale.ROOT) : "";
-        String prenom = u.getPrenom() != null ? u.getPrenom().toLowerCase(Locale.ROOT) : "";
-        String email = u.getEmail() != null ? u.getEmail().toLowerCase(Locale.ROOT) : "";
-        return nom.contains(q) || prenom.contains(q) || email.contains(q);
-    }
-
     public Utilisateur createUtilisateurAdmin(String nom, String prenom, String email, String password,
-                                                String telephone, LocalDate dateNaissance, String apiRole) {
+                                              String telephone, LocalDate dateNaissance, String apiRole) {
         if (dao.existsByEmail(email)) {
             throw new IllegalArgumentException("Email déjà utilisé");
         }
@@ -223,10 +242,19 @@ public class UtilisateurService {
     }
 
     public Utilisateur updateUtilisateurAdmin(Integer id, String nom, String prenom, String email,
-                                               String telephone, LocalDate dateNaissance,
-                                               String newPasswordOrNull,
-                                               String apiRole, String apiStatut) {
+                                              String telephone, LocalDate dateNaissance,
+                                              String newPasswordOrNull,
+                                              String apiRole, String apiStatut) {
         Utilisateur u = getUserById(id);
+
+        UtilisateurStatut oldStatut = u.getStatut();
+        UtilisateurStatut newStatut = apiStatut != null ? parseStatut(apiStatut) : oldStatut;
+        UtilisateurRole targetRole = apiRole != null ? parseRole(apiRole) : u.getRole();
+
+        validateAdminStatusCombination(targetRole, newStatut);
+
+        // ✅ STEP 1: Save all non-status fields first (name, email, role, password, etc.)
+        // Keep the OLD status so dao.save() doesn't overwrite deactivated_by
         u.setNom(nom);
         u.setPrenom(prenom);
         u.setEmail(email);
@@ -238,10 +266,56 @@ public class UtilisateurService {
         if (apiRole != null) {
             u.setRole(parseRole(apiRole));
         }
-        if (apiStatut != null) {
-            u.setStatut(parseStatut(apiStatut));
+        // Keep old statut in the entity so dao.save() doesn't touch deactivated_by
+        u.setStatut(oldStatut);
+        dao.save(u);
+
+        // ✅ STEP 2: If status changed, handle it via AccountStatusService
+        // which uses updateStatut() SQL that correctly sets deactivated_by
+        if (oldStatut != newStatut) {
+            if (newStatut == UtilisateurStatut.INACTIF && oldStatut != UtilisateurStatut.INACTIF) {
+                accountStatusService.deactivateAccount(u, "admin");
+            } else if (newStatut == UtilisateurStatut.BLOQUE) {
+                accountStatusService.blockAccount(u);
+            } else if (newStatut == UtilisateurStatut.ACTIF && oldStatut == UtilisateurStatut.INACTIF) {
+                accountStatusService.reactivateAccount(u);
+            } else {
+                // Other status changes (SUPPRIME etc.) — update directly
+                dao.updateStatut(id, newStatut.name(), null);
+            }
         }
-        return dao.save(u);
+
+        // ✅ STEP 3: Return fresh user from DB
+        return getUserById(id);
+    }
+
+    private void applyManagedStatusChange(Utilisateur user, UtilisateurStatut oldStatut, UtilisateurStatut newStatut) {
+        if (user == null || oldStatut == newStatut) {
+            return;
+        }
+        if (newStatut == UtilisateurStatut.INACTIF) {
+            accountStatusService.deactivateAccount(user, "admin");
+            return;
+        }
+        if (newStatut == UtilisateurStatut.BLOQUE) {
+            accountStatusService.blockAccount(user);
+            return;
+        }
+        if (newStatut == UtilisateurStatut.ACTIF) {
+            accountStatusService.reactivateAccount(user);
+            return;
+        }
+
+        dao.updateStatut(user.getId(), newStatut.name(), null);
+        user.setStatut(newStatut);
+        user.setDeactivatedBy(null);
+        user.setDeactivatedAt(null);
+    }
+
+    private void validateAdminStatusCombination(UtilisateurRole role, UtilisateurStatut statut) {
+        if (role == UtilisateurRole.ADMIN && statut != null && statut != UtilisateurStatut.ACTIF) {
+            throw new IllegalArgumentException("Impossible de desactiver ou bloquer un administrateur.");
+        }
     }
 
     public Utilisateur updateProfile(Integer userId, String nom, String prenom, String email,

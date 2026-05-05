@@ -82,6 +82,8 @@ public class FaceAuthService {
             return FaceAuthResult.FACE_NOT_ENABLED;
         }
 
+        lastAuthenticatedUser = user;
+
         if (user.getStatut() != UtilisateurStatut.ACTIF) {
             return FaceAuthResult.ACCOUNT_NOT_ACTIVE;
         }
@@ -198,4 +200,3 @@ public class FaceAuthService {
         return Math.sqrt(sum);
     }
 }
-

@@ -101,15 +101,6 @@ public class UserManagementController {
         loadData();
     }
 
-    @FXML
-    private void handleOpenRequests() {
-        try {
-            SceneManager.switchTo("admin-reactivation-requests");
-        } catch (IOException e) {
-            System.err.println("[UserManagementController.handleOpenRequests] " + e.getMessage());
-        }
-    }
-
     private void loadData() {
         runAsync(() -> {
             try {

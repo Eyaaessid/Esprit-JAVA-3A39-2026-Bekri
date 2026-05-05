@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -8,6 +9,9 @@
             fx:controller="tn.esprit.profil.ui.TestController"
             styleClass="page-bg"
             prefWidth="1100" prefHeight="700">
+    <stylesheets>
+        <URL value="@../css/bekri.css"/>
+    </stylesheets>
 
     <top>
         <VBox styleClass="test-header" spacing="10">
@@ -16,7 +20,7 @@
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label fx:id="pageLabel" text="" styleClass="muted"/>
             </HBox>
-            <Label fx:id="sectionLabel" text="" styleClass="section-title"/>
+            <Label fx:id="sectionLabel" text="" styleClass="section-title top-bar-title"/>
             <ProgressBar fx:id="progressBar" maxWidth="Infinity" progress="0" styleClass="progress-bar" prefHeight="8"/>
         </VBox>
     </top>

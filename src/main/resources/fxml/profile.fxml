@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -8,11 +9,14 @@
             fx:controller="tn.esprit.user.ui.ProfileController"
             styleClass="page-bg"
             prefWidth="1100" prefHeight="700">
+    <stylesheets>
+        <URL value="@../css/bekri.css"/>
+    </stylesheets>
 
     <top>
         <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="16">
             <Button text="Retour" styleClass="btn-ghost" onAction="#goBack"/>
-            <Label text="Mon Profil" styleClass="top-bar-title"/>
+            <Label text="Mon Profil" styleClass="top-bar-title page-title"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="Déconnexion" styleClass="btn-danger" onAction="#handleLogout"/>
         </HBox>

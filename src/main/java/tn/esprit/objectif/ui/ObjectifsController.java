@@ -1,13 +1,16 @@
 package tn.esprit.objectif.ui;
 
 import tn.esprit.session.SessionManager;
+import tn.esprit.shared.CommunityNavigation;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.objectif.entity.ObjectifBienEtre;
 import tn.esprit.objectif.model.ObjectifBienEtreDto;
 import tn.esprit.objectif.service.ObjectifBienEtreService;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -91,9 +94,9 @@ public class ObjectifsController {
     private void renderPage() {
         cardsPane.getChildren().clear();
 
-        int total = filteredList.size();
+        int total      = filteredList.size();
         int totalPages = Math.max(1, (int) Math.ceil((double) total / PAGE_SIZE));
-        currentPage = Math.min(currentPage, totalPages - 1);
+        currentPage    = Math.min(currentPage, totalPages - 1);
 
         int from = currentPage * PAGE_SIZE;
         int to   = Math.min(from + PAGE_SIZE, total);
@@ -136,12 +139,34 @@ public class ObjectifsController {
     @FXML private void handleSearch() { applyFilter(); }
     @FXML private void handleNew()    { openForm(null); }
 
-    @FXML
-    private void handleBack() {
+    @FXML private void handleAccueil(ActionEvent e)         { loadView(stageFrom(e), "/fxml/user-dashboard.fxml"); }
+    @FXML private void handleObjectifs(ActionEvent e)       { loadView(stageFrom(e), "/fxml/objectifs.fxml"); }
+    @FXML private void handleDailyCheckIn(ActionEvent e)    { loadView(stageFrom(e), "/fxml/suivi_today.fxml"); }
+    @FXML private void handleWeekPlan(ActionEvent e)        { loadView(stageFrom(e), "/fxml/plan-weekly.fxml"); }
+    @FXML private void handleWeeklyInsights(ActionEvent e)  { loadView(stageFrom(e), "/fxml/weekly-insight.fxml"); }
+    @FXML private void handleCommunity(ActionEvent e)       { CommunityNavigation.openPosts(stageFrom(e)); }
+    @FXML private void handleChatBot(ActionEvent e)         { loadView(stageFrom(e), "/fxml/chat-coach.fxml"); }
+    @FXML private void handleTest(ActionEvent e)            { loadView(stageFrom(e), "/fxml/test.fxml"); }
+    @FXML private void handleProfilPsy(ActionEvent e)       { loadView(stageFrom(e), "/fxml/profil-psychologique.fxml"); }
+    @FXML private void handleProfil(ActionEvent e)          { loadView(stageFrom(e), "/fxml/profile.fxml"); }
+    @FXML private void handleLogout(ActionEvent e) {
+        SessionManager.getInstance().logout();
+        loadView(stageFrom(e), "/fxml/login.fxml");
+    }
+
+    private Stage stageFrom(ActionEvent e) {
+        return (Stage) ((Node) e.getSource()).getScene().getWindow();
+    }
+
+    private void loadView(Stage stage, String fxmlPath) {
         try {
-            SceneManager.switchTo("user-dashboard");
-        } catch (IOException e) {
-            showError("Erreur de navigation : " + e.getMessage());
+            java.net.URL url = getClass().getResource(fxmlPath);
+            if (url == null) throw new IllegalArgumentException("FXML not found: " + fxmlPath);
+            Parent root = FXMLLoader.load(url);
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException ex) {
+            showError("Erreur de navigation : " + ex.getMessage());
         }
     }
 
@@ -229,7 +254,7 @@ public class ObjectifsController {
         editBtn.getStyleClass().add("btn-secondary");
         editBtn.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(editBtn, Priority.ALWAYS);
-        editBtn.setOnAction(e -> openForm(o));
+        editBtn.setOnAction(e -> openForm(o));  // ← was lambda$buildCard$1 in the stack trace
 
         Button delBtn = new Button("🗑  Supprimer");
         delBtn.getStyleClass().add("btn-danger");
@@ -281,18 +306,25 @@ public class ObjectifsController {
 
     private String fmt(Object date) { return date != null ? date.toString() : "—"; }
 
+    // ── THE FIX ──────────────────────────────────────────────────────────────
+    // Before: VBox root = loader.load();
+    //         → CRASH because objectif-form.fxml root is <BorderPane>, not <VBox>
+    // After:  Parent root = loader.load();
+    //         → Works for ANY root element type (BorderPane, VBox, AnchorPane, etc.)
+    // ─────────────────────────────────────────────────────────────────────────
     private void openForm(ObjectifBienEtreDto existing) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/objectif-form.fxml"));
-            Parent root = loader.load();
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/objectif-form.fxml"));
+
+            Parent root = loader.load(); // ← FIXED: was "VBox root" — caused ClassCastException
+
             ObjectifFormController ctrl = loader.getController();
             if (existing != null) ctrl.setObjectif(existing);
 
             Scene scene = new Scene(root);
-            var css = getClass().getResource("/css/app.css");
-            if (css != null) {
-                scene.getStylesheets().add(css.toExternalForm());
-            }
+            var css = getClass().getResource("/css/bekri.css");
+            if (css != null) scene.getStylesheets().add(css.toExternalForm());
 
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);

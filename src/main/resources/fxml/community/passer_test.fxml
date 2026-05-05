@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.testmental.ui.PasserTestController"
+            prefWidth="650.0"
+            prefHeight="500.0"
+            style="-fx-background-color: #f0f4f8;">
+
+    <children>
+        <VBox spacing="0"
+              AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+              AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+
+            <!-- HEADER -->
+            <HBox style="-fx-background-color: #2ecc9a; -fx-padding: 20px;"
+                  alignment="CENTER">
+                <Label text="🧠 Passage du Test"
+                       style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            </HBox>
+
+            <!-- PROGRESS -->
+            <HBox alignment="CENTER" style="-fx-padding: 15px; -fx-background-color: #e8f5f0;">
+                <Label fx:id="labelProgress" text="Question 1/5"
+                       style="-fx-font-size: 14px; -fx-text-fill: #555; -fx-font-weight: bold;"/>
+                <Label fx:id="labelTimer" text="⏱ 00:00"
+                       style="-fx-font-size: 16px; -fx-text-fill: #e74c3c; -fx-font-weight: bold;"/>
+            </HBox>
+
+
+            <!-- QUESTION CARD -->
+            <VBox alignment="CENTER" spacing="15"
+                  style="-fx-padding: 30px 50px; -fx-background-color: white;
+                         -fx-border-color: #dce3ea; -fx-border-width: 0 0 1 0;">
+                <Label fx:id="labelQuestion"
+                       text="Question ici"
+                       wrapText="true"
+                       style="-fx-font-size: 16px; -fx-text-fill: #2c3e50; -fx-font-weight: bold;"
+                       maxWidth="500"/>
+            </VBox>
+
+            <!-- REPONSES -->
+            <VBox spacing="12" alignment="CENTER_LEFT"
+                  style="-fx-padding: 30px 80px; -fx-background-color: #f0f4f8;">
+
+                <RadioButton fx:id="radioA"
+                             style="-fx-font-size: 14px; -fx-text-fill: #2c3e50;
+                                    -fx-background-color: white; -fx-padding: 12px 20px;
+                                    -fx-border-color: #ccd6dd; -fx-border-radius: 8px;
+                                    -fx-background-radius: 8px;"
+                             maxWidth="Infinity"/>
+
+                <RadioButton fx:id="radioB"
+                             style="-fx-font-size: 14px; -fx-text-fill: #2c3e50;
+                                    -fx-background-color: white; -fx-padding: 12px 20px;
+                                    -fx-border-color: #ccd6dd; -fx-border-radius: 8px;
+                                    -fx-background-radius: 8px;"
+                             maxWidth="Infinity"/>
+
+                <RadioButton fx:id="radioC"
+                             style="-fx-font-size: 14px; -fx-text-fill: #2c3e50;
+                                    -fx-background-color: white; -fx-padding: 12px 20px;
+                                    -fx-border-color: #ccd6dd; -fx-border-radius: 8px;
+                                    -fx-background-radius: 8px;"
+                             maxWidth="Infinity"/>
+            </VBox>
+
+            <!-- BOUTON -->
+            <HBox alignment="CENTER" style="-fx-padding: 20px;">
+                <Button text="Suivant →" onAction="#next"
+                        style="-fx-background-color: #2ecc9a; -fx-text-fill: white;
+                               -fx-font-size: 15px; -fx-font-weight: bold;
+                               -fx-padding: 12px 40px; -fx-background-radius: 25px;
+                               -fx-cursor: hand;"/>
+            </HBox>
+
+        </VBox>
+    </children>
+</AnchorPane>

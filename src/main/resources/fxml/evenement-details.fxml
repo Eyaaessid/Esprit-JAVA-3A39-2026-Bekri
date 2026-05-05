@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.evenement.ui.EvenementDetailsController"
+            prefWidth="1100" prefHeight="700" styleClass="page-bg">
+    <stylesheets><URL value="@../css/app.css"/></stylesheets>
+    <left>
+        <VBox styleClass="sidebar">
+            <VBox styleClass="sidebar-logo-box" spacing="2">
+                <Label text="bekri" styleClass="sidebar-logo"/>
+                <Label text="Bien-être &amp; Objectifs" styleClass="sidebar-logo-sub"/>
+            </VBox>
+            <VBox styleClass="sidebar-nav-box" spacing="0">
+                <Label text="MENU" styleClass="sidebar-section-label"/>
+                <Button text="🏠  Accueil" styleClass="sidebar-btn" onAction="#handleAccueil"/>
+                <Label text="EVENTS" styleClass="sidebar-section-label"/>
+                <Button text="📅  Événements" styleClass="sidebar-btn-active" onAction="#handleEvenements"/>
+                <Button text="🎫  Mes Participations" styleClass="sidebar-btn" onAction="#handleMesParticipations"/>
+                <Button text="❤️  Mes Favoris" styleClass="sidebar-btn" onAction="#handleMesFavoris"/>
+                <Button text="Gerer Evenements" styleClass="sidebar-btn" onAction="#handleCoachEvenements" visible="false" managed="false"/>
+                <Button text="Dashboard Coach" styleClass="sidebar-btn" onAction="#handleCoachDashboard" visible="false" managed="false"/>
+            </VBox>
+            <Region VBox.vgrow="ALWAYS"/>
+            <VBox styleClass="sidebar-divider">
+                <Button text="⎋  Déconnexion" styleClass="sidebar-logout" onAction="#handleLogout"/>
+            </VBox>
+        </VBox>
+    </left>
+    <center>
+        <ScrollPane fitToWidth="true" fitToHeight="false" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" maxWidth="Infinity" maxHeight="Infinity" styleClass="scroll-pane">
+            <VBox spacing="24" maxWidth="820">
+                <padding><Insets top="32" right="36" bottom="32" left="36"/></padding>
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <Button text="← Retour" styleClass="btn-ghost" onAction="#handleRetour"/>
+                    <Label fx:id="lblTitre" styleClass="page-title" HBox.hgrow="ALWAYS" wrapText="true"/>
+                </HBox>
+                <VBox styleClass="section-card" spacing="16">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label fx:id="lblType" styleClass="chip chip-type"/>
+                        <Label fx:id="lblStatut" styleClass="badge"/>
+                    </HBox>
+                    <Label fx:id="lblDescription" styleClass="body-text" wrapText="true"/>
+                    <GridPane hgap="24" vgap="12">
+                        <Label text="📅 Début" styleClass="input-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                        <Label fx:id="lblDateDebut" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                        <Label text="🏁 Fin" styleClass="input-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                        <Label fx:id="lblDateFin" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                        <Label text="👥 Capacité" styleClass="input-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                        <Label fx:id="lblCapacite" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                    </GridPane>
+                </VBox>
+                <VBox styleClass="section-card weather-card-root" spacing="12">
+                    <Label text="🌤️  Météo du lieu" styleClass="section-title"/>
+                    <ProgressIndicator fx:id="meteoLoading" prefWidth="28" prefHeight="28"/>
+                    <Label fx:id="lblMeteoTemp" styleClass="weather-stat-value" visible="false" managed="false"/>
+                    <Label fx:id="lblMeteoDesc" styleClass="body-text" visible="false" managed="false"/>
+                    <Label fx:id="lblMeteoConseil" styleClass="muted" wrapText="true" visible="false" managed="false"/>
+                </VBox>
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <Button fx:id="btnParticiper" text="✅  Participer" styleClass="btn-primary" onAction="#handleParticiper"/>
+                    <Button fx:id="btnFavori" text="🤍  Ajouter aux favoris" styleClass="btn-ghost" onAction="#handleFavori"/>
+                    <Button text="📅  Google Calendar" styleClass="btn-teal" onAction="#handleGoogleCal"/>
+                    <Button fx:id="btnModifier" text="✏️  Modifier" styleClass="btn-secondary" visible="false" managed="false" onAction="#handleModifier"/>
+                    <Button fx:id="btnSupprimer" text="🗑️  Supprimer" styleClass="btn-danger" visible="false" managed="false" onAction="#handleSupprimer"/>
+                </HBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>
