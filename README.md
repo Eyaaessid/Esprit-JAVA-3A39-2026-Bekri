@@ -65,7 +65,7 @@ L'application suit une architecture **MVC (Modèle-Vue-Contrôleur)** :
 
 ```bash
 # Cloner le dépôt
-git clone https://github.com/votre-org/Bekri-Java.git
+git clone https://github.com/Eyaaessid/Esprit-JAVA-3A39-2026-Bekri.git
 
 # Accéder au dossier
 cd Bekri-Java
