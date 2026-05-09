@@ -26,18 +26,19 @@ public class CommentDao {
             ORDER BY c.created_at ASC
             """;
 
-    public List<Comment> findByPostId(int postId) throws SQLException {
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(FIND_BY_POST_SQL)) {
+    private static final String FIND_BY_POST_SQL_LEGACY = BASE_SELECT + """
+            WHERE c.post_id = ?
+            ORDER BY c.created_at ASC
+            """;
 
-            statement.setInt(1, postId);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                List<Comment> comments = new ArrayList<>();
-                while (resultSet.next()) {
-                    comments.add(mapComment(resultSet));
-                }
-                return comments;
+    public List<Comment> findByPostId(int postId) throws SQLException {
+        try {
+            return executeFindByPostId(FIND_BY_POST_SQL, postId);
+        } catch (SQLException exception) {
+            if (!isUnknownDeletedAtColumn(exception)) {
+                throw exception;
             }
+            return executeFindByPostId(FIND_BY_POST_SQL_LEGACY, postId);
         }
     }
 
@@ -74,18 +75,56 @@ public class CommentDao {
     }
 
     public void delete(int commentId) throws SQLException {
-        String sql = "DELETE FROM commentaire WHERE id = ?";
+        String softDeleteSql = "UPDATE commentaire SET deleted_at = NOW() WHERE id = ?";
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(softDeleteSql)) {
             statement.setInt(1, commentId);
             statement.executeUpdate();
+        } catch (SQLException exception) {
+            if (!isUnknownDeletedAtColumn(exception)) {
+                throw exception;
+            }
+            String hardDeleteSql = "DELETE FROM commentaire WHERE id = ?";
+            try (Connection connection = DatabaseConnection.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(hardDeleteSql)) {
+                statement.setInt(1, commentId);
+                statement.executeUpdate();
+            }
         }
     }
 
     public List<Comment> findVisible(Integer postId, String sort) throws SQLException {
-        StringBuilder sql = new StringBuilder(BASE_SELECT)
-                .append(" WHERE c.deleted_at IS NULL ");
+        try {
+            return executeFindVisible(postId, sort, true);
+        } catch (SQLException exception) {
+            if (!isUnknownDeletedAtColumn(exception)) {
+                throw exception;
+            }
+            return executeFindVisible(postId, sort, false);
+        }
+    }
+
+    private List<Comment> executeFindByPostId(String sql, int postId) throws SQLException {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, postId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<Comment> comments = new ArrayList<>();
+                while (resultSet.next()) {
+                    comments.add(mapComment(resultSet));
+                }
+                return comments;
+            }
+        }
+    }
+
+    private List<Comment> executeFindVisible(Integer postId, String sort, boolean includeSoftDeleteFilter) throws SQLException {
+        StringBuilder sql = new StringBuilder(BASE_SELECT).append(" WHERE 1=1 ");
         List<Object> parameters = new ArrayList<>();
+        if (includeSoftDeleteFilter) {
+            sql.append(" AND c.deleted_at IS NULL");
+        }
         if (postId != null) {
             sql.append(" AND c.post_id = ?");
             parameters.add(postId);
@@ -112,6 +151,15 @@ public class CommentDao {
         }
     }
 
+    private boolean isUnknownDeletedAtColumn(SQLException exception) {
+        String message = exception.getMessage();
+        if (message == null) {
+            return false;
+        }
+        String normalized = message.toLowerCase();
+        return normalized.contains("deleted_at") && normalized.contains("unknown column");
+    }
+
     private Comment mapComment(ResultSet resultSet) throws SQLException {
         Comment comment = new Comment();
         comment.setId(resultSet.getInt("id"));
@@ -135,4 +183,3 @@ public class CommentDao {
         return comment;
     }
 }
-

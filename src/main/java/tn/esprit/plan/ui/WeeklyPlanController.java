@@ -37,6 +37,7 @@ import tn.esprit.plan.service.WeeklyPlanService;
 import tn.esprit.session.SessionManager;
 import tn.esprit.shared.CommunityNavigation;
 import tn.esprit.shared.DialogHelper;
+import tn.esprit.shared.PsychologicalProfileNavigation;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.user.entity.Utilisateur;
 
@@ -181,7 +182,7 @@ public class WeeklyPlanController implements Initializable {
     @FXML private void handleWeeklyInsights(ActionEvent e) { loadView(stageFrom(e), "/fxml/weekly-insight.fxml"); }
     @FXML private void handleCommunity(ActionEvent e)      { CommunityNavigation.openPosts(stageFrom(e)); }
     @FXML private void handleChatBot(ActionEvent e)        { loadView(stageFrom(e), "/fxml/chat-coach.fxml"); }
-    @FXML private void handleTest(ActionEvent e)           { loadView(stageFrom(e), "/fxml/test.fxml"); }
+    @FXML private void handleTest(ActionEvent e)           { openPsychologicalTest(); }
     @FXML private void handleProfilPsy(ActionEvent e)      { loadView(stageFrom(e), "/fxml/profil-psychologique.fxml"); }
     @FXML private void handleProfil(ActionEvent e)         { loadView(stageFrom(e), "/fxml/profile.fxml"); }
     @FXML private void handleLogout(ActionEvent e) {
@@ -202,6 +203,14 @@ public class WeeklyPlanController implements Initializable {
             stage.show();
         } catch (IOException ex) {
             DialogHelper.showError("Navigation", ex.getMessage());
+        }
+    }
+
+    private void openPsychologicalTest() {
+        try {
+            PsychologicalProfileNavigation.openTestIfAllowedOrDashboard();
+        } catch (IOException e) {
+            DialogHelper.showError("Navigation", e.getMessage());
         }
     }
 

@@ -9,6 +9,8 @@
    ========================================================================== */
 
 .weather-card-root {
+    -fx-min-height: 280px;
+    -fx-max-height: Infinity;
     -fx-background-color: linear-gradient(to bottom right, #EBF3F7, #F4F8F2);
     -fx-background-radius: 22px;
     -fx-border-color:

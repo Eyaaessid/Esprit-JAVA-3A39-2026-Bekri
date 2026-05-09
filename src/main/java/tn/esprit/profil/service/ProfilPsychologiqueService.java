@@ -11,6 +11,11 @@ public class ProfilPsychologiqueService {
 
     public ProfilPsychologique submitProfil(Integer utilisateurId, int scoreGlobal,
                                             String profilType, String aiFeedback) {
+        Optional<ProfilPsychologique> existing = dao.findByUtilisateurId(utilisateurId);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
         ProfilPsychologique profil = new ProfilPsychologique();
         profil.setUtilisateurId(utilisateurId);
         profil.setScoreGlobal(scoreGlobal);
@@ -21,6 +26,10 @@ public class ProfilPsychologiqueService {
 
     public Optional<ProfilPsychologique> getProfilForUser(Integer utilisateurId) {
         return dao.findByUtilisateurId(utilisateurId);
+    }
+
+    public boolean hasProfil(Integer utilisateurId) {
+        return dao.existsByUtilisateurId(utilisateurId);
     }
 
     public List<ProfilPsychologique> getAllProfils() {

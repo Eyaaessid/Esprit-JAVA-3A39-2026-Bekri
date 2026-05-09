@@ -14,6 +14,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import tn.esprit.shared.CommunityNavigation;
+import tn.esprit.shared.DialogHelper;
+import tn.esprit.shared.PsychologicalProfileNavigation;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.session.SessionManager;
 import tn.esprit.user.entity.Utilisateur;
@@ -49,13 +51,24 @@ public class UserDashboardController implements Initializable {
     @FXML private Label lblWind;
     @FXML private VBox  weatherTipsContainer;
     @FXML private Label lblWeatherStatus;
-
+    @FXML private void handleTestMental(ActionEvent e)      { loadView(stageFrom(e), "/fxml/test_mental.fxml"); }
+    @FXML private void handleTestMentalClick(MouseEvent e)  { loadView(stageFrom(e), "/fxml/test_mental.fxml"); }
     // ─────────────────────────────────────────────────────────────────────────
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        Utilisateur user = SessionManager.getInstance().getCurrentUser();
+        if (PsychologicalProfileNavigation.shouldForceTestOnLogin(user)) {
+            Platform.runLater(() -> {
+                try {
+                    PsychologicalProfileNavigation.openTestIfAllowedOrDashboard();
+                } catch (IOException e) {
+                    DialogHelper.showError("Navigation", e.getMessage());
+                }
+            });
+            return;
+        }
 
         // Welcome message
-        Utilisateur user = SessionManager.getInstance().getCurrentUser();
         if (user != null) {
             String prenom = user.getPrenom() != null ? user.getPrenom() : user.getNom();
             if (welcomeLabel      != null) welcomeLabel.setText("Bonjour, " + prenom + " 👋");
@@ -215,7 +228,7 @@ public class UserDashboardController implements Initializable {
     @FXML private void handleWeeklyInsights(ActionEvent e) { loadView(stageFrom(e), "/fxml/weekly-insight.fxml"); }
     @FXML private void handleCommunity(ActionEvent e)      { CommunityNavigation.openPosts(stageFrom(e)); }
     @FXML private void handleChatBot(ActionEvent e)        { loadView(stageFrom(e), "/fxml/chat-coach.fxml"); }
-    @FXML private void handleTest(ActionEvent e)           { loadView(stageFrom(e), "/fxml/test.fxml"); }
+    @FXML private void handleTest(ActionEvent e)           { openPsychologicalTest(); }
     @FXML private void handleProfilPsy(ActionEvent e)      { loadView(stageFrom(e), "/fxml/profil-psychologique.fxml"); }
     @FXML private void handleProfil(ActionEvent e)         { loadView(stageFrom(e), "/fxml/profile.fxml"); }
     @FXML private void handleEvenements(ActionEvent e) throws Exception { SceneManager.switchTo("evenements-list"); }
@@ -224,6 +237,15 @@ public class UserDashboardController implements Initializable {
     @FXML private void handleLogout(ActionEvent e) {
         SessionManager.getInstance().logout();
         loadView(stageFrom(e), "/fxml/login.fxml");
+    }
+
+    @FXML private void openProfile() {
+        try { SceneManager.switchTo("profile"); } catch (Exception e) { throw new RuntimeException(e); }
+    }
+
+    @FXML private void logout() {
+        SessionManager.getInstance().logout();
+        try { SceneManager.switchTo("login"); } catch (Exception e) { throw new RuntimeException(e); }
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -236,7 +258,7 @@ public class UserDashboardController implements Initializable {
     @FXML private void handleWeeklyInsightsClick(MouseEvent e) { loadView(stageFrom(e), "/fxml/weekly-insight.fxml"); }
     @FXML private void handleCommunityClick(MouseEvent e)      { CommunityNavigation.openPosts(stageFrom(e)); }
     @FXML private void handleChatBotClick(MouseEvent e)        { loadView(stageFrom(e), "/fxml/chat-coach.fxml"); }
-    @FXML private void handleTestClick(MouseEvent e)           { loadView(stageFrom(e), "/fxml/test.fxml"); }
+    @FXML private void handleTestClick(MouseEvent e)           { openPsychologicalTest(); }
     @FXML private void handleProfilPsyClick(MouseEvent e)      { loadView(stageFrom(e), "/fxml/profil-psychologique.fxml"); }
     @FXML private void handleProfilClick(MouseEvent e)         { loadView(stageFrom(e), "/fxml/profile.fxml"); }
 
@@ -256,6 +278,14 @@ public class UserDashboardController implements Initializable {
             stage.show();
         } catch (IOException ex) {
             throw new RuntimeException("Failed to load FXML: " + fxmlPath, ex);
+        }
+    }
+
+    private void openPsychologicalTest() {
+        try {
+            PsychologicalProfileNavigation.openTestIfAllowedOrDashboard();
+        } catch (IOException e) {
+            DialogHelper.showError("Navigation", e.getMessage());
         }
     }
 }

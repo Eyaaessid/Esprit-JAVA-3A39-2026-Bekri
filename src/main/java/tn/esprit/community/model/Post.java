@@ -149,11 +149,13 @@ public class Post {
     }
 
     public String getAuthorDisplayName() {
-        return authorPrenom + " " + authorNom;
+        String prenom = authorPrenom == null ? "" : authorPrenom.trim();
+        String nom = authorNom == null ? "" : authorNom.trim();
+        String fullName = (prenom + " " + nom).trim();
+        return fullName.isEmpty() ? "Utilisateur inconnu" : fullName;
     }
 
     public boolean canBeEditedBy(UserSummary user) {
         return user != null && (user.isAdmin() || user.id() == userId);
     }
 }
-

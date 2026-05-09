@@ -2,6 +2,7 @@ package tn.esprit.objectif.ui;
 
 import tn.esprit.session.SessionManager;
 import tn.esprit.shared.CommunityNavigation;
+import tn.esprit.shared.PsychologicalProfileNavigation;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.objectif.entity.ObjectifBienEtre;
 import tn.esprit.objectif.model.ObjectifBienEtreDto;
@@ -146,7 +147,7 @@ public class ObjectifsController {
     @FXML private void handleWeeklyInsights(ActionEvent e)  { loadView(stageFrom(e), "/fxml/weekly-insight.fxml"); }
     @FXML private void handleCommunity(ActionEvent e)       { CommunityNavigation.openPosts(stageFrom(e)); }
     @FXML private void handleChatBot(ActionEvent e)         { loadView(stageFrom(e), "/fxml/chat-coach.fxml"); }
-    @FXML private void handleTest(ActionEvent e)            { loadView(stageFrom(e), "/fxml/test.fxml"); }
+    @FXML private void handleTest(ActionEvent e)            { openPsychologicalTest(); }
     @FXML private void handleProfilPsy(ActionEvent e)       { loadView(stageFrom(e), "/fxml/profil-psychologique.fxml"); }
     @FXML private void handleProfil(ActionEvent e)          { loadView(stageFrom(e), "/fxml/profile.fxml"); }
     @FXML private void handleLogout(ActionEvent e) {
@@ -167,6 +168,14 @@ public class ObjectifsController {
             stage.show();
         } catch (IOException ex) {
             showError("Erreur de navigation : " + ex.getMessage());
+        }
+    }
+
+    private void openPsychologicalTest() {
+        try {
+            PsychologicalProfileNavigation.openTestIfAllowedOrDashboard();
+        } catch (IOException e) {
+            showError("Erreur de navigation : " + e.getMessage());
         }
     }
 

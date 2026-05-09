@@ -21,8 +21,8 @@
                 <Button text="📅  Événements" styleClass="sidebar-btn" onAction="#handleEvenements"/>
                 <Button text="🎫  Mes Participations" styleClass="sidebar-btn-active" onAction="#handleMesParticipations"/>
                 <Button text="❤️  Mes Favoris" styleClass="sidebar-btn" onAction="#handleMesFavoris"/>
-                <Button text="⚙️  Gérer Événements" styleClass="sidebar-btn" onAction="#handleCoachEvenements"/>
-                <Button text="📊  Dashboard Coach" styleClass="sidebar-btn" onAction="#handleCoachDashboard"/>
+                <Button text="Gerer Evenements" styleClass="sidebar-btn" onAction="#handleCoachEvenements" visible="false" managed="false"/>
+                <Button text="Dashboard Coach" styleClass="sidebar-btn" onAction="#handleCoachDashboard" visible="false" managed="false"/>
             </VBox>
             <Region VBox.vgrow="ALWAYS"/>
             <VBox styleClass="sidebar-divider">
@@ -31,7 +31,7 @@
         </VBox>
     </left>
     <center>
-        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+        <ScrollPane fitToWidth="true" fitToHeight="false" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" maxWidth="Infinity" maxHeight="Infinity" styleClass="scroll-pane">
             <VBox spacing="24">
                 <padding><Insets top="32" right="36" bottom="32" left="36"/></padding>
                 <Label text="Mes participations" styleClass="page-title"/>

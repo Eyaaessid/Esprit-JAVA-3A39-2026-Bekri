@@ -1,5 +1,6 @@
 package tn.esprit.profil.ui;
 
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -14,6 +15,7 @@ import tn.esprit.profil.service.GroqAiService;
 import tn.esprit.profil.service.ProfilPsychologiqueService;
 import tn.esprit.session.SessionManager;
 import tn.esprit.shared.DialogHelper;
+import tn.esprit.shared.PsychologicalProfileNavigation;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.utils.AppConfig;
 
@@ -66,6 +68,30 @@ public class TestController {
 
     @FXML
     private void initialize() {
+        var currentUser = SessionManager.getInstance().getCurrentUser();
+        if (currentUser == null || currentUser.getId() == null) {
+            Platform.runLater(() -> {
+                DialogHelper.showError("Session", "Veuillez vous connecter pour acceder au test psychologique.");
+                try {
+                    SceneManager.switchTo("login");
+                } catch (IOException e) {
+                    DialogHelper.showError("Navigation", e.getMessage());
+                }
+            });
+            return;
+        }
+        if (!PsychologicalProfileNavigation.canAccessTest(currentUser)) {
+            Platform.runLater(() -> {
+                DialogHelper.showInfo("Test psychologique", "Vous avez deja complete votre test psychologique.");
+                try {
+                    PsychologicalProfileNavigation.openDashboardForCurrentUser();
+                } catch (IOException e) {
+                    DialogHelper.showError("Navigation", e.getMessage());
+                }
+            });
+            return;
+        }
+
         for (int p = 0; p < QUESTIONS.length; p++) {
             answersPerPage.add(new int[QUESTIONS[p].length]);
             for (int q = 0; q < QUESTIONS[p].length; q++) {
@@ -241,8 +267,7 @@ public class TestController {
         try {
             ProfilPsychologiqueService service = new ProfilPsychologiqueService();
             service.submitProfil(userId, scoreGlobal, profilType, finalFeedback);
-            SceneManager.switchTo("profil-psychologique");
-            SceneManager.resizePrimaryStage(880, 700);
+            PsychologicalProfileNavigation.openDashboardForCurrentUser();
         } catch (IOException e) {
             DialogHelper.showError("Navigation", e.getMessage());
             nextBtn.setText("Terminer ✓");
@@ -310,7 +335,7 @@ public class TestController {
     @FXML
     private void handleRetour() {
         try {
-            SceneManager.switchTo("user-dashboard");
+            PsychologicalProfileNavigation.openDashboardForCurrentUser();
         } catch (Exception e) {
             e.printStackTrace();
         }

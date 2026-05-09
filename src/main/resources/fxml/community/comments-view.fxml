@@ -5,8 +5,6 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -25,11 +23,6 @@
             </padding>
             <HBox alignment="CENTER_LEFT" spacing="18.0" styleClass="topbar-shell">
                 <HBox alignment="CENTER_LEFT" spacing="10.0">
-                    <ImageView fitHeight="34.0" fitWidth="34.0" pickOnBounds="true" preserveRatio="true">
-                        <image>
-                            <Image url="@/org/example/images/logo.png"/>
-                        </image>
-                    </ImageView>
                     <Label styleClass="brand-title" text="Bekri"/>
                 </HBox>
                 <VBox alignment="CENTER_LEFT" spacing="2.0">

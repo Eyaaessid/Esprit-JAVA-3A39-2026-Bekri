@@ -28,6 +28,7 @@ import tn.esprit.profil.service.WellbeingRecommendationService.WellbeingRecommen
 import tn.esprit.session.SessionManager;
 import tn.esprit.shared.DialogHelper;
 import tn.esprit.shared.ObjectifContext;
+import tn.esprit.shared.PsychologicalProfileNavigation;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.user.entity.Utilisateur;
 import tn.esprit.utils.AppConfig;
@@ -456,7 +457,7 @@ public class ProfilPsychologiqueController {
 
     private void goToTest() {
         try {
-            SceneManager.switchTo("test");
+            PsychologicalProfileNavigation.openTestIfAllowedOrDashboard();
         } catch (IOException e) {
             DialogHelper.showError("Navigation", e.getMessage());
         }

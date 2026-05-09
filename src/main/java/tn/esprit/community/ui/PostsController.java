@@ -29,6 +29,7 @@ import tn.esprit.community.model.PostFormData;
 import tn.esprit.community.model.PostNotification;
 import tn.esprit.community.model.RiskAnalysisResult;
 import tn.esprit.community.model.UserSummary;
+import tn.esprit.shared.PsychologicalProfileNavigation;
 import tn.esprit.shared.SceneManager;
 
 import java.io.IOException;
@@ -994,7 +995,7 @@ public class PostsController {
     @FXML
     private void handleTest() {
         try {
-            SceneManager.switchTo("test");
+            PsychologicalProfileNavigation.openTestIfAllowedOrDashboard();
         } catch (IOException exception) {
             showError("Failed to navigate to psychological test: " + exception.getMessage());
         }

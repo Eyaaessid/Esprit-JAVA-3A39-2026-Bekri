@@ -16,6 +16,7 @@ import tn.esprit.shared.DialogHelper;
 import tn.esprit.shared.FormFieldStyles;
 import tn.esprit.shared.FormValidators;
 import tn.esprit.shared.PasswordUiHelper;
+import tn.esprit.shared.PsychologicalProfileNavigation;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.user.entity.Utilisateur;
 import tn.esprit.user.enums.UtilisateurStatut;
@@ -300,13 +301,7 @@ public class LoginController {
     }
 
     private void navigateToDashboard() throws IOException {
-        if (SessionManager.getInstance().isAdmin()) {
-            SceneManager.switchTo("admin-dashboard");
-        } else if (SessionManager.getInstance().isCoach()) {
-            SceneManager.switchTo("coach-dashboard");
-        } else {
-            SceneManager.switchTo("user-dashboard");
-        }
+        PsychologicalProfileNavigation.openPostLoginDestination();
     }
 
     private boolean isSuspended(Utilisateur user) {

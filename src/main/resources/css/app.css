@@ -1925,3 +1925,61 @@
     -fx-background-color: rgba(197, 110, 90, 0.16);
     -fx-text-fill: -bekri-danger-deep;
 }
+
+/* USER SHELL SCROLL FIXES */
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+.scroll-bar:vertical {
+    -fx-pref-width: 8px;
+    -fx-background-color: transparent;
+}
+.scroll-bar:vertical .thumb {
+    -fx-background-color: -bekri-primary;
+    -fx-background-radius: 4px;
+    -fx-opacity: 0.6;
+}
+.scroll-bar:vertical .thumb:hover {
+    -fx-opacity: 1.0;
+}
+.scroll-bar:vertical .increment-button,
+.scroll-bar:vertical .decrement-button {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+}
+.sidebar-scroll,
+.sidebar-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+.dashboard-main-shell {
+    -fx-background-color: transparent;
+}
+.top-bar {
+    -fx-background-color: -bekri-background;
+    -fx-border-color: derive(-bekri-background, -10%);
+    -fx-border-width: 0 0 1 0;
+    -fx-min-height: 52px;
+    -fx-max-height: 52px;
+    -fx-pref-height: 52px;
+    -fx-padding: 8px 16px 8px 16px;
+}
+.icon-btn {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 6px;
+    -fx-background-radius: 999px;
+    -fx-border-color: transparent;
+    -fx-effect: null;
+    -fx-font-size: 18px;
+}
+.icon-btn:hover {
+    -fx-background-color: derive(-bekri-primary, 80%);
+}
+.weather-card-root {
+    -fx-min-height: 280px;
+    -fx-max-height: Infinity;
+}

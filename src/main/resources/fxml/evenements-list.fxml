@@ -33,7 +33,7 @@
         </VBox>
     </left>
     <center>
-        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+        <ScrollPane fitToWidth="true" fitToHeight="false" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" maxWidth="Infinity" maxHeight="Infinity" styleClass="scroll-pane">
             <VBox spacing="24">
                 <padding><Insets top="32" right="36" bottom="32" left="36"/></padding>
                 <HBox alignment="CENTER_LEFT" spacing="16">

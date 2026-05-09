@@ -97,6 +97,23 @@ public class ProfilPsychologiqueDao {
         }
     }
 
+    public boolean existsByUtilisateurId(Integer utilisateurId) {
+        if (utilisateurId == null) {
+            return false;
+        }
+
+        Connection cnx = getCnx();
+        String sql = "SELECT 1 FROM profil_psychologique WHERE utilisateur_id = ? LIMIT 1";
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setInt(1, utilisateurId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public List<ProfilPsychologique> findAll() {
         Connection cnx = getCnx();
         String sql = "SELECT * FROM profil_psychologique ORDER BY date_evaluation DESC";

@@ -29,7 +29,18 @@ public class PostDao {
             """;
 
     public List<Post> findAllVisible(String search, String category) throws SQLException {
-        StringBuilder sql = new StringBuilder(BASE_SELECT);
+        try {
+            return findAllVisible(search, category, true);
+        } catch (SQLException exception) {
+            if (!isUnknownDeletedAtColumn(exception)) {
+                throw exception;
+            }
+            return findAllVisible(search, category, false);
+        }
+    }
+
+    private List<Post> findAllVisible(String search, String category, boolean includeSoftDeleteFilters) throws SQLException {
+        StringBuilder sql = new StringBuilder(baseSelect(includeSoftDeleteFilters));
         List<Object> parameters = new ArrayList<>();
 
         if (search != null && !search.isBlank()) {
@@ -62,7 +73,18 @@ public class PostDao {
     }
 
     public java.util.Optional<Post> findVisibleById(int postId) throws SQLException {
-        String sql = BASE_SELECT + " AND p.id = ?";
+        try {
+            return findVisibleById(postId, true);
+        } catch (SQLException exception) {
+            if (!isUnknownDeletedAtColumn(exception)) {
+                throw exception;
+            }
+            return findVisibleById(postId, false);
+        }
+    }
+
+    private java.util.Optional<Post> findVisibleById(int postId, boolean includeSoftDeleteFilters) throws SQLException {
+        String sql = baseSelect(includeSoftDeleteFilters) + " AND p.id = ?";
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
@@ -130,11 +152,21 @@ public class PostDao {
     }
 
     public void softDelete(int postId) throws SQLException {
-        String sql = "UPDATE post SET deleted_at = NOW() WHERE id = ?";
+        String softDeleteSql = "UPDATE post SET deleted_at = NOW() WHERE id = ?";
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(softDeleteSql)) {
             statement.setInt(1, postId);
             statement.executeUpdate();
+        } catch (SQLException exception) {
+            if (!isUnknownDeletedAtColumn(exception)) {
+                throw exception;
+            }
+            String hardDeleteSql = "DELETE FROM post WHERE id = ?";
+            try (Connection connection = DatabaseConnection.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(hardDeleteSql)) {
+                statement.setInt(1, postId);
+                statement.executeUpdate();
+            }
         }
     }
 
@@ -145,12 +177,23 @@ public class PostDao {
     }
 
     public List<Post> findVisibleByIds(List<Integer> ids) throws SQLException {
+        try {
+            return findVisibleByIds(ids, true);
+        } catch (SQLException exception) {
+            if (!isUnknownDeletedAtColumn(exception)) {
+                throw exception;
+            }
+            return findVisibleByIds(ids, false);
+        }
+    }
+
+    private List<Post> findVisibleByIds(List<Integer> ids, boolean includeSoftDeleteFilters) throws SQLException {
         if (ids == null || ids.isEmpty()) {
             return List.of();
         }
 
         String placeholders = ids.stream().map(id -> "?").collect(Collectors.joining(","));
-        String sql = BASE_SELECT + " AND p.id IN (" + placeholders + ")";
+        String sql = baseSelect(includeSoftDeleteFilters) + " AND p.id IN (" + placeholders + ")";
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
@@ -169,7 +212,20 @@ public class PostDao {
     }
 
     public List<Integer> findPostIdsByAuthor(int userId) throws SQLException {
-        String sql = "SELECT id FROM post WHERE utilisateur_id = ? AND deleted_at IS NULL";
+        try {
+            return findPostIdsByAuthor(userId, true);
+        } catch (SQLException exception) {
+            if (!isUnknownDeletedAtColumn(exception)) {
+                throw exception;
+            }
+            return findPostIdsByAuthor(userId, false);
+        }
+    }
+
+    private List<Integer> findPostIdsByAuthor(int userId, boolean includeSoftDeleteFilters) throws SQLException {
+        String sql = includeSoftDeleteFilters
+                ? "SELECT id FROM post WHERE utilisateur_id = ? AND deleted_at IS NULL"
+                : "SELECT id FROM post WHERE utilisateur_id = ?";
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, userId);
@@ -184,11 +240,30 @@ public class PostDao {
     }
 
     public List<String> findDistinctCategoriesByAuthor(int userId) throws SQLException {
-        String sql = """
+        try {
+            return findDistinctCategoriesByAuthor(userId, true);
+        } catch (SQLException exception) {
+            if (!isUnknownDeletedAtColumn(exception)) {
+                throw exception;
+            }
+            return findDistinctCategoriesByAuthor(userId, false);
+        }
+    }
+
+    private List<String> findDistinctCategoriesByAuthor(int userId, boolean includeSoftDeleteFilters) throws SQLException {
+        String sql = includeSoftDeleteFilters
+                ? """
                 SELECT DISTINCT categorie
                 FROM post
                 WHERE utilisateur_id = ?
                   AND deleted_at IS NULL
+                  AND categorie IS NOT NULL
+                  AND TRIM(categorie) <> ''
+                """
+                : """
+                SELECT DISTINCT categorie
+                FROM post
+                WHERE utilisateur_id = ?
                   AND categorie IS NOT NULL
                   AND TRIM(categorie) <> ''
                 """;
@@ -315,5 +390,22 @@ public class PostDao {
     private String emptyToNull(String value) {
         return value == null || value.isBlank() ? null : value;
     }
-}
 
+    private String baseSelect(boolean includeSoftDeleteFilters) {
+        if (includeSoftDeleteFilters) {
+            return BASE_SELECT;
+        }
+        return BASE_SELECT
+                .replace(" AND c.deleted_at IS NULL", "")
+                .replace("WHERE p.deleted_at IS NULL", "WHERE 1=1");
+    }
+
+    private boolean isUnknownDeletedAtColumn(SQLException exception) {
+        String message = exception.getMessage();
+        if (message == null) {
+            return false;
+        }
+        String normalized = message.toLowerCase();
+        return normalized.contains("deleted_at") && normalized.contains("unknown column");
+    }
+}

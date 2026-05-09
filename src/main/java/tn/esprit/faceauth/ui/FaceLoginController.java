@@ -17,6 +17,7 @@ import tn.esprit.faceauth.FaceAuthResourceExtractor;
 import tn.esprit.faceauth.JSBridge;
 import tn.esprit.faceauth.ModelLoader;
 import tn.esprit.session.SessionManager;
+import tn.esprit.shared.PsychologicalProfileNavigation;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.user.entity.Utilisateur;
 import tn.esprit.user.enums.UtilisateurRole;
@@ -326,9 +327,7 @@ public class FaceLoginController {
                         stopWebcam();
                         SessionManager.getInstance().setCurrentUser(user);
                         try {
-                            SceneManager.switchTo(
-                                    user.getRole() == UtilisateurRole.ADMIN
-                                            ? "admin-dashboard" : "user-dashboard");
+                            PsychologicalProfileNavigation.openPostLoginDestination();
                         } catch (Exception e) { showError("Erreur de navigation."); }
                     }
                     case FACE_MISMATCH -> {

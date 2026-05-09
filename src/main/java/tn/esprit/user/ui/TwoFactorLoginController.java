@@ -8,6 +8,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.VBox;
 import tn.esprit.session.SessionManager;
+import tn.esprit.shared.PsychologicalProfileNavigation;
 import tn.esprit.shared.SceneManager;
 import tn.esprit.user.dao.TwoFactorDAO;
 import tn.esprit.user.entity.Utilisateur;
@@ -139,13 +140,7 @@ public class TwoFactorLoginController {
             System.out.println("isAdmin: " + SessionManager.getInstance().isAdmin());
             System.out.println("isCoach: " + SessionManager.getInstance().isCoach());
             utilisateurService.updateLastLogin(user.getId());
-            if (SessionManager.getInstance().isAdmin()) {
-                SceneManager.switchTo("admin-dashboard");
-            } else if (SessionManager.getInstance().isCoach()) {
-                SceneManager.switchTo("coach-dashboard");
-            } else {
-                SceneManager.switchTo("user-dashboard");
-            }
+            PsychologicalProfileNavigation.openPostLoginDestination();
         } catch (Exception e) {
             showStatus("Erreur lors de la finalisation de la connexion.", true);
         }
